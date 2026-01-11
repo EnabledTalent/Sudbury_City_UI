@@ -19,8 +19,12 @@ const programs = [
 export default function Programs() {
   return (
     <section id="programs" className="section">
+        <div className="section-header">
       <h2 className="section-title">Training & Programs</h2>
-
+      <button className="view-all">
+      View all <span>→</span>
+      </button>
+      </div>
       <div className="program-grid">
         {programs.map((p, i) => (
           <div className="program-card" key={i}>

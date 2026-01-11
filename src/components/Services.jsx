@@ -19,8 +19,12 @@ const services = [
 export default function Services() {
   return (
     <section id="services" className="section gray">
+         <div className="section-header">
       <h2>Local Places & Services</h2>
-
+     <button className="view-all">
+      View all <span>→</span>
+    </button>
+    </div>
       <div className="grid">
         {services.map((s, i) => (
           <div className="info-card" key={i}>

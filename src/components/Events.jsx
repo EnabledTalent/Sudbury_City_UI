@@ -7,10 +7,15 @@ const events = [
 export default function Events() {
   return (
     <section id="events" className="section">
+        <div className="section-header">
+
       <h2>
         Happening in <span className="highlight">Sudbury</span>
       </h2>
-
+ <button className="view-all">
+      View all <span>→</span>
+    </button>
+  </div>
       <div className="grid">
         {events.map((e, i) => (
           <div className="event-card" key={i}>
