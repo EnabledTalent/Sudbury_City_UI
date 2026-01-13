@@ -1,7 +1,17 @@
 const events = [
-  "Summer Music Festival",
-  "Community Art Workshop",
-  "Community Art Workshop",
+  {
+    title: "Summer Music Festival",
+    image: "/images/events1.png",
+  },
+  {
+    title: "Community Art Workshop",
+    image: "/images/event2.png",
+  },
+  {
+    title: "Local Food Fair",
+    image: "/images/event3.png",
+  },
+  
 ];
 
 export default function Events() {
@@ -19,8 +29,10 @@ export default function Events() {
       <div className="grid">
         {events.map((e, i) => (
           <div className="event-card" key={i}>
-            <div className="event-img"></div>
-            <h3>{e}</h3>
+            <div className="event-img">
+              <img src={e.image} alt={e.title} />
+            </div>
+            <h3>{e.title}</h3>
             <p>
               Write an amazing description in this dedicated card section.
               Each word counts.

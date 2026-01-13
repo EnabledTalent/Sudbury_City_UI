@@ -23,10 +23,11 @@ export default function App() {
           element={
             <>
               <Hero />
-              <Programs />
-              <Services />
-              <Jobs />
               <Events />
+              <Jobs />
+              <Services />
+              <Programs />
+              
               <AiCtaFooter/>
             </>
           }
