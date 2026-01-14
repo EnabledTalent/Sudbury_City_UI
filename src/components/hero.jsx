@@ -1,6 +1,17 @@
 export default function Hero() {
   return (
     <section className="hero">
+      {/* Background with brightness filter */}
+      <div 
+        className="hero-background"
+        style={{
+          backgroundImage: 'url("/images/home-page-image.png")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          filter: 'brightness(1.5)'
+        }}
+      />
       {/* Overlay */}
       <div className="hero-overlay" />
 
@@ -8,6 +19,7 @@ export default function Hero() {
       <div className="hero-content">
         <h1>
           Everything you need to know about{" "}
+          <br />
           <span>Sudbury</span>
           <br />— in one place
         </h1>
@@ -23,7 +35,7 @@ export default function Hero() {
             <span className="hero-ai-icon" style={{marginBottom:"2px"}}>✨</span>
             <div>
               <strong>AI City Assistant</strong>
-              <p style={{color:"black"}}>Ask anything about Sudbury</p>
+              <p style={{color:"#0f172a", fontWeight:"500"}}>Ask anything about Sudbury</p>
             </div>
           </div>
 

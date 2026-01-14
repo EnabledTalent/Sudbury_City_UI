@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import AiCtaFooter from "./AiCtaFooter";
 
 const jobs = [
   {
@@ -31,6 +32,7 @@ export default function JobsList() {
   const navigate = useNavigate();
 
   return (
+    <>
     <section className="section">
          {/* BACK NAVIGATION */}
       <button
@@ -118,5 +120,7 @@ export default function JobsList() {
         ))}
       </div>
     </section>
+    <AiCtaFooter />
+    </>
   );
 }

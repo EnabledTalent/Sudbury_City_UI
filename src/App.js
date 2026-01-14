@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/navbar";
-import Jobs from "./components/Jobs";
+import Jobs from "./pages/Jobs";
 import JobDetails from "./components/JobDetails";
 
 // other sections
@@ -10,13 +10,27 @@ import Services from "./components/Services";
 import Events from "./components/Events";
 import AiCtaFooter from "./components/AiCtaFooter";
 import JobsList from "./components/JobsList";
+import UserSelection from "./pages/UserSelection";
+import StudentHub from "./pages/StudentHub";
+import ResidentHub from "./pages/ResidentHub";
+import NewcomerHub from "./pages/NewcomerHub";
+import TravellerHub from "./pages/TravellerHub";
+import Explore from "./pages/Explore";
+import ServicesPage from "./pages/ServicesPage";
+import EventsPage from "./pages/EventsPage";
+import TrainingPrograms from "./pages/TrainingPrograms";
+import AIAssistant from "./pages/AIAssistant";
+import SignIn from "./pages/SignIn";
+import About from "./pages/About";
 
 export default function App() {
   return (
     <>
       <Navbar />
-
       <Routes>
+        {/* User Selection/Onboarding page */}
+        <Route path="/user-selection" element={<UserSelection />} />
+
         {/* Home page (single-page sections) */}
         <Route
           path="/"
@@ -26,6 +40,7 @@ export default function App() {
               <Events />
               <Jobs />
               <Services />
+
               <Programs />
               
               <AiCtaFooter/>
@@ -36,6 +51,33 @@ export default function App() {
         {/* Job details page */}
         <Route path="/jobs" element={<JobsList />} />
         <Route path="/jobs/:id" element={<JobDetails />} />
+
+        {/* Hub pages */}
+        <Route path="/student-hub" element={<StudentHub />} />
+        <Route path="/resident-hub" element={<ResidentHub />} />
+        <Route path="/newcomer-hub" element={<NewcomerHub />} />
+        <Route path="/traveller-hub" element={<TravellerHub />} />
+
+        {/* Explore page */}
+        <Route path="/explore" element={<Explore />} />
+
+        {/* Services page */}
+        <Route path="/services" element={<ServicesPage />} />
+
+        {/* Events page */}
+        <Route path="/events" element={<EventsPage />} />
+
+        {/* Training & Programs page */}
+        <Route path="/training" element={<TrainingPrograms />} />
+
+        {/* AI Assistant page */}
+        <Route path="/ai-assistant" element={<AIAssistant />} />
+
+        {/* Sign In page */}
+        <Route path="/sign-in" element={<SignIn />} />
+
+        {/* About page */}
+        <Route path="/about" element={<About />} />
       </Routes>
     </>
   );

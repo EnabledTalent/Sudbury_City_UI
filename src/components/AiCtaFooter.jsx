@@ -1,4 +1,8 @@
+import { useNavigate } from "react-router-dom";
+
 export default function AiCtaFooter() {
+  const navigate = useNavigate();
+
   return (
     <footer className="site-footer">
       <div className="footer-content">
@@ -17,19 +21,19 @@ export default function AiCtaFooter() {
         {/* Platform */}
         <div className="footer-column">
           <h4>Platform</h4>
-          <a href="#jobs">Jobs</a>
-          <a href="#events">Events</a>
-          <a href="#services">Places & Services</a>
-          <a href="#programs">Training</a>
+          <a onClick={() => navigate("/jobs")} style={{ cursor: "pointer" }}>Jobs</a>
+          <a onClick={() => navigate("/events")} style={{ cursor: "pointer" }}>Events</a>
+          <a onClick={() => navigate("/services")} style={{ cursor: "pointer" }}>Places & Services</a>
+          <a onClick={() => navigate("/training")} style={{ cursor: "pointer" }}>Training</a>
         </div>
 
         {/* Resources */}
         <div className="footer-column">
           <h4>Resources</h4>
-          <a>Student Hub</a>
-          <a>Resident Hub</a>
-          <a>Newcomer Hub</a>
-          <a>Visitor Hub</a>
+          <a onClick={() => navigate("/student-hub")} style={{ cursor: "pointer" }}>Student Hub</a>
+          <a onClick={() => navigate("/resident-hub")} style={{ cursor: "pointer" }}>Resident Hub</a>
+          <a onClick={() => navigate("/newcomer-hub")} style={{ cursor: "pointer" }}>Newcomer Hub</a>
+          <a onClick={() => navigate("/traveller-hub")} style={{ cursor: "pointer" }}>Visitor Hub</a>
         </div>
 
         {/* Company */}

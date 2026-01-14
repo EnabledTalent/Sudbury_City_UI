@@ -1,7 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDarkMode } from "../context/DarkModeContext";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [hubsOpen, setHubsOpen] = useState(false);
+  const navigate = useNavigate();
+  const { isDarkMode, toggleDarkMode } = useDarkMode();
 
   const scrollToSection = (id) => {
     const section = document.getElementById(id);
@@ -22,23 +27,39 @@ export default function Navbar() {
         </div>
 
         <nav className="nav-links">
-          <a className="active" onClick={() => scrollToSection("home")}>Home</a>
-          <a onClick={() => scrollToSection("explore")}>Explore</a>
-          <a onClick={() => scrollToSection("events")}>Events</a>
-          <a onClick={() => scrollToSection("jobs")}>Jobs</a>
-          <a onClick={() => scrollToSection("services")}>Services</a>
-          <a onClick={() => scrollToSection("resources")}>Resources</a>
-          <a onClick={() => scrollToSection("hubs")} className="dropdown-link">
-            Hubs <span>▾</span>
-          </a>
-          <a onClick={() => scrollToSection("about")}>About</a>
+          <a onClick={() => navigate("/")}>Home</a>
+          <a onClick={() => navigate("/explore")}>Explore</a>
+          <a onClick={() => navigate("/events")}>Events</a>
+          <a onClick={() => navigate("/jobs")}>Jobs</a>
+          <a onClick={() => navigate("/services")}>Services</a>
+          <a onClick={() => navigate("/training")}>Training</a>
+          <div 
+            className="nav-dropdown"
+            onMouseEnter={() => setHubsOpen(true)}
+            onMouseLeave={() => setHubsOpen(false)}
+          >
+            <a className="dropdown-link">
+              Hubs <span>▾</span>
+            </a>
+            {hubsOpen && (
+              <div className="dropdown-menu">
+                <a onClick={() => navigate("/student-hub")}>🎓 Student</a>
+                <a onClick={() => navigate("/resident-hub")}>🏠 Resident</a>
+                <a onClick={() => navigate("/newcomer-hub")}>🌍 Newcomer</a>
+                <a onClick={() => navigate("/traveller-hub")}>✈️ Traveller</a>
+              </div>
+            )}
+          </div>
+          <a onClick={() => navigate("/about")}>About</a>
         </nav>
       </div>
 
       {/* RIGHT */}
       <div className="nav-right">
-        <button className="icon-btn">✨ AI Assistant</button>
-        <button className="icon-btn">🌙</button>
+        <button className="icon-btn" onClick={() => navigate("/ai-assistant")}>✨ AI Assistant</button>
+        <button className="icon-btn" onClick={toggleDarkMode}>
+          {isDarkMode ? "☀️" : "🌙"}
+        </button>
 
         <div className="profile">
           <button
@@ -58,7 +79,7 @@ export default function Navbar() {
           )}
         </div>
 
-        <button className="sign-in">Sign In</button>
+        <button className="sign-in" onClick={() => navigate("/sign-in")}>Sign In</button>
       </div>
     </header>
   );
