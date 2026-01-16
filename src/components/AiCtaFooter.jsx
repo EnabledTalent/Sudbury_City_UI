@@ -21,26 +21,26 @@ export default function AiCtaFooter() {
         {/* Platform */}
         <div className="footer-column">
           <h4>Platform</h4>
-          <a onClick={() => navigate("/jobs")} style={{ cursor: "pointer" }}>Jobs</a>
-          <a onClick={() => navigate("/events")} style={{ cursor: "pointer" }}>Events</a>
-          <a onClick={() => navigate("/services")} style={{ cursor: "pointer" }}>Places & Services</a>
-          <a onClick={() => navigate("/training")} style={{ cursor: "pointer" }}>Training</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate("/jobs"); }} style={{ cursor: "pointer" }}>Jobs</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate("/events"); }} style={{ cursor: "pointer" }}>Events</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate("/services"); }} style={{ cursor: "pointer" }}>Places & Services</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate("/training"); }} style={{ cursor: "pointer" }}>Training</a>
         </div>
 
         {/* Resources */}
         <div className="footer-column">
           <h4>Resources</h4>
-          <a onClick={() => navigate("/student-hub")} style={{ cursor: "pointer" }}>Student Hub</a>
-          <a onClick={() => navigate("/resident-hub")} style={{ cursor: "pointer" }}>Resident Hub</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate("/student-hub"); }} style={{ cursor: "pointer" }}>Student Hub</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate("/resident-hub"); }} style={{ cursor: "pointer" }}>Resident Hub</a>
         </div>
 
         {/* Company */}
         <div className="footer-column">
           <h4>Company</h4>
-          <a>About</a>
-          <a>Help</a>
-          <a>Privacy</a>
-          <a>Business Directory</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate("/about"); }}>About</a>
+          <a href="#" onClick={(e) => e.preventDefault()}>Help</a>
+          <a href="#" onClick={(e) => e.preventDefault()}>Privacy</a>
+          <a href="#" onClick={(e) => e.preventDefault()}>Business Directory</a>
         </div>
       </div>
 

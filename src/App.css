@@ -582,6 +582,15 @@ html {
   text-decoration: none;
   margin-top: 8px;
 }
+
+button.learn-more {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
 /* CTA SECTION */
 .cta-section {
   background: #ffffff;
@@ -1553,6 +1562,15 @@ html {
   font-size: 15px;
 }
 
+button.program-learn-more {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
 .program-learn-more:hover {
   text-decoration: underline;
 }
@@ -1995,6 +2013,15 @@ html {
   text-decoration: none;
   font-size: 16px;
   font-weight: 500;
+}
+
+button.about-link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
 }
 
 .about-link:hover {

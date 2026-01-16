@@ -166,7 +166,7 @@ export default function SignUp() {
 
           <p className="signin-switch">
             Already have an account?{" "}
-            <a onClick={() => navigate("/sign-in")} style={{ cursor: "pointer", color: "#2563eb" }}>Sign in</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); navigate("/sign-in"); }} style={{ cursor: "pointer", color: "#2563eb" }}>Sign in</a>
           </p>
         </div>
       </div>

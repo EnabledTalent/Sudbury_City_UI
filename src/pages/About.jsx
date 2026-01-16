@@ -52,7 +52,7 @@ export default function About() {
               and follow strict data protection guidelines. You control what information you share 
               and can update your preferences anytime.
             </p>
-            <a href="#" className="about-link">Read our full privacy policy</a>
+            <button type="button" className="about-link" onClick={(e) => e.preventDefault()}>Read our full privacy policy</button>
           </section>
 
           {/* How It Works Section */}

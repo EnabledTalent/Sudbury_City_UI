@@ -97,7 +97,7 @@ export default function TrainingPrograms() {
                     <span className="program-price">{program.price}</span>
                   )}
                 </div>
-                <a href="#" className="program-learn-more">Learn more</a>
+                <button type="button" className="program-learn-more" onClick={(e) => e.preventDefault()}>Learn more</button>
               </div>
             ))}
           </div>

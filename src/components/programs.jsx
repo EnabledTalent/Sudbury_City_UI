@@ -39,9 +39,9 @@ export default function Programs() {
 
             <span className="free-pill">FREE</span>
 
-            <a href="#" className="learn-more">
+            <button type="button" className="learn-more">
               Learn more
-            </a>
+            </button>
           </div>
         ))}
       </div>

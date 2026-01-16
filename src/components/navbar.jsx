@@ -26,28 +26,28 @@ export default function Navbar() {
         </div>
 
         <nav className="nav-links">
-          <a onClick={() => navigate("/")}>Home</a>
-          <a onClick={() => navigate("/explore")}>Explore</a>
-          <a onClick={() => navigate("/events")}>Events</a>
-          <a onClick={() => navigate("/jobs")}>Jobs</a>
-          <a onClick={() => navigate("/services")}>Services</a>
-          <a onClick={() => navigate("/training")}>Training</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate("/"); }}>Home</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate("/explore"); }}>Explore</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate("/events"); }}>Events</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate("/jobs"); }}>Jobs</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate("/services"); }}>Services</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate("/training"); }}>Training</a>
           <div 
             className="nav-dropdown"
             onMouseEnter={() => setHubsOpen(true)}
             onMouseLeave={() => setHubsOpen(false)}
           >
-            <a className="dropdown-link">
+            <a href="#" className="dropdown-link" onClick={(e) => e.preventDefault()}>
               Hubs <span>▾</span>
             </a>
             {hubsOpen && (
               <div className="dropdown-menu">
-                <a onClick={() => navigate("/student-hub")}>🎓 Student</a>
-                <a onClick={() => navigate("/resident-hub")}>🏠 Resident</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); navigate("/student-hub"); }}>🎓 Student</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); navigate("/resident-hub"); }}>🏠 Resident</a>
               </div>
             )}
           </div>
-          <a onClick={() => navigate("/about")}>About</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate("/about"); }}>About</a>
         </nav>
       </div>
 
