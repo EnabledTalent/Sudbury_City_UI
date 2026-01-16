@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../App.css";
 import AiCtaFooter from "../components/AiCtaFooter";
 
@@ -56,12 +57,23 @@ const programsData = [
 const filterOptions = ["All", "Free", "Funded", "Certification", "Short-term"];
 
 export default function TrainingPrograms() {
+  const navigate = useNavigate();
   const [selectedFilter, setSelectedFilter] = useState("All");
 
   return (
     <>
       <div className="hub-page">
         <div className="hub-container">
+          <div className="page-navigation">
+            <div className="page-navigation-left">
+              <button className="back-btn" onClick={() => navigate("/")}>
+                ← Back
+              </button>
+            </div>
+            <button className="home-btn" onClick={() => navigate("/")}>
+              🏠 Home
+            </button>
+          </div>
           <h1 className="hub-title">Training & Programs</h1>
           <p className="hub-subtitle">
             Build skills, earn certifications, and access funded programs.

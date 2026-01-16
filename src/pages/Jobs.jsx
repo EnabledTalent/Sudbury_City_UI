@@ -3,21 +3,24 @@ import { useNavigate } from "react-router-dom";
 const jobs = [
   {
     id: 1,
-    title: "Frontend Developer",
-    location: "Sudbury, ON",
-    salary: "$70,000",
+    title: "Registered Nurse",
+    location: "Health Sciences North, Sudbury",
+    salary: "$75,000 - $95,000",
+    tags: ["Full-time", "Healthcare"],
   },
-   {
+  {
     id: 2,
-    title: "Frontend Developer",
-    location: "Sudbury, ON",
-    salary: "$70,000",
+    title: "Software Developer",
+    location: "Tech Startup, Greater Sudbury",
+    salary: "$65,000 - $85,000",
+    tags: ["Full-time", "Remote/Hybrid"],
   },
-   {
+  {
     id: 3,
-    title: "Frontend Developer",
-    location: "Sudbury, ON",
-    salary: "$70,000",
+    title: "Elementary Teacher",
+    location: "Rainbow District School Board",
+    salary: "$55,000 - $95,000",
+    tags: ["Full-time", "Education"],
   },
 ];
 
@@ -41,8 +44,9 @@ export default function Jobs() {
             <h3>{job.title}</h3>
 
             <div className="tags">
-              <span>Part-time</span>
-              <span>Remote</span>
+              {job.tags.map((tag, i) => (
+                <span key={i}>{tag}</span>
+              ))}
             </div>
 
             <p>📍 {job.location}</p>
@@ -52,7 +56,7 @@ export default function Jobs() {
               className="primary"
               onClick={() => navigate(`/jobs/${job.id}`)}
             >
-              Apply
+              View Details
             </button>
           </div>
         ))}

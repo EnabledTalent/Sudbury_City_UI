@@ -1,11 +1,24 @@
+import { useNavigate } from "react-router-dom";
 import "../App.css";
 import AiCtaFooter from "../components/AiCtaFooter";
 
 export default function About() {
+  const navigate = useNavigate();
+
   return (
     <>
       <div className="about-page">
         <div className="about-container">
+          <div className="page-navigation">
+            <div className="page-navigation-left">
+              <button className="back-btn" onClick={() => navigate("/")}>
+                ← Back
+              </button>
+            </div>
+            <button className="home-btn" onClick={() => navigate("/")}>
+              🏠 Home
+            </button>
+          </div>
           {/* Hero Section */}
           <div className="about-hero">
             <h1 className="about-title">About Discover Sudbury</h1>

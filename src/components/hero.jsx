@@ -21,7 +21,8 @@ export default function Hero() {
           Everything you need to know about{" "}
           <br />
           <span>Sudbury</span>
-          <br />— in one place
+          <br />
+          in one place
         </h1>
 
         <p>

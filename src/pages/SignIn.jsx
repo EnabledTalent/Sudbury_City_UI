@@ -27,6 +27,16 @@ export default function SignIn() {
     <>
       <div className="signin-page">
         <div className="signin-container">
+          <div className="page-navigation">
+            <div className="page-navigation-left">
+              <button className="back-btn" onClick={() => navigate("/")}>
+                ← Back
+              </button>
+            </div>
+            <button className="home-btn" onClick={() => navigate("/")}>
+              🏠 Home
+            </button>
+          </div>
           <h1 className="signin-title">Welcome</h1>
           <p className="signin-subtitle">
             Sign in to your Discover Sudbury account

@@ -28,7 +28,6 @@ export default function Navbar() {
         <nav className="nav-links">
           <a href="#" onClick={(e) => { e.preventDefault(); navigate("/"); }}>Home</a>
           <a href="#" onClick={(e) => { e.preventDefault(); navigate("/explore"); }}>Explore</a>
-          <a href="#" onClick={(e) => { e.preventDefault(); navigate("/events"); }}>Events</a>
           <a href="#" onClick={(e) => { e.preventDefault(); navigate("/jobs"); }}>Jobs</a>
           <a href="#" onClick={(e) => { e.preventDefault(); navigate("/services"); }}>Services</a>
           <a href="#" onClick={(e) => { e.preventDefault(); navigate("/training"); }}>Training</a>
@@ -58,7 +57,6 @@ export default function Navbar() {
           {isDarkMode ? "☀️" : "🌙"}
         </button>
 
-        <button className="sign-up" onClick={() => navigate("/sign-up")}>Sign Up</button>
         <button className="sign-in" onClick={() => navigate("/sign-in")}>Sign In</button>
       </div>
     </header>

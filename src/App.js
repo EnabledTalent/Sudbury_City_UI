@@ -14,7 +14,6 @@ import StudentHub from "./pages/StudentHub";
 import ResidentHub from "./pages/ResidentHub";
 import Explore from "./pages/Explore";
 import ServicesPage from "./pages/ServicesPage";
-import EventsPage from "./pages/EventsPage";
 import TrainingPrograms from "./pages/TrainingPrograms";
 import AIAssistant from "./pages/AIAssistant";
 import SignIn from "./pages/SignIn";
@@ -58,9 +57,6 @@ export default function App() {
 
         {/* Services page */}
         <Route path="/services" element={<ServicesPage />} />
-
-        {/* Events page */}
-        <Route path="/events" element={<EventsPage />} />
 
         {/* Training & Programs page */}
         <Route path="/training" element={<TrainingPrograms />} />

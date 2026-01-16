@@ -54,9 +54,16 @@ export default function JobDetails() {
 
   return (
     <section className="section job-detail">
-      <button className="back-btn" onClick={() => navigate(-1)}>
-        ← Back
-      </button>
+      <div className="page-navigation">
+        <div className="page-navigation-left">
+          <button className="back-btn" onClick={() => navigate(-1)}>
+            ← Back to Jobs
+          </button>
+        </div>
+        <button className="home-btn" onClick={() => navigate("/")}>
+          🏠 Home
+        </button>
+      </div>
 
       <div className="job-detail-layout">
         {/* LEFT */}
@@ -85,7 +92,7 @@ export default function JobDetails() {
         <div className="salary-box">
           <p>Salary</p>
           <h2>{job.salary}</h2>
-          <button className="primary full">Apply Now</button>
+          <button className="primary full" onClick={() => navigate("/sign-in")}>Apply Now</button>
         </div>
       </div>
     </section>

@@ -35,12 +35,19 @@ export default function JobsList() {
     <>
     <section className="section">
          {/* BACK NAVIGATION */}
-      <button
-        className="back-btn"
-        onClick={() => navigate("/")}
-      >
-        ← Back to Jobs
-      </button>
+      <div className="page-navigation">
+        <div className="page-navigation-left">
+          <button
+            className="back-btn"
+            onClick={() => navigate("/")}
+          >
+            ← Back to Home
+          </button>
+        </div>
+        <button className="home-btn" onClick={() => navigate("/")}>
+          🏠 Home
+        </button>
+      </div>
       {/* PAGE HEADER */}
       <h1>Jobs in Sudbury</h1>
       <p className="muted">
@@ -114,7 +121,7 @@ export default function JobsList() {
               className="primary"
               onClick={() => navigate(`/jobs/${job.id}`)}
             >
-              Apply
+              View Details
             </button>
           </div>
         ))}

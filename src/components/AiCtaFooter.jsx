@@ -22,7 +22,7 @@ export default function AiCtaFooter() {
         <div className="footer-column">
           <h4>Platform</h4>
           <a href="#" onClick={(e) => { e.preventDefault(); navigate("/jobs"); }} style={{ cursor: "pointer" }}>Jobs</a>
-          <a href="#" onClick={(e) => { e.preventDefault(); navigate("/events"); }} style={{ cursor: "pointer" }}>Events</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate("/explore"); }} style={{ cursor: "pointer" }}>Events</a>
           <a href="#" onClick={(e) => { e.preventDefault(); navigate("/services"); }} style={{ cursor: "pointer" }}>Places & Services</a>
           <a href="#" onClick={(e) => { e.preventDefault(); navigate("/training"); }} style={{ cursor: "pointer" }}>Training</a>
         </div>

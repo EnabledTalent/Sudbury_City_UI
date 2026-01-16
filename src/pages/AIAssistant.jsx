@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../App.css";
 import AiCtaFooter from "../components/AiCtaFooter";
 
@@ -10,6 +11,7 @@ const suggestedQuestions = [
 ];
 
 export default function AIAssistant() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleSubmit = (e) => {
@@ -26,6 +28,16 @@ export default function AIAssistant() {
     <>
       <div className="ai-assistant-page">
         <div className="ai-assistant-container">
+          <div className="page-navigation">
+            <div className="page-navigation-left">
+              <button className="back-btn" onClick={() => navigate("/")}>
+                ← Back
+              </button>
+            </div>
+            <button className="home-btn" onClick={() => navigate("/")}>
+              🏠 Home
+            </button>
+          </div>
           {/* Star/Sparkle Icon */}
           <div className="ai-assistant-icon">✨</div>
 

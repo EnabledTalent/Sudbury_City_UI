@@ -48,6 +48,16 @@ export default function SignUp() {
     <>
       <div className="signin-page">
         <div className="signin-container">
+          <div className="page-navigation">
+            <div className="page-navigation-left">
+              <button className="back-btn" onClick={() => navigate("/")}>
+                ← Back
+              </button>
+            </div>
+            <button className="home-btn" onClick={() => navigate("/")}>
+              🏠 Home
+            </button>
+          </div>
           <h1 className="signin-title">Create an Account</h1>
           <p className="signin-subtitle">
             Choose your account type to get started

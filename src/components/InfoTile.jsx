@@ -13,41 +13,33 @@ export default function InfoTile({ icon, title, subtitle, items, updatedAt, onCl
       <h3 className="hub-card-title">{title}</h3>
       <p className="hub-card-description">{subtitle}</p>
 
-      <div style={{ marginTop: 12 }}>
+      <div className="info-tile-content" style={{ marginTop: 20 }}>
         {items?.length ? (
-          <ul style={{ paddingLeft: 16, margin: 0, listStyle: "none" }}>
+          <ul className="info-tile-list">
             {items.slice(0, 3).map((x) => (
-              <li key={x.id} style={{ marginBottom: 6 }}>
+              <li key={x.id} className="info-tile-item">
                 <a 
                   href={x.url} 
                   target="_blank" 
                   rel="noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  style={{ 
-                    color: "var(--text-primary)",
-                    textDecoration: "none",
-                    fontSize: "14px",
-                    display: "block",
-                    padding: "4px 0",
-                    transition: "color 0.2s ease"
-                  }}
-                  onMouseEnter={(e) => e.target.style.color = "#2563eb"}
-                  onMouseLeave={(e) => e.target.style.color = "var(--text-primary)"}
+                  className="info-tile-link"
                 >
+                  <span className="info-tile-bullet">•</span>
                   {x.label}
                 </a>
               </li>
             ))}
           </ul>
         ) : (
-          <p style={{ margin: 0, opacity: 0.7, fontSize: "14px", color: "var(--text-secondary)" }}>Loading…</p>
+          <p className="info-tile-loading">Loading latest updates…</p>
         )}
 
-        {updatedAt ? (
-          <div style={{ marginTop: 10, fontSize: 12, opacity: 0.6, color: "var(--text-secondary)" }}>
+        {updatedAt && (
+          <div className="info-tile-updated">
             Updated: {new Date(updatedAt).toLocaleString()}
           </div>
-        ) : null}
+        )}
       </div>
     </div>
   );
