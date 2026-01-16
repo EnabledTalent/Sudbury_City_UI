@@ -4,36 +4,18 @@ import AiCtaFooter from "../components/AiCtaFooter";
 const studentHubCards = [
   {
     id: 1,
-    title: "Student Jobs & Internships",
-    description: "Part-time work, co-ops, internships, and campus roles",
-    icon: "💼",
-  },
-  {
-    id: 2,
-    title: "Training & Certifications",
-    description: "Skill programs, short courses, and funded training",
-    icon: "📚",
-  },
-  {
-    id: 3,
     title: "Academic Resources",
     description: "Libraries, tutoring, student services",
     icon: "📊",
   },
   {
-    id: 4,
-    title: "Student Events",
-    description: "Workshops, meetups, and campus events",
-    icon: "📅",
-  },
-  {
-    id: 5,
+    id: 2,
     title: "Discounts & Deals",
     description: "Student-friendly offers from local businesses",
     icon: "🏷️",
   },
   {
-    id: 6,
+    id: 3,
     title: "",
     description: "",
     icon: "",

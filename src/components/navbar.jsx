@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useDarkMode } from "../context/DarkModeContext";
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
   const [hubsOpen, setHubsOpen] = useState(false);
   const navigate = useNavigate();
   const { isDarkMode, toggleDarkMode } = useDarkMode();
@@ -45,8 +44,6 @@ export default function Navbar() {
               <div className="dropdown-menu">
                 <a onClick={() => navigate("/student-hub")}>🎓 Student</a>
                 <a onClick={() => navigate("/resident-hub")}>🏠 Resident</a>
-                <a onClick={() => navigate("/newcomer-hub")}>🌍 Newcomer</a>
-                <a onClick={() => navigate("/traveller-hub")}>✈️ Traveller</a>
               </div>
             )}
           </div>
@@ -61,24 +58,7 @@ export default function Navbar() {
           {isDarkMode ? "☀️" : "🌙"}
         </button>
 
-        <div className="profile">
-          <button
-            className="profile-btn"
-            onClick={() => setOpen(!open)}
-          >
-            🎓 Student ▾
-          </button>
-
-          {open && (
-            <div className="profile-menu">
-              <div>🎓 Student</div>
-              <div>🏠 Resident</div>
-              <div>🌍 Newcomer</div>
-              <div>✈️ Traveller</div>
-            </div>
-          )}
-        </div>
-
+        <button className="sign-up" onClick={() => navigate("/sign-up")}>Sign Up</button>
         <button className="sign-in" onClick={() => navigate("/sign-in")}>Sign In</button>
       </div>
     </header>

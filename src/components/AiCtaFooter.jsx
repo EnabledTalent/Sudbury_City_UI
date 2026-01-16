@@ -32,8 +32,6 @@ export default function AiCtaFooter() {
           <h4>Resources</h4>
           <a onClick={() => navigate("/student-hub")} style={{ cursor: "pointer" }}>Student Hub</a>
           <a onClick={() => navigate("/resident-hub")} style={{ cursor: "pointer" }}>Resident Hub</a>
-          <a onClick={() => navigate("/newcomer-hub")} style={{ cursor: "pointer" }}>Newcomer Hub</a>
-          <a onClick={() => navigate("/traveller-hub")} style={{ cursor: "pointer" }}>Visitor Hub</a>
         </div>
 
         {/* Company */}

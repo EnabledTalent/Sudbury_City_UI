@@ -4,9 +4,7 @@ import "../App.css";
 import AiCtaFooter from "../components/AiCtaFooter";
 
 export default function SignIn() {
-  const [isSignIn, setIsSignIn] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: "",
     email: "",
     password: "",
   });
@@ -29,31 +27,12 @@ export default function SignIn() {
     <>
       <div className="signin-page">
         <div className="signin-container">
-          <h1 className="signin-title">
-            {isSignIn ? "Sign in" : "Create an account"}
-          </h1>
+          <h1 className="signin-title">Welcome</h1>
           <p className="signin-subtitle">
-            {isSignIn
-              ? "Welcome back to Discover Sudbury"
-              : "Join Discover Sudbury today"}
+            Sign in to your Discover Sudbury account
           </p>
 
           <form className="signin-form" onSubmit={handleSubmit}>
-            {!isSignIn && (
-              <div className="form-group">
-                <label htmlFor="fullName">Full name</label>
-                <input
-                  type="text"
-                  id="fullName"
-                  name="fullName"
-                  placeholder="John Doe"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  required={!isSignIn}
-                />
-              </div>
-            )}
-
             <div className="form-group">
               <label htmlFor="email">Email</label>
               <input
@@ -81,22 +60,13 @@ export default function SignIn() {
             </div>
 
             <button type="submit" className="signin-submit-btn">
-              {isSignIn ? "Sign in" : "Create Account"}
+              Sign In
             </button>
           </form>
 
           <p className="signin-switch">
-            {isSignIn ? (
-              <>
-                Don't have an account?{" "}
-                <a onClick={() => setIsSignIn(false)}>Sign up</a>
-              </>
-            ) : (
-              <>
-                Already have an account?{" "}
-                <a onClick={() => setIsSignIn(true)}>Sign in</a>
-              </>
-            )}
+            Don't have an account?{" "}
+            <a onClick={() => navigate("/sign-up")} style={{ cursor: "pointer", color: "#2563eb" }}>Sign up</a>
           </p>
         </div>
       </div>

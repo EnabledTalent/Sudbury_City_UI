@@ -7,20 +7,18 @@ import JobDetails from "./components/JobDetails";
 import Hero from "./components/hero";
 import Programs from "./components/programs";
 import Services from "./components/Services";
-import Events from "./components/Events";
 import AiCtaFooter from "./components/AiCtaFooter";
 import JobsList from "./components/JobsList";
 import UserSelection from "./pages/UserSelection";
 import StudentHub from "./pages/StudentHub";
 import ResidentHub from "./pages/ResidentHub";
-import NewcomerHub from "./pages/NewcomerHub";
-import TravellerHub from "./pages/TravellerHub";
 import Explore from "./pages/Explore";
 import ServicesPage from "./pages/ServicesPage";
 import EventsPage from "./pages/EventsPage";
 import TrainingPrograms from "./pages/TrainingPrograms";
 import AIAssistant from "./pages/AIAssistant";
 import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
 import About from "./pages/About";
 
 export default function App() {
@@ -37,7 +35,6 @@ export default function App() {
           element={
             <>
               <Hero />
-              <Events />
               <Jobs />
               <Services />
 
@@ -55,8 +52,6 @@ export default function App() {
         {/* Hub pages */}
         <Route path="/student-hub" element={<StudentHub />} />
         <Route path="/resident-hub" element={<ResidentHub />} />
-        <Route path="/newcomer-hub" element={<NewcomerHub />} />
-        <Route path="/traveller-hub" element={<TravellerHub />} />
 
         {/* Explore page */}
         <Route path="/explore" element={<Explore />} />
@@ -75,6 +70,9 @@ export default function App() {
 
         {/* Sign In page */}
         <Route path="/sign-in" element={<SignIn />} />
+
+        {/* Sign Up page */}
+        <Route path="/sign-up" element={<SignUp />} />
 
         {/* About page */}
         <Route path="/about" element={<About />} />

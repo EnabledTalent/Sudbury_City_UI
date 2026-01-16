@@ -22,18 +22,6 @@ const residentHubCards = [
   },
   {
     id: 4,
-    title: "Jobs in Sudbury",
-    description: "Local employment opportunities",
-    icon: "💼",
-  },
-  {
-    id: 5,
-    title: "Volunteer Opportunities",
-    description: "Ways to get involved in the community",
-    icon: "❤️",
-  },
-  {
-    id: 6,
     title: "",
     description: "",
     icon: "",

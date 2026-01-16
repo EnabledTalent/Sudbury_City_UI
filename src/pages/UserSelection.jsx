@@ -18,20 +18,6 @@ const userRoles = [
     icon: "🏠",
     color: "#10b981",
   },
-  {
-    id: "newcomer",
-    title: "Newcomer",
-    description: "New to the city or recently moved",
-    icon: "🌍",
-    color: "#8b5cf6",
-  },
-  {
-    id: "traveller",
-    title: "Traveller",
-    description: "Visiting Sudbury",
-    icon: "✈️",
-    color: "#f59e0b",
-  },
 ];
 
 export default function UserSelection() {
@@ -44,8 +30,6 @@ export default function UserSelection() {
     const hubRoutes = {
       student: "/student-hub",
       resident: "/resident-hub",
-      newcomer: "/newcomer-hub",
-      traveller: "/traveller-hub",
     };
     navigate(hubRoutes[roleId] || "/");
   };
