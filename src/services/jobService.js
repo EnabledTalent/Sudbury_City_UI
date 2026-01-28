@@ -21,10 +21,20 @@ export const uploadResume = async (file) => {
       body: formData,
     }
   );
+  console.log("Upload response status:", response.status);
 
   if (!response.ok) {
     throw new Error("Upload failed");
   }
+  
+  
+ const data = await response.json();
 
-  return response.json();
+  // ✅ STEP 2: STORE ACTUAL PROFILE DATA
+  localStorage.setItem(
+    "profileData",
+    JSON.stringify(data)
+  );
+console.log("Profile data stored", data)
+  return data;
 };

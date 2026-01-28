@@ -186,3 +186,236 @@
     width: 100%;
   }
 }
+/* ===== PROFILE BUILDER LAYOUT ===== */
+.profile-layout {
+  display: flex;
+  gap: 24px;
+  padding: 24px;
+  background: #f2f7fd;
+  min-height: 100vh;
+}
+
+/* ===== LEFT STEPPER ===== */
+.stepper {
+  width: 260px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.step.active {
+  font-weight: 600;
+  color: #111827;
+}
+
+.step.success::before {
+  content: "✔";
+  color: #22c55e;
+}
+
+.step.error::before {
+  content: "!";
+  color: #ef4444;
+}
+
+/* ===== RIGHT CONTENT ===== */
+.profile-content {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px;
+}
+
+/* ===== HEADER BANNER ===== */
+.profile-banner {
+  background: linear-gradient(90deg, #c2410c, #fb923c);
+  color: #ffffff;
+  border-radius: 20px;
+  padding: 32px;
+  margin-bottom: 24px;
+}
+
+.profile-banner h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+/* ===== FORM ===== */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #fb923c;
+}
+
+/* ===== ERROR STATE ===== */
+.input-error {
+  border: 1px solid #ef4444;
+  background: #fff1f2;
+}
+
+.error-text {
+  font-size: 12px;
+  color: #ef4444;
+  margin-top: 6px;
+}
+
+/* ===== FOOTER ACTIONS ===== */
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 32px;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #d97706;
+  color: #ffffff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  resize: vertical;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #fb923c;
+}
+.delete-btn {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 13px;
+}
+.delete-btn:hover {
+  text-decoration: underline;
+}
+
+/* ===== DATE ROW ===== */
+.date-row {
+  display: flex;
+  gap: 16px;
+}
+.experience-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  background: #ffffff;
+}
+
+.experience-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+/* ===== SKILLS TAGS ===== */
+.skills-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.skill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #f3f4f6;
+  border-radius: 20px;
+  font-size: 13px;
+  color: #374151;
+}
+
+.skill-tag-remove {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+  margin-left: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.skill-tag-remove:hover {
+  background: #e5e7eb;
+  color: #ef4444;
+}
+
+/* ===== SECTION HEADER ===== */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.error-badge {
+  font-size: 12px;
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.label-error {
+  color: #ef4444 !important;
+}
+
+

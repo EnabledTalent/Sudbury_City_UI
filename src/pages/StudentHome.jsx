@@ -1,10 +1,13 @@
 import { useRef, useState } from "react";
 import { uploadResume } from "../services/jobService";
+import { useNavigate } from "react-router-dom";
 
 export default function StudentHome() {
   const fileInputRef = useRef(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleUploadClick = () => {
     fileInputRef.current.click();
@@ -25,7 +28,8 @@ export default function StudentHome() {
 
     try {
       await uploadResume(file);
-      alert("Resume uploaded successfully");
+  
+     navigate("/student/success");
     } catch {
       setError("Failed to upload resume");
     } finally {
