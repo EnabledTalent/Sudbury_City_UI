@@ -1,10 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useProfile } from "../../context/ProfileContext";
+import { saveProfile, updateProfile } from "../../services/profileService";
 import ProfileHeader from "./ProfileHeader";
 
 export default function ReviewAgree({ onPrev, onNext }) {
-  const { profile, updateProfile } = useProfile();
+  const { profile, updateProfile: updateProfileContext } = useProfile();
+  const navigate = useNavigate();
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  // Check if we're in edit mode
+  useEffect(() => {
+    const editMode = localStorage.getItem("profileEditMode") === "true";
+    setIsEditMode(editMode);
+  }, []);
 
   const reviewAgree = profile.reviewAgree || {
     discovery: "",
@@ -13,10 +25,10 @@ export default function ReviewAgree({ onPrev, onNext }) {
   };
 
   const updateField = (field, value) => {
-    updateProfile("reviewAgree", { ...reviewAgree, [field]: value });
+    updateProfileContext("reviewAgree", { ...reviewAgree, [field]: value });
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const newErrors = {};
     if (!reviewAgree.agreed) {
       newErrors.agreed = "You must agree to the terms and conditions";
@@ -26,7 +38,44 @@ export default function ReviewAgree({ onPrev, onNext }) {
       return;
     }
     setErrors({});
-    onNext();
+    setSaveError("");
+
+    // Ensure reviewAgree is saved to profile before saving
+    const updatedProfile = {
+      ...profile,
+      reviewAgree: reviewAgree,
+    };
+
+    // Save or update profile to API
+    setLoading(true);
+    const action = isEditMode ? "Updating" : "Saving";
+    console.log(`${action} profile to backend...`);
+    console.log("Profile data:", updatedProfile);
+    
+    try {
+      const result = isEditMode 
+        ? await updateProfile(updatedProfile)
+        : await saveProfile(updatedProfile);
+      console.log(`Profile ${isEditMode ? 'updated' : 'saved'} successfully:`, result);
+      
+      // Clear edit mode flag
+      localStorage.removeItem("profileEditMode");
+      
+      // On success, navigate to success page
+      navigate("/student/success");
+    } catch (error) {
+      console.error(`Error ${isEditMode ? 'updating' : 'saving'} profile:`, error);
+      // Only show error if it's not a JSON parsing issue with 200 status
+      if (error.message && error.message.includes("Invalid JSON")) {
+        // If we got 200 but invalid JSON, still treat as success
+        console.log("Got 200 with invalid JSON, treating as success");
+        localStorage.removeItem("profileEditMode");
+        navigate("/student/success");
+      } else {
+        setSaveError(error.message || `Failed to ${isEditMode ? 'update' : 'save'} profile. Please try again.`);
+        setLoading(false);
+      }
+    }
   };
 
   const styles = {
@@ -157,6 +206,52 @@ export default function ReviewAgree({ onPrev, onNext }) {
       cursor: "pointer",
       fontSize: "14px",
       fontWeight: 500,
+      position: "relative",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "8px",
+      minWidth: "140px",
+    },
+    btnPrimaryDisabled: {
+      background: "#d97706",
+      color: "#ffffff",
+      border: "none",
+      padding: "12px 20px",
+      borderRadius: "8px",
+      cursor: "not-allowed",
+      fontSize: "14px",
+      fontWeight: 500,
+      opacity: 0.7,
+      position: "relative",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "8px",
+      minWidth: "140px",
+    },
+    loadingSpinner: {
+      width: "16px",
+      height: "16px",
+      border: "2px solid rgba(255, 255, 255, 0.3)",
+      borderTop: "2px solid #ffffff",
+      borderRadius: "50%",
+      animation: "spin 0.8s linear infinite",
+    },
+    errorMessage: {
+      background: "#fff1f2",
+      border: "1px solid #ef4444",
+      borderRadius: "8px",
+      padding: "12px 16px",
+      marginBottom: "20px",
+      color: "#ef4444",
+      fontSize: "14px",
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+    },
+    errorIcon: {
+      fontSize: "18px",
     },
   };
 
@@ -203,19 +298,19 @@ export default function ReviewAgree({ onPrev, onNext }) {
         <ul style={styles.termsList}>
           <li style={styles.termsItem}>
             <span style={styles.termsBullet}>•</span>
-            Allow EnabledTalent to share your resume, pitch yourself and
+            Allow Sudburry to share your resume, pitch yourself and
             behaviour question video with third parties (ex. prospective
             employers) to consider you for an internship.
           </li>
           <li style={styles.termsItem}>
             <span style={styles.termsBullet}>•</span>
-            The EnabledTalent program has the right to remove you from the
+            The Sudburry program has the right to remove you from the
             program if you decline more than three interview requests without
             appropriate justification
           </li>
           <li style={styles.termsItem}>
             <span style={styles.termsBullet}>•</span>
-            The EnabledTalent has the right to remove you from the program if
+            The Sudburry has the right to remove you from the program if
             you decline more than two internship offers without appropriate
             justification
           </li>
@@ -255,12 +350,38 @@ export default function ReviewAgree({ onPrev, onNext }) {
         )}
       </div>
 
+      {saveError && (
+        <div style={styles.errorMessage}>
+          <span style={styles.errorIcon}>⚠</span>
+          <span>{saveError}</span>
+        </div>
+      )}
+
       <div style={styles.formActions}>
-        <button style={styles.btnSecondary} onClick={onPrev}>
+        <button
+          style={{
+            ...styles.btnSecondary,
+            ...(loading ? { opacity: 0.6, cursor: "not-allowed" } : {}),
+          }}
+          onClick={onPrev}
+          disabled={loading}
+        >
           Previous
         </button>
-        <button style={styles.btnPrimary} onClick={handleNext}>
-          Save & Proceed
+        <button
+          style={loading ? styles.btnPrimaryDisabled : styles.btnPrimary}
+          onClick={handleNext}
+          disabled={loading}
+        >
+          {loading && (
+            <span
+              style={styles.loadingSpinner}
+              className="loading-spinner"
+            ></span>
+          )}
+          {loading 
+            ? (isEditMode ? "Updating..." : "Saving...") 
+            : (isEditMode ? "Update" : "Save & Proceed")}
         </button>
       </div>
     </>

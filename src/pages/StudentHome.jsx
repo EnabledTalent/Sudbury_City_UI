@@ -27,11 +27,13 @@ export default function StudentHome() {
     setLoading(true);
 
     try {
-      await uploadResume(file);
-  
-     navigate("/student/success");
-    } catch {
-      setError("Failed to upload resume");
+      const uploadData = await uploadResume(file);
+      // Navigate to profile builder so user can review and edit the parsed data
+      // The profile context will automatically load the normalized data from localStorage
+      navigate("/student/profile");
+    } catch (err) {
+      console.error("Upload error:", err);
+      setError(err.message || "Failed to upload resume");
     } finally {
       setLoading(false);
       e.target.value = ""; // reset input

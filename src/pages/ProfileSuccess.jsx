@@ -60,7 +60,7 @@ export default function ProfileSuccess() {
         </h2>
 
         <button
-          onClick={() => navigate("/student/profile")}
+          onClick={() => navigate("/student/view-profile")}
           style={{
             background: "#d87a2c",
             color: "#fff",
