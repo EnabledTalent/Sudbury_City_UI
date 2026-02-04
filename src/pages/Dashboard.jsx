@@ -308,7 +308,6 @@ export default function Dashboard() {
           >
             Log Out
           </span>
-          <span style={{ fontSize: "18px", cursor: "pointer" }}>⚙️</span>
         </div>
       </nav>
 

@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { fetchProfile } from "../services/profileService";
 import { calculateProfileCompletion } from "../utils/profileCompletion";
 import ChatWidget from "../components/ChatWidget";
+import { useProfile } from "../context/ProfileContext";
 
 export default function ViewProfile() {
   const navigate = useNavigate();
+  const { profile: contextProfile } = useProfile();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -519,13 +521,51 @@ export default function ViewProfile() {
     );
   }
 
-  const name = profile?.basicInfo?.name || "User";
-  const initials = name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .substring(0, 2);
+  // Get name from profile, context, or localStorage as fallback
+  const getName = () => {
+    // First try fetched profile - check fullName at root level (from API)
+    if (profile?.fullName) {
+      return profile.fullName;
+    }
+    // Then try basicInfo.name from fetched profile
+    if (profile?.basicInfo?.name) {
+      return profile.basicInfo.name;
+    }
+    // Then try context profile - check fullName at root level
+    if (contextProfile?.fullName) {
+      return contextProfile.fullName;
+    }
+    // Then try context profile basicInfo.name
+    if (contextProfile?.basicInfo?.name) {
+      return contextProfile.basicInfo.name;
+    }
+    // Fallback to localStorage profileData - check fullName
+    const profileData = localStorage.getItem("profileData");
+    if (profileData) {
+      try {
+        const parsed = JSON.parse(profileData);
+        if (parsed.fullName) {
+          return parsed.fullName;
+        }
+        if (parsed.basicInfo?.name) {
+          return parsed.basicInfo.name;
+        }
+      } catch (e) {
+        console.error("Error parsing profileData:", e);
+      }
+    }
+    return "User";
+  };
+
+  const name = getName();
+  const initials = name && name !== "User"
+    ? name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .substring(0, 2)
+    : "U";
   const jobTitle = profile?.basicInfo?.jobTitle || profile?.workExperience?.[0]?.jobTitle || "Job Title";
 
   return (
@@ -565,7 +605,6 @@ export default function ViewProfile() {
           >
             Log Out
           </span>
-          <span style={{ fontSize: "18px", cursor: "pointer" }}>⚙️</span>
           <button 
             style={styles.aiCoachBtn}
             onClick={() => setShowChatWidget(true)}

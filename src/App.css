@@ -156,7 +156,6 @@
   text-align: center;
   margin-top: 10px;
 }
-
 .switch-text {
   text-align: center;
   margin-top: 24px;
@@ -431,5 +430,6 @@ textarea:focus {
 .loading-spinner {
   animation: spin 0.8s linear infinite;
 }
+
 
 

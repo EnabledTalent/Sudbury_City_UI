@@ -637,7 +637,6 @@ export default function MyJobs() {
           >
             Log Out
           </span>
-          <span style={{ fontSize: "18px", cursor: "pointer" }}>🔄</span>
           <button 
             style={styles.aiCoachBtn}
             onClick={() => setShowChatWidget(true)}
