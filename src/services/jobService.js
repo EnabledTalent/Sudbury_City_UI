@@ -513,3 +513,219 @@ export const applyWithProfile = async (jobId, profile) => {
     throw new Error("Invalid response from server");
   }
 };
+
+/**
+ * Get email from JWT token
+ */
+const getEmailFromToken = () => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+  
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.sub || payload.email || payload.username;
+  } catch (e) {
+    throw new Error("Failed to decode token");
+  }
+};
+
+/**
+ * Post a new job (employer)
+ */
+export const postJob = async (jobData) => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
+  // Parse salary range from "CAD 2500 - 3000" format
+  let salaryMin = 0;
+  let salaryMax = 0;
+  if (jobData.estimatedSalary) {
+    const salaryMatch = jobData.estimatedSalary.match(/(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)/);
+    if (salaryMatch) {
+      salaryMin = parseFloat(salaryMatch[1]);
+      salaryMax = parseFloat(salaryMatch[2]);
+    }
+  }
+
+  // Determine employmentType and typeOfWork from jobType and contractType
+  let employmentType = jobData.jobType || "Full time";
+  let typeOfWork = jobData.contractType || jobData.jobType || "Remote";
+
+  // Map jobType to employmentType
+  const jobTypeMap = {
+    "Full time": "Full-time",
+    "Part time": "Part-time",
+    "Remote": "Remote",
+    "Hybrid": "Hybrid",
+    "Internship": "Internship",
+  };
+
+  if (jobTypeMap[jobData.jobType]) {
+    employmentType = jobTypeMap[jobData.jobType];
+  }
+
+  // Map contractType to typeOfWork
+  const contractTypeMap = {
+    "Contract hybrid": "Hybrid",
+    "Contract remote": "Remote",
+    "Contract onsite": "On-site",
+    "Hourly based": "Hourly",
+  };
+
+  if (contractTypeMap[jobData.contractType]) {
+    typeOfWork = contractTypeMap[jobData.contractType];
+  } else if (jobData.jobType && !jobData.contractType) {
+    typeOfWork = jobData.jobType;
+  }
+
+  const payload = {
+    role: jobData.jobTitle || "",
+    companyName: jobData.companyName || "",
+    jobLocation: jobData.jobLocation || "",
+    address: jobData.address || "",
+    experienceRange: jobData.yearsOfExperience || "",
+    employmentType: employmentType,
+    typeOfWork: typeOfWork,
+    preferredLanguage: jobData.preferredLanguage || "English",
+    urgentlyHiring: jobData.urgentlyHiring === "Yes",
+    jobDescription: jobData.jobDescription || "",
+    requirements: jobData.jobRequirement || "",
+    salaryMin: salaryMin,
+    salaryMax: salaryMax,
+  };
+
+  // Get employer email from token
+  const employerEmail = getEmailFromToken();
+
+  const response = await fetch(
+    `${BUSINESS_BASE_URL}/api/v1/jobs/employer/jobs?email=${encodeURIComponent(employerEmail)}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        accept: "*/*",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to post job: ${response.status} ${errorText}`
+    );
+  }
+
+  const responseText = await response.text();
+  
+  if (!responseText || !responseText.trim()) {
+    return { success: true, message: "Job posted successfully" };
+  }
+
+  try {
+    return JSON.parse(responseText);
+  } catch (e) {
+    return { success: true, message: "Job posted successfully" };
+  }
+};
+
+/**
+ * Fetch employer's jobs
+ */
+export const fetchEmployerJobs = async (email = null) => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
+  // Note: The endpoint might not require email parameter if it's extracted from token
+  // Adjust based on your API requirements
+  const employerEmail = email || getEmailFromToken();
+  const url = email 
+    ? `${BUSINESS_BASE_URL}/api/v1/jobs/employer/jobs?email=${encodeURIComponent(employerEmail)}`
+    : `${BUSINESS_BASE_URL}/api/v1/jobs/employer/jobs`;
+
+  const response = await fetch(
+    url,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        accept: "*/*",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to fetch employer jobs: ${response.status} ${errorText}`
+    );
+  }
+
+  const responseText = await response.text();
+  
+  if (!responseText || !responseText.trim()) {
+    return [];
+  }
+
+  try {
+    const data = JSON.parse(responseText);
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    console.error("Error parsing employer jobs:", e);
+    return [];
+  }
+};
+
+/**
+ * Fetch employer job stats
+ */
+export const fetchEmployerJobStats = async (email = null) => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
+  const employerEmail = email || getEmailFromToken();
+
+  const response = await fetch(
+    `${BUSINESS_BASE_URL}/api/v1/jobs/employer/jobs/stats?email=${encodeURIComponent(employerEmail)}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        accept: "*/*",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to fetch job stats: ${response.status} ${errorText}`
+    );
+  }
+
+  const responseText = await response.text();
+  
+  if (!responseText || !responseText.trim()) {
+    return [];
+  }
+
+  try {
+    const data = JSON.parse(responseText);
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    console.error("Error parsing job stats:", e);
+    return [];
+  }
+};

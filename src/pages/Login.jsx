@@ -2,12 +2,16 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { registerUser, loginUser } from "../services/authService";
+import { fetchOrganizationProfile } from "../services/employerService";
+import { fetchProfile } from "../services/profileService";
+import Toast from "../components/Toast";
 
 export default function Login() {
   const [mode, setMode] = useState("signup"); // signup | login
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [toast, setToast] = useState({ message: "", type: "error" });
 
   const navigate = useNavigate();
 
@@ -16,7 +20,7 @@ export default function Login() {
     email: "",
     username: "",
     password: "",
-    role: "student",
+    role: "employer",
   });
 
 const handleSubmit = async (e) => {
@@ -32,9 +36,47 @@ const handleSubmit = async (e) => {
      console.log("Login successful:", data);
       // ✅ CONFIRM TOKEN IS STORED
       const token = localStorage.getItem("token");
+      const role ="employer"
 
       if (token) {
-        navigate("/student"); // ✅ NAVIGATE ONLY NOW
+        // Route based on role
+        if (role === "employer") {
+          // Check if organization profile exists
+          try {
+            const orgProfile = await fetchOrganizationProfile();
+            if (orgProfile) {
+              // Organization profile exists, navigate to dashboard
+              navigate("/employer/dashboard");
+            } else {
+              // No organization profile, navigate to home to fill it
+              navigate("/employer/home");
+            }
+          } catch (err) {
+            console.error("Error checking organization profile:", err);
+            // If error, still navigate to home to fill organization info
+            navigate("/employer/home");
+          }
+        } else {
+          // Student login - check if profile exists
+          try {
+            const email = data.sub || data.email || data.username;
+            if (email) {
+              const profile = await fetchProfile(email);
+              if (profile && Object.keys(profile).length > 0) {
+                // Profile exists, navigate to view profile
+                navigate("/student/view-profile");
+              } else {
+                // No profile, navigate to upload resume
+                navigate("/student");
+              }
+            } else {
+              navigate("/student");
+            }
+          } catch (err) {
+            console.error("Error checking profile:", err);
+            navigate("/student");
+          }
+        }
       } else {
         setError("Token not stored");
       }
@@ -45,7 +87,12 @@ const handleSubmit = async (e) => {
         username: form.email,
         password: form.password,
       });
-      alert("Signup successful");
+      setToast({ message: "Signup successful! You can now login.", type: "success" });
+      // Switch to login mode after successful signup
+      setTimeout(() => {
+        setMode("login");
+        setToast({ message: "", type: "error" });
+      }, 2000);
     }
   } catch (err) {
     setError(err.message || "Login failed");
@@ -193,6 +240,11 @@ const handleSubmit = async (e) => {
 
         </div>
       </div>
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ message: "", type: "error" })}
+      />
     </div>
   );
 }

@@ -352,3 +352,46 @@ export const fetchProfile = async (email) => {
     return {};
   }
 };
+
+/**
+ * Fetch all jobseeker profiles
+ */
+export const fetchAllJobseekerProfiles = async () => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
+  const response = await fetch(
+    `${BUSINESS_BASE_URL}/api/jobseeker/profile/all`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        accept: "*/*",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to fetch all profiles: ${response.status} ${errorText}`
+    );
+  }
+
+  const responseText = await response.text();
+  
+  if (!responseText || !responseText.trim()) {
+    return [];
+  }
+
+  try {
+    const data = JSON.parse(responseText);
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    console.error("Error parsing all profiles:", e);
+    return [];
+  }
+};
