@@ -144,7 +144,7 @@ export default function ListedJobs() {
       width: "32px",
       height: "32px",
       borderRadius: "50%",
-      background: "linear-gradient(135deg, #fb923c, #f97316)",
+      background: "linear-gradient(135deg, #16a34a, #15803d)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -166,11 +166,11 @@ export default function ListedJobs() {
     },
     navLinkActive: {
       fontSize: "14px",
-      color: "#3b82f6",
+      color: "#16a34a",
       cursor: "pointer",
       textDecoration: "none",
       paddingBottom: "4px",
-      borderBottom: "2px solid #3b82f6",
+      borderBottom: "2px solid #16a34a",
       fontWeight: 500,
     },
     userActions: {
@@ -187,7 +187,7 @@ export default function ListedJobs() {
       gap: "6px",
     },
     postJobBtn: {
-      background: "linear-gradient(90deg, #fb923c, #f97316)",
+      background: "linear-gradient(90deg, #16a34a, #15803d)",
       color: "#ffffff",
       border: "none",
       padding: "10px 20px",
@@ -260,7 +260,7 @@ export default function ListedJobs() {
       borderRadius: "12px",
       padding: "20px",
       marginBottom: "16px",
-      border: "2px solid #3b82f6",
+      border: "2px solid #16a34a",
       cursor: "pointer",
       transition: "all 0.2s",
       boxShadow: "0 4px 6px rgba(59, 130, 246, 0.1)",
@@ -292,7 +292,7 @@ export default function ListedJobs() {
       width: "48px",
       height: "48px",
       borderRadius: "8px",
-      background: "#3b82f6",
+      background: "#16a34a",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -416,7 +416,7 @@ export default function ListedJobs() {
       color: "#6b7280",
     },
     viewCandidatesBtn: {
-      background: "linear-gradient(90deg, #fb923c, #f97316)",
+      background: "linear-gradient(90deg, #16a34a, #15803d)",
       color: "#ffffff",
       border: "none",
       padding: "12px 24px",
@@ -482,7 +482,7 @@ export default function ListedJobs() {
       width: "6px",
       height: "6px",
       borderRadius: "50%",
-      background: "#fb923c",
+      background: "#16a34a",
     },
   };
 

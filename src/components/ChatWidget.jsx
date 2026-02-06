@@ -150,7 +150,7 @@ const ChatWidget = ({ onClose }) => {
       border: "1px solid #e5e7eb",
     },
     header: {
-      background: "#d97706",
+      background: "#16a34a",
       color: "#ffffff",
       padding: "16px 20px",
       borderRadius: "12px 12px 0 0",
@@ -211,7 +211,7 @@ const ChatWidget = ({ onClose }) => {
       wordWrap: "break-word",
     },
     userBubble: {
-      background: "#d97706",
+      background: "#16a34a",
       color: "#ffffff",
       borderBottomRightRadius: "4px",
     },
@@ -241,7 +241,7 @@ const ChatWidget = ({ onClose }) => {
       fontFamily: "inherit",
     },
     sendButton: {
-      background: "#d97706",
+      background: "#16a34a",
       color: "#ffffff",
       border: "none",
       padding: "10px 20px",
@@ -253,7 +253,7 @@ const ChatWidget = ({ onClose }) => {
       whiteSpace: "nowrap",
     },
     sendButtonDisabled: {
-      background: "#d97706",
+      background: "#16a34a",
       color: "#ffffff",
       border: "none",
       padding: "10px 20px",
@@ -335,12 +335,12 @@ const ChatWidget = ({ onClose }) => {
           disabled={loading || !inputMessage.trim()}
           onMouseEnter={(e) => {
             if (!loading && inputMessage.trim()) {
-              e.target.style.background = "#b45309";
+              e.target.style.background = "#15803d";
             }
           }}
           onMouseLeave={(e) => {
             if (!loading && inputMessage.trim()) {
-              e.target.style.background = "#d97706";
+              e.target.style.background = "#16a34a";
             }
           }}
         >

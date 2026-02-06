@@ -74,7 +74,7 @@ export default function PostJob() {
       margin: "0 auto",
       background: "#ffffff",
       borderRadius: "12px",
-      border: "2px solid #3b82f6",
+      border: "2px solid #16a34a",
       padding: "32px",
       boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
     },
@@ -140,7 +140,7 @@ export default function PostJob() {
       boxSizing: "border-box",
     },
     inputFocus: {
-      borderColor: "#fb923c",
+      borderColor: "#16a34a",
     },
     calendarIcon: {
       position: "absolute",
@@ -164,7 +164,7 @@ export default function PostJob() {
       lineHeight: "1.6",
     },
     textareaFocus: {
-      borderColor: "#fb923c",
+      borderColor: "#16a34a",
     },
     radioGroup: {
       display: "flex",
@@ -181,7 +181,7 @@ export default function PostJob() {
       width: "18px",
       height: "18px",
       cursor: "pointer",
-      accentColor: "#fb923c",
+      accentColor: "#16a34a",
     },
     radioLabel: {
       fontSize: "14px",
@@ -224,7 +224,7 @@ export default function PostJob() {
       gap: "12px",
     },
     submitButton: {
-      background: "linear-gradient(90deg, #fb923c, #f97316)",
+      background: "linear-gradient(90deg, #16a34a, #15803d)",
       color: "#ffffff",
       border: "none",
       padding: "14px 32px",
@@ -276,7 +276,7 @@ export default function PostJob() {
               onChange={handleInputChange}
               style={styles.input}
               onFocus={(e) => {
-                e.target.style.borderColor = "#fb923c";
+                e.target.style.borderColor = "#16a34a";
               }}
               onBlur={(e) => {
                 e.target.style.borderColor = "#e5e7eb";
@@ -295,7 +295,7 @@ export default function PostJob() {
                 onChange={handleInputChange}
                 style={styles.input}
                 onFocus={(e) => {
-                  e.target.style.borderColor = "#fb923c";
+                  e.target.style.borderColor = "#16a34a";
                 }}
                 onBlur={(e) => {
                   e.target.style.borderColor = "#e5e7eb";
@@ -315,7 +315,7 @@ export default function PostJob() {
               onChange={handleInputChange}
               style={styles.input}
               onFocus={(e) => {
-                e.target.style.borderColor = "#fb923c";
+                e.target.style.borderColor = "#16a34a";
               }}
               onBlur={(e) => {
                 e.target.style.borderColor = "#e5e7eb";
@@ -333,7 +333,7 @@ export default function PostJob() {
               onChange={handleInputChange}
               style={styles.input}
               onFocus={(e) => {
-                e.target.style.borderColor = "#fb923c";
+                e.target.style.borderColor = "#16a34a";
               }}
               onBlur={(e) => {
                 e.target.style.borderColor = "#e5e7eb";
@@ -410,7 +410,7 @@ export default function PostJob() {
                     style={{
                       ...styles.radioInput,
                       accentColor:
-                        formData.contractType === option ? "#ec4899" : "#fb923c",
+                        formData.contractType === option ? "#15803d" : "#16a34a",
                     }}
                   />
                   <label style={styles.radioLabel}>{option}</label>
@@ -429,7 +429,7 @@ export default function PostJob() {
                 onChange={handleInputChange}
                 style={styles.select}
                 onFocus={(e) => {
-                  e.target.style.borderColor = "#fb923c";
+                  e.target.style.borderColor = "#16a34a";
                 }}
                 onBlur={(e) => {
                   e.target.style.borderColor = "#e5e7eb";
@@ -478,7 +478,7 @@ export default function PostJob() {
               onChange={handleInputChange}
               style={styles.textarea}
               onFocus={(e) => {
-                e.target.style.borderColor = "#fb923c";
+                e.target.style.borderColor = "#16a34a";
               }}
               onBlur={(e) => {
                 e.target.style.borderColor = "#e5e7eb";
@@ -495,7 +495,7 @@ export default function PostJob() {
               onChange={handleInputChange}
               style={styles.textarea}
               onFocus={(e) => {
-                e.target.style.borderColor = "#fb923c";
+                e.target.style.borderColor = "#16a34a";
               }}
               onBlur={(e) => {
                 e.target.style.borderColor = "#e5e7eb";
@@ -513,7 +513,7 @@ export default function PostJob() {
               onChange={handleInputChange}
               style={styles.input}
               onFocus={(e) => {
-                e.target.style.borderColor = "#fb923c";
+                e.target.style.borderColor = "#16a34a";
               }}
               onBlur={(e) => {
                 e.target.style.borderColor = "#e5e7eb";

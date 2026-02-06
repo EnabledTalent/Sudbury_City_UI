@@ -178,7 +178,7 @@ export default function OtherDetails({ onPrev, onNext }) {
       fontWeight: 500,
     },
     btnPrimary: {
-      background: "#d97706",
+      background: "#16a34a",
       color: "#ffffff",
       border: "none",
       padding: "12px 20px",
@@ -321,7 +321,7 @@ export default function OtherDetails({ onPrev, onNext }) {
             value={earliestAvailability}
             onChange={(e) => updateField("earliestAvailability", e.target.value)}
             placeholder="Enter earliest availability"
-            onFocus={(e) => (e.target.style.borderColor = "#fb923c")}
+            onFocus={(e) => (e.target.style.borderColor = "#16a34a")}
             onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
           />
           {errors.earliestAvailability && (
@@ -341,7 +341,7 @@ export default function OtherDetails({ onPrev, onNext }) {
           value={desiredSalary}
           onChange={(e) => updateField("desiredSalary", e.target.value)}
           placeholder="e.g., 80000-90000"
-          onFocus={(e) => (e.target.style.borderColor = "#fb923c")}
+          onFocus={(e) => (e.target.style.borderColor = "#16a34a")}
           onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
         />
       </div>

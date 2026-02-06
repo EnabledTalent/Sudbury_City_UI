@@ -198,11 +198,11 @@ export default function MyJobs() {
     },
     navLinkActive: {
       fontSize: "14px",
-      color: "#3b82f6",
+      color: "#16a34a",
       cursor: "pointer",
       textDecoration: "none",
       paddingBottom: "4px",
-      borderBottom: "2px solid #3b82f6",
+      borderBottom: "2px solid #16a34a",
       fontWeight: 500,
     },
     searchBar: {
@@ -275,8 +275,8 @@ export default function MyJobs() {
     filterButtonActive: {
       padding: "8px 16px",
       borderRadius: "8px",
-      border: "1px solid #d97706",
-      background: "#d97706",
+      border: "1px solid #16a34a",
+      background: "#16a34a",
       cursor: "pointer",
       fontSize: "14px",
       fontWeight: 500,
@@ -297,7 +297,7 @@ export default function MyJobs() {
       padding: "20px",
       marginBottom: "16px",
       cursor: "pointer",
-      border: "2px solid #d97706",
+      border: "2px solid #16a34a",
       boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
     },
     jobCardHeader: {
@@ -364,7 +364,7 @@ export default function MyJobs() {
       color: "#6b7280",
     },
     matchingScore: {
-      background: "#d97706",
+      background: "#16a34a",
       color: "#ffffff",
       padding: "6px 12px",
       borderRadius: "6px",
@@ -390,7 +390,7 @@ export default function MyJobs() {
       position: "absolute",
       top: "32px",
       right: "32px",
-      background: "#d97706",
+      background: "#16a34a",
       color: "#ffffff",
       border: "none",
       padding: "12px 24px",
@@ -402,7 +402,7 @@ export default function MyJobs() {
       transition: "all 0.2s",
     },
     applyButtonHover: {
-      background: "#b45309",
+      background: "#15803d",
       boxShadow: "0 4px 6px rgba(0, 0, 0, 0.15)",
     },
     jobDetailsLogo: {
@@ -687,13 +687,13 @@ export default function MyJobs() {
                 disabled={applying}
                 onMouseEnter={(e) => {
                   if (!applying && !applySuccess) {
-                    e.target.style.background = "#b45309";
+                    e.target.style.background = "#15803d";
                     e.target.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.15)";
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!applying && !applySuccess) {
-                    e.target.style.background = "#d97706";
+                    e.target.style.background = "#16a34a";
                     e.target.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.1)";
                   }
                 }}
@@ -777,7 +777,7 @@ export default function MyJobs() {
                 <div style={styles.section}>
                   <h3 style={styles.sectionTitle}>Contact</h3>
                   <p style={styles.sectionText}>
-                    Email: <a href={`mailto:${selectedJob.employer.email}`} style={{ color: "#3b82f6" }}>
+                    Email: <a href={`mailto:${selectedJob.employer.email}`} style={{ color: "#16a34a" }}>
                       {selectedJob.employer.email}
                     </a>
                   </p>

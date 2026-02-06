@@ -143,11 +143,11 @@ export default function ViewProfile() {
     },
     navLinkActive: {
       fontSize: "14px",
-      color: "#3b82f6",
+      color: "#16a34a",
       cursor: "pointer",
       textDecoration: "none",
       paddingBottom: "4px",
-      borderBottom: "2px solid #3b82f6",
+      borderBottom: "2px solid #16a34a",
       fontWeight: 500,
     },
     searchBar: {
@@ -195,7 +195,7 @@ export default function ViewProfile() {
       padding: "24px 40px",
     },
     banner: {
-      background: "linear-gradient(90deg, #ea580c 0%, #fb923c 100%)",
+      background: "linear-gradient(90deg, #15803d 0%, #16a34a 100%)",
       borderRadius: "16px",
       padding: "32px 40px",
       marginBottom: "32px",
@@ -274,12 +274,12 @@ export default function ViewProfile() {
     },
     progressRing: {
       fill: "none",
-      stroke: "#fb923c",
+      stroke: "#16a34a",
       strokeWidth: "4",
     },
     progressFill: {
       fill: "none",
-      stroke: "#3b82f6",
+      stroke: "#16a34a",
       strokeWidth: "4",
       strokeLinecap: "round",
       transition: "stroke-dashoffset 0.6s ease",
@@ -321,7 +321,7 @@ export default function ViewProfile() {
       width: "60px",
       height: "60px",
       borderRadius: "50%",
-      background: "#d97706",
+      background: "#16a34a",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -459,7 +459,7 @@ export default function ViewProfile() {
       marginBottom: "12px",
     },
     acceptBtn: {
-      background: "#d97706",
+      background: "#16a34a",
       color: "#fff",
       border: "none",
       padding: "8px 16px",

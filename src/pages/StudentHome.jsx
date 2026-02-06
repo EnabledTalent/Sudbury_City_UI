@@ -66,7 +66,7 @@ export default function StudentHome() {
           </span>
           <button
             style={{
-              background: "#f08a52",
+              background: "#22c55e",
               color: "#fff",
               border: "none",
               padding: "10px 16px",
@@ -106,7 +106,7 @@ export default function StudentHome() {
             onClick={handleUploadClick}
             disabled={loading}
             style={{
-              background: "#d87a2c",
+              background: "#16a34a",
               color: "#fff",
               border: "none",
               padding: "12px 20px",
@@ -137,7 +137,7 @@ export default function StudentHome() {
 
         <p style={{ marginTop: "20px", fontSize: "14px" }}>
           Don’t have resume file ready?{" "}
-          <span style={{ color: "#f08a52", cursor: "pointer" }}>
+          <span style={{ color: "#22c55e", cursor: "pointer" }}>
             Create manually
           </span>
         </p>

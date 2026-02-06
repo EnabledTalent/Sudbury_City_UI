@@ -169,7 +169,7 @@ export default function ReviewAgree({ onPrev, onNext }) {
       width: "20px",
       height: "20px",
       cursor: "pointer",
-      accentColor: "#d97706",
+      accentColor: "#16a34a",
       marginTop: "2px",
     },
     checkboxLabel: {
@@ -198,7 +198,7 @@ export default function ReviewAgree({ onPrev, onNext }) {
       fontWeight: 500,
     },
     btnPrimary: {
-      background: "#d97706",
+      background: "#16a34a",
       color: "#ffffff",
       border: "none",
       padding: "12px 20px",
@@ -214,7 +214,7 @@ export default function ReviewAgree({ onPrev, onNext }) {
       minWidth: "140px",
     },
     btnPrimaryDisabled: {
-      background: "#d97706",
+      background: "#16a34a",
       color: "#ffffff",
       border: "none",
       padding: "12px 20px",
@@ -288,7 +288,7 @@ export default function ReviewAgree({ onPrev, onNext }) {
           value={reviewAgree.comments}
           onChange={(e) => updateField("comments", e.target.value)}
           placeholder="Please leave any additional comments or feedback"
-          onFocus={(e) => (e.target.style.borderColor = "#fb923c")}
+          onFocus={(e) => (e.target.style.borderColor = "#16a34a")}
           onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
         />
       </div>

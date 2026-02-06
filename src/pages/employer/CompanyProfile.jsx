@@ -156,7 +156,7 @@ export default function CompanyProfile() {
       width: "32px",
       height: "32px",
       borderRadius: "50%",
-      background: "linear-gradient(135deg, #fb923c, #f97316)",
+      background: "linear-gradient(135deg, #16a34a, #15803d)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -178,11 +178,11 @@ export default function CompanyProfile() {
     },
     navLinkActive: {
       fontSize: "14px",
-      color: "#3b82f6",
+      color: "#16a34a",
       cursor: "pointer",
       textDecoration: "none",
       paddingBottom: "4px",
-      borderBottom: "2px solid #3b82f6",
+      borderBottom: "2px solid #16a34a",
       fontWeight: 500,
     },
     userActions: {
@@ -199,7 +199,7 @@ export default function CompanyProfile() {
       gap: "6px",
     },
     postJobBtn: {
-      background: "linear-gradient(90deg, #fb923c, #f97316)",
+      background: "linear-gradient(90deg, #16a34a, #15803d)",
       color: "#ffffff",
       border: "none",
       padding: "10px 20px",
@@ -243,7 +243,7 @@ export default function CompanyProfile() {
       width: "80px",
       height: "80px",
       borderRadius: "50%",
-      background: "#3b82f6",
+      background: "#16a34a",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -319,7 +319,7 @@ export default function CompanyProfile() {
       fontWeight: 500,
     },
     websiteCard: {
-      background: "linear-gradient(90deg, #fb923c, #f97316)",
+      background: "linear-gradient(90deg, #16a34a, #15803d)",
       borderRadius: "12px",
       padding: "20px",
       display: "flex",
@@ -455,7 +455,7 @@ export default function CompanyProfile() {
       width: "18px",
       height: "18px",
       cursor: "pointer",
-      accentColor: "#fb923c",
+      accentColor: "#16a34a",
     },
     radioLabel: {
       fontSize: "14px",
@@ -480,7 +480,7 @@ export default function CompanyProfile() {
       fontWeight: 500,
     },
     saveBtn: {
-      background: "linear-gradient(90deg, #fb923c, #f97316)",
+      background: "linear-gradient(90deg, #16a34a, #15803d)",
       color: "#ffffff",
       border: "none",
       padding: "12px 24px",
@@ -598,7 +598,7 @@ export default function CompanyProfile() {
                       placeholder="Search Organization"
                       style={styles.input}
                       onFocus={(e) => {
-                        e.target.style.borderColor = "#fb923c";
+                        e.target.style.borderColor = "#16a34a";
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = "#e5e7eb";
@@ -618,7 +618,7 @@ export default function CompanyProfile() {
                     placeholder="Enter description about company"
                     style={styles.textarea}
                     onFocus={(e) => {
-                      e.target.style.borderColor = "#fb923c";
+                      e.target.style.borderColor = "#16a34a";
                     }}
                     onBlur={(e) => {
                       e.target.style.borderColor = "#e5e7eb";
@@ -636,7 +636,7 @@ export default function CompanyProfile() {
                     onChange={handleInputChange}
                     style={styles.input}
                     onFocus={(e) => {
-                      e.target.style.borderColor = "#fb923c";
+                      e.target.style.borderColor = "#16a34a";
                     }}
                     onBlur={(e) => {
                       e.target.style.borderColor = "#e5e7eb";
@@ -656,7 +656,7 @@ export default function CompanyProfile() {
                       placeholder="Select year"
                       style={styles.input}
                       onFocus={(e) => {
-                        e.target.style.borderColor = "#fb923c";
+                        e.target.style.borderColor = "#16a34a";
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = "#e5e7eb";
@@ -677,7 +677,7 @@ export default function CompanyProfile() {
                     placeholder="Enter website link"
                     style={styles.input}
                     onFocus={(e) => {
-                      e.target.style.borderColor = "#fb923c";
+                      e.target.style.borderColor = "#16a34a";
                     }}
                     onBlur={(e) => {
                       e.target.style.borderColor = "#e5e7eb";
@@ -719,7 +719,7 @@ export default function CompanyProfile() {
                       onChange={handleInputChange}
                       style={styles.select}
                       onFocus={(e) => {
-                        e.target.style.borderColor = "#fb923c";
+                        e.target.style.borderColor = "#16a34a";
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = "#e5e7eb";

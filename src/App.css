@@ -6,82 +6,98 @@
   font-family: Inter, system-ui, Arial, sans-serif;
 }
 
-/* PAGE BACKGROUND */
+/* PAGE BACKGROUND - landing-style subtle gradient */
 .auth-page {
   min-height: 100vh;
-  background: #f5c15b;
+  background: linear-gradient(160deg, #f0fdf4 0%, #e0f2fe 50%, #f8fafc 100%);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 32px 24px;
 }
 
-/* OUTER GRADIENT CARD */
+/* OUTER CARD - refined shadow like landing */
 .auth-wrapper {
   width: 100%;
-  max-width: 1200px;
-  background: linear-gradient(135deg, #f6c35b, #f4a640);
-  border-radius: 32px;
-  padding: 24px;
+  max-width: 1100px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 0;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
 }
 
 /* INNER CONTAINER */
 .auth-container {
   display: flex;
-  border-radius: 28px;
+  border-radius: 24px;
   overflow: hidden;
 }
 
-/* LEFT PANEL */
+/* LEFT PANEL - green + subtle purple gradient (Built for Every Stakeholder feel) */
 .auth-left {
   width: 50%;
-  padding: 80px 64px;
+  padding: 72px 56px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  background: linear-gradient(145deg, #16a34a 0%, #15803d 60%, #1e40af 100%);
+  border-radius: 24px 0 0 24px;
 }
 
 .logo-circle {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.4);
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #16a34a;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  margin-bottom: 48px;
+  font-weight: 800;
+  font-size: 32px;
+  margin-bottom: 40px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
 }
 
 .auth-left h1 {
-  font-size: 30px;
+  font-size: 28px;
+  line-height: 1.3;
   margin-bottom: 12px;
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .auth-left p {
-  color: rgba(0, 0, 0, 0.7);
-  max-width: 320px;
+  color: rgba(255, 255, 255, 0.92);
+  max-width: 300px;
+  font-size: 15px;
+  line-height: 1.5;
 }
 
 /* RIGHT CARD */
 .auth-right {
   width: 50%;
   background: #ffffff;
-  border-radius: 28px;
-  padding: 48px;
+  border-radius: 0 24px 24px 0;
+  padding: 48px 56px;
 }
 
 .auth-right h2 {
   text-align: center;
-  font-size: 24px;
-  margin-bottom: 6px;
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #111827;
+  letter-spacing: -0.02em;
 }
 
 .auth-subtitle {
   text-align: center;
   font-size: 14px;
-  color: #777;
-  margin-bottom: 32px;
+  color: #6b7280;
+  margin-bottom: 28px;
 }
 
 /* FORM */
@@ -99,16 +115,19 @@
 .form-group input,
 .form-group select {
   width: 100%;
-  padding: 10px 14px;
+  padding: 12px 14px;
   border-radius: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid #e5e7eb;
   font-size: 14px;
   outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
 }
 
-.form-group input:focus {
-  border-color: #f4a640;
-}
 
 /* PASSWORD FIELD */
 .password-wrapper {
@@ -131,17 +150,24 @@
   margin-bottom: 12px;
 }
 
-/* BUTTON */
+/* BUTTON - landing-style primary CTA */
 .submit-btn {
   width: 100%;
-  padding: 12px;
+  padding: 14px;
   border-radius: 12px;
   border: none;
   cursor: pointer;
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   color: #fff;
-  background: linear-gradient(90deg, #c94a2f, #f08a52);
+  background: linear-gradient(180deg, #16a34a 0%, #15803d 100%);
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.35);
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+.submit-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #15803d 0%, #166534 100%);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.4);
+  transform: translateY(-1px);
 }
 
 .submit-btn:disabled {
@@ -163,16 +189,27 @@
 }
 
 .switch-text span {
-  color: #f08a52;
+  color: #16a34a;
   cursor: pointer;
   font-weight: 500;
+}
+.switch-text span:hover {
+  color: #15803d;
+  text-decoration: underline;
 }
 
 .terms-text {
   font-size: 11px;
-  color: #999;
+  color: #6b7280;
   text-align: center;
   margin-top: 18px;
+}
+.terms-text u {
+  color: #16a34a;
+  cursor: pointer;
+}
+.terms-text u:hover {
+  color: #15803d;
 }
 
 /* RESPONSIVE */
@@ -183,6 +220,8 @@
 
   .auth-right {
     width: 100%;
+    border-radius: 24px;
+    padding: 40px 24px;
   }
 }
 /* ===== PROFILE BUILDER LAYOUT ===== */
@@ -190,7 +229,7 @@
   display: flex;
   gap: 24px;
   padding: 24px;
-  background: #f2f7fd;
+  background: var(--bg-page);
   min-height: 100vh;
 }
 
@@ -237,7 +276,7 @@
 
 /* ===== HEADER BANNER ===== */
 .profile-banner {
-  background: linear-gradient(90deg, #c2410c, #fb923c);
+  background: linear-gradient(90deg, var(--primary), var(--primary-dark));
   color: #ffffff;
   border-radius: 20px;
   padding: 32px;
@@ -270,18 +309,18 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #fb923c;
+  border-color: var(--primary);
 }
 
 /* ===== ERROR STATE ===== */
 .input-error {
-  border: 1px solid #ef4444;
+  border: 1px solid var(--error);
   background: #fff1f2;
 }
 
 .error-text {
   font-size: 12px;
-  color: #ef4444;
+  color: var(--error);
   margin-top: 6px;
 }
 
@@ -301,7 +340,7 @@
 }
 
 .btn-primary {
-  background: #d97706;
+  background: var(--primary);
   color: #ffffff;
   border: none;
   padding: 12px 20px;
@@ -318,12 +357,12 @@ textarea {
 
 textarea:focus {
   outline: none;
-  border-color: #fb923c;
+  border-color: var(--primary);
 }
 .delete-btn {
   background: transparent;
   border: none;
-  color: #ef4444;
+  color: var(--error);
   cursor: pointer;
   font-size: 13px;
 }
@@ -389,8 +428,8 @@ textarea:focus {
 }
 
 .skill-tag-remove:hover {
-  background: #e5e7eb;
-  color: #ef4444;
+  background: var(--border);
+  color: var(--error);
 }
 
 /* ===== SECTION HEADER ===== */
@@ -409,12 +448,12 @@ textarea:focus {
 
 .error-badge {
   font-size: 12px;
-  color: #ef4444;
+  color: var(--error);
   font-weight: 500;
 }
 
 .label-error {
-  color: #ef4444 !important;
+  color: var(--error) !important;
 }
 
 /* ===== LOADING SPINNER ===== */

@@ -102,7 +102,7 @@ export default function EmployerHome() {
       width: "32px",
       height: "32px",
       borderRadius: "50%",
-      background: "linear-gradient(135deg, #fb923c, #f97316)",
+      background: "linear-gradient(135deg, #16a34a, #15803d)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -130,7 +130,7 @@ export default function EmployerHome() {
       color: "#6b7280",
     },
     postJobBtn: {
-      background: "linear-gradient(90deg, #fb923c, #f97316)",
+      background: "linear-gradient(90deg, #16a34a, #15803d)",
       color: "#ffffff",
       border: "none",
       padding: "10px 20px",
@@ -172,7 +172,7 @@ export default function EmployerHome() {
       width: "80px",
       height: "80px",
       borderRadius: "50%",
-      background: "#d97706",
+      background: "#16a34a",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -233,7 +233,7 @@ export default function EmployerHome() {
       boxSizing: "border-box",
     },
     inputFocus: {
-      borderColor: "#fb923c",
+      borderColor: "#16a34a",
     },
     searchIcon: {
       position: "absolute",
@@ -256,7 +256,7 @@ export default function EmployerHome() {
       boxSizing: "border-box",
     },
     textareaFocus: {
-      borderColor: "#fb923c",
+      borderColor: "#16a34a",
     },
     select: {
       width: "100%",
@@ -297,7 +297,7 @@ export default function EmployerHome() {
       width: "18px",
       height: "18px",
       cursor: "pointer",
-      accentColor: "#fb923c",
+      accentColor: "#16a34a",
     },
     radioLabel: {
       fontSize: "14px",
@@ -322,7 +322,7 @@ export default function EmployerHome() {
       fontWeight: 500,
     },
     saveBtn: {
-      background: "linear-gradient(90deg, #fb923c, #f97316)",
+      background: "linear-gradient(90deg, #16a34a, #15803d)",
       color: "#ffffff",
       border: "none",
       padding: "12px 24px",
@@ -399,7 +399,7 @@ export default function EmployerHome() {
                   placeholder="Search Organization"
                   style={styles.input}
                   onFocus={(e) => {
-                    e.target.style.borderColor = "#fb923c";
+                    e.target.style.borderColor = "#16a34a";
                   }}
                   onBlur={(e) => {
                     e.target.style.borderColor = "#e5e7eb";
@@ -419,7 +419,7 @@ export default function EmployerHome() {
                 placeholder="Enter description about company"
                 style={styles.textarea}
                 onFocus={(e) => {
-                  e.target.style.borderColor = "#fb923c";
+                  e.target.style.borderColor = "#16a34a";
                 }}
                 onBlur={(e) => {
                   e.target.style.borderColor = "#e5e7eb";
@@ -437,7 +437,7 @@ export default function EmployerHome() {
                 onChange={handleInputChange}
                 style={styles.input}
                 onFocus={(e) => {
-                  e.target.style.borderColor = "#fb923c";
+                  e.target.style.borderColor = "#16a34a";
                 }}
                 onBlur={(e) => {
                   e.target.style.borderColor = "#e5e7eb";
@@ -457,7 +457,7 @@ export default function EmployerHome() {
                   placeholder="Select year"
                   style={styles.input}
                   onFocus={(e) => {
-                    e.target.style.borderColor = "#fb923c";
+                    e.target.style.borderColor = "#16a34a";
                   }}
                   onBlur={(e) => {
                     e.target.style.borderColor = "#e5e7eb";
@@ -478,7 +478,7 @@ export default function EmployerHome() {
                 placeholder="Enter website link"
                 style={styles.input}
                 onFocus={(e) => {
-                  e.target.style.borderColor = "#fb923c";
+                  e.target.style.borderColor = "#16a34a";
                 }}
                 onBlur={(e) => {
                   e.target.style.borderColor = "#e5e7eb";
@@ -520,7 +520,7 @@ export default function EmployerHome() {
                   onChange={handleInputChange}
                   style={styles.select}
                   onFocus={(e) => {
-                    e.target.style.borderColor = "#fb923c";
+                    e.target.style.borderColor = "#16a34a";
                   }}
                   onBlur={(e) => {
                     e.target.style.borderColor = "#e5e7eb";

@@ -31,7 +31,7 @@ export default function ProfileSuccess() {
           </span>
           <button
             style={{
-              background: "#f08a52",
+              background: "#22c55e",
               color: "#fff",
               border: "none",
               padding: "10px 16px",
@@ -62,7 +62,7 @@ export default function ProfileSuccess() {
         <button
           onClick={() => navigate("/student/view-profile")}
           style={{
-            background: "#d87a2c",
+            background: "#16a34a",
             color: "#fff",
             border: "none",
             padding: "12px 24px",

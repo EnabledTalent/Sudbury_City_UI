@@ -94,11 +94,11 @@ export default function Dashboard() {
     },
     navLinkActive: {
       fontSize: "14px",
-      color: "#3b82f6",
+      color: "#16a34a",
       cursor: "pointer",
       textDecoration: "none",
       paddingBottom: "4px",
-      borderBottom: "2px solid #3b82f6",
+      borderBottom: "2px solid #16a34a",
       fontWeight: 500,
     },
     userActions: {
@@ -263,7 +263,7 @@ export default function Dashboard() {
   // Helper function to get color for each status
   const getStatusColor = (status) => {
     const colors = {
-      APPLIED: "#3b82f6", // Blue
+      APPLIED: "#16a34a", // Blue
       UNDER_REVIEW: "#f59e0b", // Amber
       INTERVIEW: "#8b5cf6", // Purple
       OFFERED: "#10b981", // Green

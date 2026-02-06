@@ -183,7 +183,7 @@ export default function Projects({ onPrev, onNext }) {
       outline: "none",
     },
     inputFocus: {
-      borderColor: "#fb923c",
+      borderColor: "#16a34a",
     },
     textarea: {
       width: "100%",
@@ -221,7 +221,7 @@ export default function Projects({ onPrev, onNext }) {
       width: "18px",
       height: "18px",
       cursor: "pointer",
-      accentColor: "#d97706",
+      accentColor: "#16a34a",
     },
     radioLabel: {
       fontSize: "14px",
@@ -245,7 +245,7 @@ export default function Projects({ onPrev, onNext }) {
       transition: "all 0.2s",
     },
     fileUploadHover: {
-      borderColor: "#fb923c",
+      borderColor: "#16a34a",
       background: "#fff7ed",
     },
     fileUploadContent: {
@@ -295,7 +295,7 @@ export default function Projects({ onPrev, onNext }) {
       fontWeight: 500,
     },
     btnPrimary: {
-      background: "#d97706",
+      background: "#16a34a",
       color: "#ffffff",
       border: "none",
       padding: "12px 20px",
@@ -339,7 +339,7 @@ export default function Projects({ onPrev, onNext }) {
               }
               value={proj.name}
               onChange={(e) => updateProject(index, "name", e.target.value)}
-              onFocus={(e) => (e.target.style.borderColor = "#fb923c")}
+              onFocus={(e) => (e.target.style.borderColor = "#16a34a")}
               onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
             />
             {errors[index]?.name && (
@@ -360,7 +360,7 @@ export default function Projects({ onPrev, onNext }) {
               onChange={(e) =>
                 updateProject(index, "description", e.target.value)
               }
-              onFocus={(e) => (e.target.style.borderColor = "#fb923c")}
+              onFocus={(e) => (e.target.style.borderColor = "#16a34a")}
               onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
             />
             {errors[index]?.description && (
@@ -411,7 +411,7 @@ export default function Projects({ onPrev, onNext }) {
                 onChange={(e) =>
                   updateProject(index, "startDate", e.target.value)
                 }
-                onFocus={(e) => (e.target.style.borderColor = "#fb923c")}
+                onFocus={(e) => (e.target.style.borderColor = "#16a34a")}
                 onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
               />
             </div>
@@ -428,7 +428,7 @@ export default function Projects({ onPrev, onNext }) {
                 disabled={proj.currentlyWorking}
                 onFocus={(e) => {
                   if (!proj.currentlyWorking) {
-                    e.target.style.borderColor = "#fb923c";
+                    e.target.style.borderColor = "#16a34a";
                   }
                 }}
                 onBlur={(e) => {
@@ -448,7 +448,7 @@ export default function Projects({ onPrev, onNext }) {
                 document.getElementById(`file-input-${index}`).click()
               }
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "#fb923c";
+                e.currentTarget.style.borderColor = "#16a34a";
                 e.currentTarget.style.background = "#fff7ed";
               }}
               onMouseLeave={(e) => {
