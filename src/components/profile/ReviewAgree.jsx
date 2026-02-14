@@ -22,6 +22,7 @@ export default function ReviewAgree({ onPrev, onNext }) {
     discovery: "",
     comments: "",
     agreed: false,
+    hasDisability: null,
   };
 
   const updateField = (field, value) => {
@@ -32,6 +33,10 @@ export default function ReviewAgree({ onPrev, onNext }) {
     const newErrors = {};
     if (!reviewAgree.agreed) {
       newErrors.agreed = "You must agree to the terms and conditions";
+    }
+    // Validate disability selection (mandatory)
+    if (reviewAgree.hasDisability === undefined || reviewAgree.hasDisability === null || reviewAgree.hasDisability === "") {
+      newErrors.hasDisability = "Please select if you have a disability";
     }
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -49,14 +54,11 @@ export default function ReviewAgree({ onPrev, onNext }) {
     // Save or update profile to API
     setLoading(true);
     const action = isEditMode ? "Updating" : "Saving";
-    console.log(`${action} profile to backend...`);
-    console.log("Profile data:", updatedProfile);
     
     try {
       const result = isEditMode 
         ? await updateProfile(updatedProfile)
         : await saveProfile(updatedProfile);
-      console.log(`Profile ${isEditMode ? 'updated' : 'saved'} successfully:`, result);
       
       // Clear edit mode flag
       localStorage.removeItem("profileEditMode");
@@ -68,7 +70,6 @@ export default function ReviewAgree({ onPrev, onNext }) {
       // Only show error if it's not a JSON parsing issue with 200 status
       if (error.message && error.message.includes("Invalid JSON")) {
         // If we got 200 but invalid JSON, still treat as success
-        console.log("Got 200 with invalid JSON, treating as success");
         localStorage.removeItem("profileEditMode");
         navigate("/student/success");
       } else {
@@ -183,6 +184,28 @@ export default function ReviewAgree({ onPrev, onNext }) {
       color: "#ef4444",
       marginTop: "6px",
     },
+    radioGroup: {
+      display: "flex",
+      gap: "24px",
+      marginTop: "8px",
+    },
+    radioOption: {
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      cursor: "pointer",
+    },
+    radioInput: {
+      width: "18px",
+      height: "18px",
+      cursor: "pointer",
+      accentColor: "#16a34a",
+    },
+    radioLabel: {
+      fontSize: "14px",
+      color: "#374151",
+      cursor: "pointer",
+    },
     formActions: {
       display: "flex",
       justifyContent: "space-between",
@@ -279,6 +302,76 @@ export default function ReviewAgree({ onPrev, onNext }) {
           <option value="University">University</option>
           <option value="Other">Other</option>
         </select>
+      </div>
+
+      <div style={styles.formGroup}>
+        <label style={styles.label}>
+          Do you have a disability? <span style={{ color: "#ef4444" }}>*</span>
+        </label>
+        <div style={styles.radioGroup}>
+          <div style={styles.radioOption}>
+            <input
+              type="radio"
+              id="disability-yes"
+              name="disability"
+              value="yes"
+              style={styles.radioInput}
+              checked={reviewAgree.hasDisability === true || reviewAgree.hasDisability === "yes"}
+              onChange={() => updateField("hasDisability", true)}
+            />
+            <label htmlFor="disability-yes" style={styles.radioLabel}>Yes</label>
+          </div>
+          <div style={styles.radioOption}>
+            <input
+              type="radio"
+              id="disability-no"
+              name="disability"
+              value="no"
+              style={styles.radioInput}
+              checked={reviewAgree.hasDisability === false || reviewAgree.hasDisability === "no"}
+              onChange={() => updateField("hasDisability", false)}
+            />
+            <label htmlFor="disability-no" style={styles.radioLabel}>No</label>
+          </div>
+        </div>
+        {errors.hasDisability && (
+          <div style={styles.errorText}>{errors.hasDisability}</div>
+        )}
+      </div>
+
+      <div style={styles.formGroup}>
+        <label style={styles.label}>
+          Do you have a disability? <span style={{ color: "#ef4444" }}>*</span>
+        </label>
+        <div style={styles.radioGroup}>
+          <div style={styles.radioOption}>
+            <input
+              type="radio"
+              id="disability-yes"
+              name="disability"
+              value="yes"
+              style={styles.radioInput}
+              checked={reviewAgree.hasDisability === true || reviewAgree.hasDisability === "yes"}
+              onChange={() => updateField("hasDisability", true)}
+            />
+            <label htmlFor="disability-yes" style={styles.radioLabel}>Yes</label>
+          </div>
+          <div style={styles.radioOption}>
+            <input
+              type="radio"
+              id="disability-no"
+              name="disability"
+              value="no"
+              style={styles.radioInput}
+              checked={reviewAgree.hasDisability === false || reviewAgree.hasDisability === "no"}
+              onChange={() => updateField("hasDisability", false)}
+            />
+            <label htmlFor="disability-no" style={styles.radioLabel}>No</label>
+          </div>
+        </div>
+        {errors.hasDisability && (
+          <div style={styles.errorText}>{errors.hasDisability}</div>
+        )}
       </div>
 
       <div style={styles.formGroup}>

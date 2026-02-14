@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { uploadResume } from "../services/jobService";
+import { logoutUser } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 
 export default function StudentHome() {
@@ -57,7 +58,9 @@ export default function StudentHome() {
           <span>Profile</span>
           <span
             style={{ cursor: "pointer" }}
-            onClick={() => {
+            onClick={async () => {
+              // Call logout API
+              await logoutUser();
               localStorage.clear();
               window.location.href = "/";
             }}

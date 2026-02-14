@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { normalizeUploadData } from "../utils/normalizeUploadData";
 
 const ProfileContext = createContext();
@@ -62,11 +62,12 @@ export const ProfileProvider = ({ children }) => {
   };
 
   // Function to load and normalize profile data (called after upload)
-  const loadProfileData = (data) => {
+  // Memoized to prevent unnecessary re-renders
+  const loadProfileData = useCallback((data) => {
     const normalized = normalizeUploadData(data);
     setProfile(normalized);
     localStorage.setItem("profileData", JSON.stringify(normalized));
-  };
+  }, []);
 
   return (
     <ProfileContext.Provider value={{ profile, updateProfile, loadProfileData }}>

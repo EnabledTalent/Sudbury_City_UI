@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { fetchJobs, fetchAllApplications, applyWithProfile } from "../services/jobService";
+import { logoutUser } from "../services/authService";
 import { useProfile } from "../context/ProfileContext";
 import Toast from "../components/Toast";
 import ChatWidget from "../components/ChatWidget";
 
 export default function MyJobs() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { profile } = useProfile();
   const [filter, setFilter] = useState("all"); // "all", "applied", "accepted", "rejected"
   const [selectedJob, setSelectedJob] = useState(null);
@@ -31,13 +33,11 @@ export default function MyJobs() {
         if (filter === "all") {
           // Fetch all available jobs
           data = await fetchJobs();
-          console.log("Fetched jobs:", data);
         } else {
           // Fetch applications for applied/accepted/rejected filters
           // Get email from profile context
           const email = profile?.basicInfo?.email;
           const applications = await fetchAllApplications(email);
-          console.log("Fetched applications:", applications);
           
           // Transform applications to match job structure and filter by status
           data = applications
@@ -79,9 +79,23 @@ export default function MyJobs() {
         setJobs(data || []);
         // Set first job as selected if available
         if (data && data.length > 0) {
-          // Only update selectedJob if current selection is not in the new data
-          if (!selectedJob || !data.find(job => job.id === selectedJob.id)) {
-            setSelectedJob(data[0]);
+          // Check if we have a selectedJobId from navigation state (from notifications)
+          const selectedJobId = location.state?.selectedJobId;
+          
+          if (selectedJobId) {
+            // Find and select the job with matching ID
+            const jobToSelect = data.find(job => job.id === selectedJobId);
+            if (jobToSelect) {
+              setSelectedJob(jobToSelect);
+            } else {
+              // If job not found, select first job
+              setSelectedJob(data[0]);
+            }
+          } else {
+            // Only update selectedJob if current selection is not in the new data
+            if (!selectedJob || !data.find(job => job.id === selectedJob.id)) {
+              setSelectedJob(data[0]);
+            }
           }
         } else {
           setSelectedJob(null);
@@ -112,6 +126,12 @@ export default function MyJobs() {
       return;
     }
 
+    // Check if job has externalApplyUrl - if so, navigate to that URL
+    if (selectedJob.externalApplyUrl && selectedJob.externalApplyUrl !== null && selectedJob.externalApplyUrl.trim() !== "") {
+      window.open(selectedJob.externalApplyUrl, "_blank");
+      return;
+    }
+
     if (!profile || !profile.basicInfo?.email) {
       setToast({ message: "Profile data is missing. Please complete your profile first.", type: "error" });
       return;
@@ -125,7 +145,6 @@ export default function MyJobs() {
     try {
       const jobId = selectedJob.id;
       const result = await applyWithProfile(jobId, profile);
-      console.log("Application submitted:", result);
       setApplySuccess(true);
       setToast({ message: "Application submitted successfully!", type: "success" });
       // Optionally refresh jobs or show success message
@@ -170,19 +189,28 @@ export default function MyJobs() {
     },
     topNav: {
       background: "#ffffff",
-      padding: "16px 40px",
+      padding: "20px 40px",
       borderBottom: "1px solid #e5e7eb",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
+      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
+      position: "sticky",
+      top: 0,
+      zIndex: 100,
+      backdropFilter: "blur(10px)",
     },
     logo: {
       display: "flex",
       alignItems: "center",
       gap: "10px",
-      fontWeight: 600,
-      fontSize: "18px",
-      color: "#111827",
+      fontWeight: 700,
+      fontSize: "20px",
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      backgroundClip: "text",
+      letterSpacing: "-0.02em",
     },
     navLinks: {
       display: "flex",
@@ -232,17 +260,35 @@ export default function MyJobs() {
       color: "#374151",
       cursor: "pointer",
     },
+    logoutBtn: {
+      background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+      color: "#ffffff",
+      border: "none",
+      padding: "10px 18px",
+      borderRadius: "10px",
+      cursor: "pointer",
+      fontSize: "13px",
+      fontWeight: 600,
+      display: "flex",
+      alignItems: "center",
+      gap: "6px",
+      boxShadow: "0 4px 12px rgba(239, 68, 68, 0.3)",
+      transition: "all 0.3s ease",
+    },
     aiCoachBtn: {
-      background: "#ef4444",
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
       color: "#fff",
       border: "none",
-      padding: "10px 16px",
-      borderRadius: "8px",
+      padding: "12px 20px",
+      borderRadius: "12px",
       cursor: "pointer",
       fontSize: "14px",
+      fontWeight: 600,
       display: "flex",
       alignItems: "center",
       gap: "8px",
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      transition: "all 0.3s ease",
     },
     container: {
       display: "flex",
@@ -263,42 +309,48 @@ export default function MyJobs() {
       marginBottom: "20px",
     },
     filterButton: {
-      padding: "8px 16px",
-      borderRadius: "8px",
-      border: "1px solid #e5e7eb",
+      padding: "10px 20px",
+      borderRadius: "12px",
+      border: "2px solid #e5e7eb",
       background: "#ffffff",
       cursor: "pointer",
       fontSize: "14px",
-      fontWeight: 500,
+      fontWeight: 600,
       color: "#374151",
+      transition: "all 0.3s ease",
+      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.04)",
     },
     filterButtonActive: {
-      padding: "8px 16px",
-      borderRadius: "8px",
-      border: "1px solid #16a34a",
-      background: "#16a34a",
+      padding: "10px 20px",
+      borderRadius: "12px",
+      border: "2px solid #16a34a",
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
       cursor: "pointer",
       fontSize: "14px",
-      fontWeight: 500,
+      fontWeight: 600,
       color: "#ffffff",
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      transition: "all 0.3s ease",
     },
     jobCard: {
       background: "#ffffff",
-      borderRadius: "12px",
-      padding: "20px",
+      borderRadius: "16px",
+      padding: "24px",
       marginBottom: "16px",
       cursor: "pointer",
       border: "2px solid transparent",
-      transition: "all 0.2s",
+      transition: "all 0.3s ease",
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
     },
     jobCardSelected: {
       background: "#ffffff",
-      borderRadius: "12px",
-      padding: "20px",
+      borderRadius: "16px",
+      padding: "24px",
       marginBottom: "16px",
       cursor: "pointer",
       border: "2px solid #16a34a",
-      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+      boxShadow: "0 8px 24px rgba(22, 163, 74, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08)",
+      transform: "translateY(-2px)",
     },
     jobCardHeader: {
       display: "flex",
@@ -374,9 +426,11 @@ export default function MyJobs() {
     },
     jobDetailsCard: {
       background: "#ffffff",
-      borderRadius: "12px",
+      borderRadius: "16px",
       padding: "32px",
       position: "relative",
+      minHeight: "400px",
+      paddingBottom: "80px",
     },
     jobDetailsHeader: {
       display: "flex",
@@ -388,9 +442,24 @@ export default function MyJobs() {
     },
     applyButton: {
       position: "absolute",
-      top: "32px",
-      right: "32px",
-      background: "#16a34a",
+      bottom: "24px",
+      right: "24px",
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      color: "#ffffff",
+      border: "none",
+      padding: "10px 20px",
+      borderRadius: "12px",
+      cursor: "pointer",
+      fontSize: "14px",
+      fontWeight: 600,
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      transition: "all 0.3s ease",
+      zIndex: 10,
+    },
+    applyButtonHover: {
+      background: "linear-gradient(135deg, #15803d 0%, #166534 100%)",
+      transform: "translateY(-2px)",
+      boxShadow: "0 6px 16px rgba(22, 163, 74, 0.4)",
       color: "#ffffff",
       border: "none",
       padding: "12px 24px",
@@ -559,9 +628,11 @@ export default function MyJobs() {
           />
         </div>
         <div style={styles.userActions}>
-          <span 
-            style={styles.userActionLink}
-            onClick={() => {
+          <button 
+            style={styles.logoutBtn}
+            onClick={async () => {
+              // Call logout API
+              await logoutUser();
               // Clear all stored data
               localStorage.removeItem("token");
               localStorage.removeItem("role");
@@ -570,9 +641,20 @@ export default function MyJobs() {
               // Navigate to login page
               navigate("/");
             }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)";
+              e.target.style.transform = "translateY(-2px)";
+              e.target.style.boxShadow = "0 6px 16px rgba(239, 68, 68, 0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)";
+              e.target.style.transform = "translateY(0)";
+              e.target.style.boxShadow = "0 4px 12px rgba(239, 68, 68, 0.3)";
+            }}
           >
+            <span>🚪</span>
             Log Out
-          </span>
+          </button>
           <button 
             style={styles.aiCoachBtn}
             onClick={() => setShowChatWidget(true)}
@@ -677,29 +759,34 @@ export default function MyJobs() {
         <div style={styles.rightContent}>
           {selectedJob ? (
             <div style={styles.jobDetailsCard}>
-              <button
-                style={{
-                  ...styles.applyButton,
-                  ...(applying ? { opacity: 0.7, cursor: "not-allowed" } : {}),
-                  ...(applySuccess ? { background: "#22c55e" } : {}),
-                }}
-                onClick={handleApply}
-                disabled={applying}
-                onMouseEnter={(e) => {
-                  if (!applying && !applySuccess) {
-                    e.target.style.background = "#15803d";
-                    e.target.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.15)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!applying && !applySuccess) {
-                    e.target.style.background = "#16a34a";
-                    e.target.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.1)";
-                  }
-                }}
-              >
-                {applying ? "Applying..." : applySuccess ? "✓ Applied" : "Apply"}
-              </button>
+              {/* Only show Apply button for "all" filter, not for applied/accepted/rejected */}
+              {filter === "all" && (
+                <button
+                  style={{
+                    ...styles.applyButton,
+                    ...(applying ? { opacity: 0.7, cursor: "not-allowed" } : {}),
+                    ...(applySuccess ? { background: "#22c55e" } : {}),
+                  }}
+                  onClick={handleApply}
+                  disabled={applying}
+                  onMouseEnter={(e) => {
+                    if (!applying && !applySuccess) {
+                      e.target.style.background = "#15803d";
+                      e.target.style.boxShadow = "0 6px 16px rgba(22, 163, 74, 0.4)";
+                      e.target.style.transform = "translateY(-2px)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!applying && !applySuccess) {
+                      e.target.style.background = "linear-gradient(135deg, #16a34a 0%, #15803d 100%)";
+                      e.target.style.boxShadow = "0 4px 12px rgba(22, 163, 74, 0.3)";
+                      e.target.style.transform = "translateY(0)";
+                    }
+                  }}
+                >
+                  {applying ? "Applying..." : applySuccess ? "✓ Applied" : "Apply"}
+                </button>
+              )}
               <div style={styles.jobDetailsHeader}>
                 <div style={styles.jobDetailsLogo}>
                   {(selectedJob.employer?.companyName || "C").charAt(0).toUpperCase()}

@@ -33,14 +33,13 @@ const handleSubmit = async (e) => {
      
       // ⏳ WAIT FOR RESPONSE
       const data = await loginUser(form.username, form.password);
-     console.log("Login successful:", data);
       // ✅ CONFIRM TOKEN IS STORED
       const token = localStorage.getItem("token");
-      const role ="employer"
+      const role = localStorage.getItem("role");
 
       if (token) {
         // Route based on role
-        if (role === "employer") {
+        if (role === "EMPLOYER") {
           // Check if organization profile exists
           try {
             const orgProfile = await fetchOrganizationProfile();

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchEmployerJobs, fetchEmployerJobStats } from "../../services/jobService";
+import { fetchEmployerJobs, fetchEmployerJobStats, fetchJobApplications, updateApplicationStatus, sendInterviewInvitation, sendJobOffer, rejectApplication, updateJob, deleteJob } from "../../services/jobService";
+import { logoutUser } from "../../services/authService";
 import Toast from "../../components/Toast";
 
 export default function ListedJobs() {
@@ -10,7 +11,31 @@ export default function ListedJobs() {
   const [filterStatus] = useState("all"); // all, active, closed
   const [loading, setLoading] = useState(true);
   const [jobs, setJobs] = useState([]);
+  const [originalJobs, setOriginalJobs] = useState([]); // Store original job data from API
   const [toast, setToast] = useState({ message: "", type: "error" });
+  const [showCandidatesModal, setShowCandidatesModal] = useState(false);
+  const [jobCandidates, setJobCandidates] = useState([]);
+  const [loadingCandidates, setLoadingCandidates] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [jobToDelete, setJobToDelete] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    jobTitle: "",
+    companyName: "",
+    jobLocation: "",
+    address: "",
+    yearsOfExperience: "",
+    jobType: "",
+    contractType: "",
+    preferredLanguage: "",
+    urgentlyHiring: "",
+    jobDescription: "",
+    jobRequirement: "",
+    estimatedSalary: "",
+    url: "",
+  });
+  const [updating, setUpdating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Helper function - must be defined before use
   const getTimeAgo = (date) => {
@@ -58,6 +83,7 @@ export default function ListedJobs() {
             accepted: jobStats?.acceptedCandidates || 0,
             declined: jobStats?.declinedCandidates || 0,
             matching: jobStats?.matchingCandidates || 0,
+            applied: jobStats?.appliedCandidates || 0,
             postedTime: job.postedDate
               ? getTimeAgo(new Date(job.postedDate))
               : "Recently",
@@ -78,10 +104,12 @@ export default function ListedJobs() {
             declinedCandidates: jobStats?.declinedCandidates || 0,
             requestsSent: jobStats?.requestsSent || 0,
             matchingCandidates: jobStats?.matchingCandidates || 0,
+            appliedCandidates: jobStats?.appliedCandidates || 0,
           };
         });
 
         setJobs(jobsWithStats);
+        setOriginalJobs(jobsData); // Store original job data
       } catch (error) {
         console.error("Error loading jobs:", error);
         setJobs([]);
@@ -118,6 +146,192 @@ export default function ListedJobs() {
     }
   }, [filteredJobs, selectedJob]);
 
+  // Function to open edit modal with job data
+  const handleEditClick = (job) => {
+    // Find the original job data from the API response to get all fields
+    const originalJob = originalJobs.find(j => j.id === job.id);
+    if (!originalJob) return;
+
+    // Map the original job data to form format
+    setEditFormData({
+      jobTitle: originalJob.role || job.jobTitle || "",
+      companyName: originalJob.companyName || job.companyName || "",
+      jobLocation: originalJob.jobLocation || originalJob.location || job.locationDetail || job.location || "",
+      address: originalJob.address || originalJob.location || job.locationDetail || job.location || "",
+      yearsOfExperience: originalJob.experienceRange || job.yearsOfExperience || "",
+      jobType: originalJob.employmentType || job.jobTypeDetail || "",
+      contractType: originalJob.typeOfWork || job.workArrangement || "",
+      preferredLanguage: originalJob.preferredLanguage || "English",
+      urgentlyHiring: originalJob.urgentlyHiring ? "Yes" : "No",
+      jobDescription: originalJob.description || originalJob.jobDescription || (Array.isArray(job.description) ? job.description.join("\n") : (job.about || "")),
+      jobRequirement: originalJob.requirements || (Array.isArray(job.requirements) ? job.requirements.join("\n") : ""),
+      estimatedSalary: originalJob.salaryMin && originalJob.salaryMax
+        ? `${originalJob.salaryMin} - ${originalJob.salaryMax}`
+        : originalJob.salary
+        ? String(originalJob.salary).replace("$", "")
+        : (job.salary && job.salary !== "Not specified" ? job.salary.replace("$", "") : ""),
+      url: originalJob.externalApplyUrl || "",
+    });
+    setShowEditModal(true);
+  };
+
+  // Function to handle edit form submission
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedJob?.id) return;
+
+    try {
+      setUpdating(true);
+      await updateJob(selectedJob.id, editFormData);
+      setToast({ message: "Job updated successfully!", type: "success" });
+      setShowEditModal(false);
+      
+      // Reload jobs
+      const [jobsData, stats] = await Promise.all([
+        fetchEmployerJobs(),
+        fetchEmployerJobStats(),
+      ]);
+
+      const jobsWithStats = jobsData.map((job) => {
+        const jobStats = stats.find((stat) => stat.jobId === job.id);
+        const description = job.description
+          ? job.description.split(/\n|•/).filter((line) => line.trim())
+          : [];
+        const requirements = job.requirements
+          ? job.requirements.split(/\n|•/).filter((line) => line.trim())
+          : [];
+
+        return {
+          id: job.id,
+          companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "∞",
+          jobTitle: job.role || "",
+          companyName: job.companyName || "",
+          location: job.location || job.address || "",
+          experience: job.experienceRange ? `Exp: ${job.experienceRange}` : "Exp: N/A",
+          jobType: job.employmentType || "Full Time",
+          accepted: jobStats?.acceptedCandidates || 0,
+          declined: jobStats?.declinedCandidates || 0,
+          matching: jobStats?.matchingCandidates || 0,
+          applied: jobStats?.appliedCandidates || 0,
+          postedTime: job.postedDate
+            ? getTimeAgo(new Date(job.postedDate))
+            : "Recently",
+          status: "Active",
+          jobTypeDetail: job.employmentType || "Full Time",
+          locationDetail: job.location || "",
+          workArrangement: job.typeOfWork || "Hybrid",
+          yearsOfExperience: job.experienceRange || "N/A",
+          salary: job.salaryMin && job.salaryMax
+            ? `$${job.salaryMin} - ${job.salaryMax}`
+            : job.salary
+            ? `$${job.salary}`
+            : "Not specified",
+          about: job.description || "No description available.",
+          description: description,
+          requirements: requirements,
+          acceptedCandidates: jobStats?.acceptedCandidates || 0,
+          declinedCandidates: jobStats?.declinedCandidates || 0,
+          requestsSent: jobStats?.requestsSent || 0,
+          matchingCandidates: jobStats?.matchingCandidates || 0,
+          appliedCandidates: jobStats?.appliedCandidates || 0,
+        };
+      });
+
+      setJobs(jobsWithStats);
+      setOriginalJobs(jobsData); // Update original jobs data
+      const updatedJob = jobsWithStats.find(j => j.id === selectedJob.id);
+      if (updatedJob) {
+        setSelectedJob(updatedJob);
+      }
+    } catch (error) {
+      setToast({ message: `Failed to update job: ${error.message}`, type: "error" });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // Function to handle delete
+  const handleDeleteClick = (job) => {
+    setJobToDelete(job);
+    setShowDeleteConfirm(true);
+  };
+
+  // Function to confirm delete
+  const handleConfirmDelete = async () => {
+    if (!jobToDelete?.id) return;
+
+    try {
+      setDeleting(true);
+      await deleteJob(jobToDelete.id);
+      setToast({ message: "Job deleted successfully!", type: "success" });
+      setShowDeleteConfirm(false);
+      setJobToDelete(null);
+      
+      // Reload jobs
+      const [jobsData, stats] = await Promise.all([
+        fetchEmployerJobs(),
+        fetchEmployerJobStats(),
+      ]);
+
+      const jobsWithStats = jobsData.map((job) => {
+        const jobStats = stats.find((stat) => stat.jobId === job.id);
+        const description = job.description
+          ? job.description.split(/\n|•/).filter((line) => line.trim())
+          : [];
+        const requirements = job.requirements
+          ? job.requirements.split(/\n|•/).filter((line) => line.trim())
+          : [];
+
+        return {
+          id: job.id,
+          companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "∞",
+          jobTitle: job.role || "",
+          companyName: job.companyName || "",
+          location: job.location || job.address || "",
+          experience: job.experienceRange ? `Exp: ${job.experienceRange}` : "Exp: N/A",
+          jobType: job.employmentType || "Full Time",
+          accepted: jobStats?.acceptedCandidates || 0,
+          declined: jobStats?.declinedCandidates || 0,
+          matching: jobStats?.matchingCandidates || 0,
+          applied: jobStats?.appliedCandidates || 0,
+          postedTime: job.postedDate
+            ? getTimeAgo(new Date(job.postedDate))
+            : "Recently",
+          status: "Active",
+          jobTypeDetail: job.employmentType || "Full Time",
+          locationDetail: job.location || "",
+          workArrangement: job.typeOfWork || "Hybrid",
+          yearsOfExperience: job.experienceRange || "N/A",
+          salary: job.salaryMin && job.salaryMax
+            ? `$${job.salaryMin} - ${job.salaryMax}`
+            : job.salary
+            ? `$${job.salary}`
+            : "Not specified",
+          about: job.description || "No description available.",
+          description: description,
+          requirements: requirements,
+          acceptedCandidates: jobStats?.acceptedCandidates || 0,
+          declinedCandidates: jobStats?.declinedCandidates || 0,
+          requestsSent: jobStats?.requestsSent || 0,
+          matchingCandidates: jobStats?.matchingCandidates || 0,
+          appliedCandidates: jobStats?.appliedCandidates || 0,
+        };
+      });
+
+      setJobs(jobsWithStats);
+      setOriginalJobs(jobsData); // Update original jobs data
+      if (jobsWithStats.length > 0) {
+        setSelectedJob(jobsWithStats[0]);
+      } else {
+        setSelectedJob(null);
+      }
+    } catch (error) {
+      setToast({ message: `Failed to delete job: ${error.message}`, type: "error" });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const styles = {
     page: {
       background: "#f2f7fd",
@@ -125,20 +339,28 @@ export default function ListedJobs() {
     },
     topNav: {
       background: "#ffffff",
-      padding: "16px 40px",
+      padding: "20px 40px",
       borderBottom: "1px solid #e5e7eb",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
+      position: "sticky",
+      top: 0,
+      zIndex: 100,
+      backdropFilter: "blur(10px)",
     },
     logo: {
       display: "flex",
       alignItems: "center",
       gap: "10px",
-      fontWeight: 600,
-      fontSize: "18px",
-      color: "#111827",
+      fontWeight: 700,
+      fontSize: "20px",
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      backgroundClip: "text",
+      letterSpacing: "-0.02em",
     },
     logoIcon: {
       width: "32px",
@@ -148,9 +370,10 @@ export default function ListedJobs() {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      color: "#fff",
+      color: "#ffffff",
       fontWeight: 700,
-      fontSize: "16px",
+      fontSize: "18px",
+      lineHeight: "1",
     },
     navLinks: {
       display: "flex",
@@ -186,18 +409,35 @@ export default function ListedJobs() {
       alignItems: "center",
       gap: "6px",
     },
-    postJobBtn: {
-      background: "linear-gradient(90deg, #16a34a, #15803d)",
+    logoutBtn: {
+      background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
       color: "#ffffff",
       border: "none",
-      padding: "10px 20px",
-      borderRadius: "8px",
+      padding: "10px 18px",
+      borderRadius: "10px",
+      cursor: "pointer",
+      fontSize: "13px",
+      fontWeight: 600,
+      display: "flex",
+      alignItems: "center",
+      gap: "6px",
+      boxShadow: "0 4px 12px rgba(239, 68, 68, 0.3)",
+      transition: "all 0.3s ease",
+    },
+    postJobBtn: {
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      color: "#ffffff",
+      border: "none",
+      padding: "12px 24px",
+      borderRadius: "12px",
       cursor: "pointer",
       fontSize: "14px",
-      fontWeight: 500,
+      fontWeight: 600,
       display: "flex",
       alignItems: "center",
       gap: "8px",
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      transition: "all 0.3s ease",
     },
     container: {
       maxWidth: "1600px",
@@ -213,10 +453,11 @@ export default function ListedJobs() {
     },
     searchSection: {
       background: "#ffffff",
-      borderRadius: "12px",
-      padding: "20px",
-      marginBottom: "16px",
-      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+      borderRadius: "16px",
+      padding: "24px",
+      marginBottom: "20px",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
+      border: "1px solid rgba(0, 0, 0, 0.04)",
     },
     searchBar: {
       display: "flex",
@@ -247,23 +488,24 @@ export default function ListedJobs() {
     },
     jobCard: {
       background: "#ffffff",
-      borderRadius: "12px",
-      padding: "20px",
+      borderRadius: "16px",
+      padding: "24px",
       marginBottom: "16px",
-      border: "1px solid #e5e7eb",
+      border: "2px solid transparent",
       cursor: "pointer",
-      transition: "all 0.2s",
-      boxShadow: selectedJob ? "0 1px 3px rgba(0, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.1)",
+      transition: "all 0.3s ease",
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
     },
     jobCardSelected: {
       background: "#ffffff",
-      borderRadius: "12px",
-      padding: "20px",
+      borderRadius: "16px",
+      padding: "24px",
       marginBottom: "16px",
       border: "2px solid #16a34a",
       cursor: "pointer",
-      transition: "all 0.2s",
-      boxShadow: "0 4px 6px rgba(59, 130, 246, 0.1)",
+      transition: "all 0.3s ease",
+      boxShadow: "0 8px 24px rgba(22, 163, 74, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08)",
+      transform: "translateY(-2px)",
     },
     jobCardHeader: {
       display: "flex",
@@ -358,9 +600,10 @@ export default function ListedJobs() {
     },
     jobDetailCard: {
       background: "#ffffff",
-      borderRadius: "12px",
-      padding: "32px",
-      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+      borderRadius: "20px",
+      padding: "40px",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
+      border: "1px solid rgba(0, 0, 0, 0.04)",
     },
     jobHeader: {
       display: "flex",
@@ -416,16 +659,18 @@ export default function ListedJobs() {
       color: "#6b7280",
     },
     viewCandidatesBtn: {
-      background: "linear-gradient(90deg, #16a34a, #15803d)",
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
       color: "#ffffff",
       border: "none",
-      padding: "12px 24px",
-      borderRadius: "8px",
+      padding: "14px 28px",
+      borderRadius: "12px",
       cursor: "pointer",
-      fontSize: "14px",
-      fontWeight: 500,
+      fontSize: "15px",
+      fontWeight: 600,
       width: "100%",
       marginBottom: "32px",
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      transition: "all 0.3s ease",
     },
     section: {
       marginBottom: "32px",
@@ -484,6 +729,144 @@ export default function ListedJobs() {
       borderRadius: "50%",
       background: "#16a34a",
     },
+    // Modal styles
+    modalOverlay: {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: "rgba(0, 0, 0, 0.5)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 1000,
+      padding: "20px",
+    },
+    modalContent: {
+      background: "#ffffff",
+      borderRadius: "20px",
+      width: "100%",
+      maxWidth: "800px",
+      maxHeight: "80vh",
+      display: "flex",
+      flexDirection: "column",
+      boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 10px 20px -5px rgba(0, 0, 0, 0.1)",
+      border: "1px solid rgba(0, 0, 0, 0.06)",
+    },
+    modalHeader: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "24px",
+      borderBottom: "1px solid #e5e7eb",
+    },
+    modalTitle: {
+      fontSize: "20px",
+      fontWeight: 600,
+      color: "#111827",
+      margin: 0,
+    },
+    modalCloseBtn: {
+      background: "transparent",
+      border: "none",
+      fontSize: "28px",
+      color: "#6b7280",
+      cursor: "pointer",
+      padding: "0",
+      width: "32px",
+      height: "32px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: "4px",
+      transition: "background 0.2s",
+    },
+    modalBody: {
+      padding: "24px",
+      overflowY: "auto",
+      flex: 1,
+    },
+    candidatesList: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "16px",
+    },
+    candidateCardModal: {
+      display: "flex",
+      gap: "20px",
+      padding: "20px",
+      background: "#ffffff",
+      borderRadius: "16px",
+      border: "2px solid rgba(0, 0, 0, 0.06)",
+      transition: "all 0.3s ease",
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
+    },
+    candidatePicModal: {
+      width: "48px",
+      height: "48px",
+      borderRadius: "50%",
+      background: "linear-gradient(135deg, #16a34a, #15803d)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#ffffff",
+      fontSize: "20px",
+      fontWeight: 700,
+      flexShrink: 0,
+    },
+    candidateInfoModal: {
+      flex: 1,
+    },
+    candidateNameModal: {
+      fontSize: "16px",
+      fontWeight: 600,
+      color: "#111827",
+      marginBottom: "4px",
+    },
+    candidateRoleModal: {
+      fontSize: "14px",
+      color: "#6b7280",
+      marginBottom: "8px",
+    },
+    candidateDetailsModal: {
+      fontSize: "12px",
+      color: "#9ca3af",
+      marginBottom: "8px",
+    },
+    applicationStatusRow: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginTop: "8px",
+    },
+    applicationStatus: {
+      fontSize: "12px",
+      color: "#6b7280",
+    },
+    statusBadge: {
+      display: "inline-block",
+      padding: "2px 8px",
+      borderRadius: "4px",
+      background: "#d1fae5",
+      color: "#065f46",
+      fontWeight: 500,
+      marginLeft: "4px",
+    },
+    statusActions: {
+      display: "flex",
+      gap: "8px",
+    },
+    statusSelect: {
+      padding: "6px 12px",
+      borderRadius: "6px",
+      border: "1px solid #e5e7eb",
+      fontSize: "12px",
+      color: "#111827",
+      background: "#ffffff",
+      cursor: "pointer",
+      fontWeight: 500,
+    },
   };
 
   return (
@@ -516,22 +899,37 @@ export default function ListedJobs() {
           </span>
         </div>
         <div style={styles.userActions}>
-          <span style={styles.userActionLink}>
+          <span
+            style={styles.userActionLink}
+            onClick={() => navigate("/employer/company-profile")}
+          >
             <span>👤</span>
             Profile
           </span>
-          <span
-            style={styles.userActionLink}
-            onClick={() => {
+          <button
+            style={styles.logoutBtn}
+            onClick={async () => {
+              // Call logout API
+              await logoutUser();
               localStorage.removeItem("token");
               localStorage.removeItem("role");
               localStorage.removeItem("profileData");
               navigate("/");
             }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)";
+              e.target.style.transform = "translateY(-2px)";
+              e.target.style.boxShadow = "0 6px 16px rgba(239, 68, 68, 0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)";
+              e.target.style.transform = "translateY(0)";
+              e.target.style.boxShadow = "0 4px 12px rgba(239, 68, 68, 0.3)";
+            }}
           >
             <span>🚪</span>
             Log Out
-          </span>
+          </button>
           <button
             style={styles.postJobBtn}
             onClick={() => navigate("/employer/post-job")}
@@ -578,7 +976,63 @@ export default function ListedJobs() {
               }
               onClick={() => setSelectedJob(job)}
             >
-              <div style={styles.postedTime}>Posted {job.postedTime}</div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+                <div style={styles.postedTime}>Posted {job.postedTime}</div>
+                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                  <span
+                    style={{
+                      fontSize: "18px",
+                      color: "#6b7280",
+                      cursor: "pointer",
+                      padding: "4px 8px",
+                      borderRadius: "6px",
+                      transition: "all 0.2s",
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditClick(job);
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = "#f3f4f6";
+                      e.target.style.color = "#16a34a";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = "transparent";
+                      e.target.style.color = "#6b7280";
+                    }}
+                    title="Edit Job"
+                  >
+                    ✏️
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "20px",
+                      color: "#ef4444",
+                      cursor: "pointer",
+                      padding: "4px 8px",
+                      borderRadius: "6px",
+                      transition: "all 0.2s",
+                      fontWeight: 600,
+                      lineHeight: "1",
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteClick(job);
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = "#fee2e2";
+                      e.target.style.color = "#dc2626";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = "transparent";
+                      e.target.style.color = "#ef4444";
+                    }}
+                    title="Delete Job"
+                  >
+                    ×
+                  </span>
+                </div>
+              </div>
               <div style={styles.jobCardHeader}>
                 <div style={styles.companyLogo}>{job.companyLogo}</div>
                 <div style={styles.jobInfo}>
@@ -604,6 +1058,9 @@ export default function ListedJobs() {
                 </span>
               </div>
               <div style={styles.jobMetrics}>
+                <div style={styles.metric}>
+                  <span>Applied: {job.applied}</span>
+                </div>
                 <div style={styles.metric}>
                   <span>Accepted: {job.accepted}</span>
                 </div>
@@ -633,7 +1090,45 @@ export default function ListedJobs() {
                     {selectedJob.companyName}
                   </div>
                 </div>
-                <span style={styles.editIcon}>✏️</span>
+                <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                  <span 
+                    style={{...styles.editIcon, cursor: "pointer"}}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditClick(selectedJob);
+                    }}
+                    title="Edit Job"
+                  >
+                    ✏️
+                  </span>
+                  <span 
+                    style={{
+                      fontSize: "24px",
+                      color: "#ef4444",
+                      cursor: "pointer",
+                      padding: "4px 8px",
+                      borderRadius: "6px",
+                      transition: "all 0.2s",
+                      fontWeight: 600,
+                      lineHeight: "1",
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteClick(selectedJob);
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = "#fee2e2";
+                      e.target.style.color = "#dc2626";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = "transparent";
+                      e.target.style.color = "#ef4444";
+                    }}
+                    title="Delete Job"
+                  >
+                    ×
+                  </span>
+                </div>
               </div>
 
               {/* Candidate Metrics */}
@@ -652,6 +1147,12 @@ export default function ListedJobs() {
                 </div>
                 <div style={styles.metricBox}>
                   <div style={styles.metricValue}>
+                    {selectedJob.appliedCandidates}
+                  </div>
+                  <div style={styles.metricLabel}>Applied candidates</div>
+                </div>
+                <div style={styles.metricBox}>
+                  <div style={styles.metricValue}>
                     {selectedJob.requestsSent}
                   </div>
                   <div style={styles.metricLabel}>Requests sent</div>
@@ -664,7 +1165,24 @@ export default function ListedJobs() {
                 </div>
               </div>
 
-              <button style={styles.viewCandidatesBtn}>
+              <button 
+                style={styles.viewCandidatesBtn}
+                onClick={async () => {
+                  if (!selectedJob?.id) return;
+                  try {
+                    setLoadingCandidates(true);
+                    setShowCandidatesModal(true);
+                    const applications = await fetchJobApplications(selectedJob.id);
+                    setJobCandidates(applications);
+                  } catch (error) {
+                    console.error("Error fetching job applications:", error);
+                    setToast({ message: `Failed to load candidates: ${error.message}`, type: "error" });
+                    setShowCandidatesModal(false);
+                  } finally {
+                    setLoadingCandidates(false);
+                  }
+                }}
+              >
                 View Candidates →
               </button>
 
@@ -758,6 +1276,486 @@ export default function ListedJobs() {
         type={toast.type}
         onClose={() => setToast({ message: "", type: "error" })}
       />
+
+      {/* Candidates Modal */}
+      {showCandidatesModal && (
+        <div style={styles.modalOverlay} onClick={() => setShowCandidatesModal(false)}>
+          <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <h2 style={styles.modalTitle}>
+                Candidates for {selectedJob?.jobTitle}
+              </h2>
+              <button
+                style={styles.modalCloseBtn}
+                onClick={() => setShowCandidatesModal(false)}
+                onMouseEnter={(e) => {
+                  e.target.style.background = "#f3f4f6";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = "transparent";
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div style={styles.modalBody}>
+              {loadingCandidates ? (
+                <div style={{ padding: "40px", textAlign: "center", color: "#6b7280" }}>
+                  Loading candidates...
+                </div>
+              ) : jobCandidates.length === 0 ? (
+                <div style={{ padding: "40px", textAlign: "center", color: "#6b7280" }}>
+                  No candidates have applied for this job yet.
+                </div>
+              ) : (
+                <div style={styles.candidatesList}>
+                  {jobCandidates.map((application, index) => {
+                    const candidate = application.jobSeekerProfile || application;
+                    const fullName = candidate.fullName || candidate.name || application.firstName || "Unknown";
+                    const email = candidate.email || application.email || "";
+                    const location = candidate.city || candidate.location || "Location not specified";
+                    
+                    // Calculate years of experience
+                    let yearsOfExp = candidate.yearsOfExperience || 0;
+                    if (!yearsOfExp && candidate.workExperience && candidate.workExperience.length > 0) {
+                      const experiences = candidate.workExperience.map((exp) => {
+                        const startYear = exp.startDate ? parseInt(exp.startDate.toString().substring(0, 4)) : new Date().getFullYear();
+                        const endYear = exp.endDate 
+                          ? parseInt(exp.endDate.toString().substring(0, 4))
+                          : exp.currentlyWorking 
+                            ? new Date().getFullYear()
+                            : new Date().getFullYear();
+                        return endYear - startYear;
+                      });
+                      yearsOfExp = Math.max(...experiences, 0);
+                    }
+
+                    // Get role/title
+                    const role = candidate.workExperience?.[0]?.jobTitle || "Job Seeker";
+
+                    return (
+                      <div key={application.id || index} style={styles.candidateCardModal}>
+                        <div style={styles.candidatePicModal}>
+                          {fullName.charAt(0).toUpperCase()}
+                        </div>
+                        <div style={styles.candidateInfoModal}>
+                          <div style={styles.candidateNameModal}>{fullName}</div>
+                          <div style={styles.candidateRoleModal}>{role}</div>
+                          <div style={styles.candidateDetailsModal}>
+                            <span>📍 {location}</span>
+                            {yearsOfExp > 0 && <span> • 💼 {yearsOfExp} Yrs</span>}
+                            {email && <span> • ✉️ {email}</span>}
+                          </div>
+                          <div style={styles.applicationStatusRow}>
+                            {application.status && (
+                              <div style={styles.applicationStatus}>
+                                Status: <span style={{
+                                  ...styles.statusBadge,
+                                  ...(application.status === "HIRED" || application.status === "OFFERED" || application.status === "ACCEPTED"
+                                    ? { background: "#d1fae5", color: "#065f46" }
+                                    : application.status === "UNDER_REVIEW"
+                                    ? { background: "#dbeafe", color: "#1e40af" }
+                                    : application.status === "REJECTED"
+                                    ? { background: "#fee2e2", color: "#991b1b" }
+                                    : { background: "#f3f4f6", color: "#374151" }
+                                  )
+                                }}>{application.status === "OFFERED" ? "ACCEPTED" : application.status}</span>
+                              </div>
+                            )}
+                            <div style={styles.statusActions}>
+                              <select
+                                style={styles.statusSelect}
+                                value={application.status === "OFFERED" ? "ACCEPTED" : (application.status || "UNDER_REVIEW")}
+                                onChange={async (e) => {
+                                  const uiStatus = e.target.value;
+                                  // Map UI status to backend enum value
+                                  // ACCEPTED in UI maps to OFFERED in backend (backend doesn't have ACCEPTED enum)
+                                  const backendStatus = uiStatus === "ACCEPTED" ? "OFFERED" : uiStatus;
+                                  
+                                  try {
+                                    // First update the status via status API
+                                    await updateApplicationStatus(application.id, backendStatus);
+                                    
+                                    // Then call the appropriate email endpoint based on status
+                                    try {
+                                      if (uiStatus === "ACCEPTED" || backendStatus === "OFFERED") {
+                                        // Send job offer email
+                                        await sendJobOffer(application.id);
+                                      } else if (backendStatus === "REJECTED") {
+                                        // Send rejection email
+                                        await rejectApplication(application.id);
+                                      } else if (backendStatus === "UNDER_REVIEW") {
+                                        // Send interview invitation email
+                                        await sendInterviewInvitation(application.id);
+                                      }
+                                    } catch (emailError) {
+                                      console.error("Error sending email notification:", emailError);
+                                      // Don't fail the whole operation if email fails, just show a warning
+                                      setToast({ 
+                                        message: `Status updated but email notification failed: ${emailError.message}`, 
+                                        type: "error" 
+                                      });
+                                    }
+                                    // Update local state with backend status (OFFERED will display as ACCEPTED)
+                                    setJobCandidates(prev => 
+                                      prev.map(app => 
+                                        app.id === application.id 
+                                          ? { ...app, status: backendStatus }
+                                          : app
+                                      )
+                                    );
+                                    setToast({ 
+                                      message: `Status updated to ${uiStatus}${backendStatus === "OFFERED" || backendStatus === "REJECTED" || backendStatus === "UNDER_REVIEW" ? " and email sent" : ""}`, 
+                                      type: "success" 
+                                    });
+                                    // Refresh job stats to update counts
+                                    const [jobsData, stats] = await Promise.all([
+                                      fetchEmployerJobs(),
+                                      fetchEmployerJobStats(),
+                                    ]);
+                                    
+                                    // Parse description and requirements
+                                    const jobsWithStats = jobsData.map((job) => {
+                                      const jobStats = stats.find((stat) => stat.jobId === job.id);
+                                      const description = job.description
+                                        ? job.description.split(/\n|•/).filter((line) => line.trim())
+                                        : [];
+                                      const requirements = job.requirements
+                                        ? job.requirements.split(/\n|•/).filter((line) => line.trim())
+                                        : [];
+                                      
+                                      return {
+                                        id: job.id,
+                                        companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "∞",
+                                        jobTitle: job.role || "",
+                                        companyName: job.companyName || "",
+                                        location: job.location || job.address || "",
+                                        experience: job.experienceRange ? `Exp: ${job.experienceRange}` : "Exp: N/A",
+                                        jobType: job.employmentType || "Full Time",
+                                        accepted: jobStats?.acceptedCandidates || 0,
+                                        declined: jobStats?.declinedCandidates || 0,
+                                        matching: jobStats?.matchingCandidates || 0,
+                                        applied: jobStats?.appliedCandidates || 0,
+                                        postedTime: job.postedDate
+                                          ? getTimeAgo(new Date(job.postedDate))
+                                          : "Recently",
+                                        status: "Active",
+                                        jobTypeDetail: job.employmentType || "Full Time",
+                                        locationDetail: job.location || "",
+                                        workArrangement: job.typeOfWork || "Hybrid",
+                                        yearsOfExperience: job.experienceRange || "N/A",
+                                        salary: job.salaryMin && job.salaryMax
+                                          ? `$${job.salaryMin} - ${job.salaryMax}`
+                                          : job.salary
+                                          ? `$${job.salary}`
+                                          : "Not specified",
+                                        about: job.description || "No description available.",
+                                        description: description,
+                                        requirements: requirements,
+                                        acceptedCandidates: jobStats?.acceptedCandidates || 0,
+                                        declinedCandidates: jobStats?.declinedCandidates || 0,
+                                        requestsSent: jobStats?.requestsSent || 0,
+                                        matchingCandidates: jobStats?.matchingCandidates || 0,
+                                        appliedCandidates: jobStats?.appliedCandidates || 0,
+                                      };
+                                    });
+                                    
+      setJobs(jobsWithStats);
+      setOriginalJobs(jobsData); // Update original jobs data
+      const updatedJob = jobsWithStats.find(j => j.id === selectedJob.id);
+      if (updatedJob) {
+        setSelectedJob(updatedJob);
+      }
+                                  } catch (error) {
+                                    console.error("Error updating application status:", error);
+                                    setToast({ 
+                                      message: `Failed to update status: ${error.message}`, 
+                                      type: "error" 
+                                    });
+                                  }
+                                }}
+                              >
+                                <option value="UNDER_REVIEW">In Review</option>
+                                <option value="ACCEPTED">Accepted</option>
+                                <option value="HIRED">Hired</option>
+                                <option value="REJECTED">Rejected</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Job Modal */}
+      {showEditModal && selectedJob && (
+        <div style={styles.modalOverlay} onClick={() => setShowEditModal(false)}>
+          <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <h2 style={styles.modalTitle}>Edit Job</h2>
+              <button
+                style={styles.modalCloseBtn}
+                onClick={() => setShowEditModal(false)}
+                onMouseEnter={(e) => {
+                  e.target.style.background = "#f3f4f6";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = "transparent";
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div style={styles.modalBody}>
+              <form onSubmit={handleEditSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <label style={{ fontSize: "14px", fontWeight: 500, color: "#374151" }}>Job Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editFormData.jobTitle}
+                    onChange={(e) => setEditFormData({...editFormData, jobTitle: e.target.value})}
+                    style={{ padding: "12px 16px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "14px", outline: "none" }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <label style={{ fontSize: "14px", fontWeight: 500, color: "#374151" }}>Company Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editFormData.companyName}
+                    onChange={(e) => setEditFormData({...editFormData, companyName: e.target.value})}
+                    style={{ padding: "12px 16px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "14px", outline: "none" }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <label style={{ fontSize: "14px", fontWeight: 500, color: "#374151" }}>Job Location *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editFormData.jobLocation}
+                    onChange={(e) => setEditFormData({...editFormData, jobLocation: e.target.value})}
+                    style={{ padding: "12px 16px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "14px", outline: "none" }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <label style={{ fontSize: "14px", fontWeight: 500, color: "#374151" }}>Address</label>
+                  <input
+                    type="text"
+                    value={editFormData.address}
+                    onChange={(e) => setEditFormData({...editFormData, address: e.target.value})}
+                    style={{ padding: "12px 16px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "14px", outline: "none" }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <label style={{ fontSize: "14px", fontWeight: 500, color: "#374151" }}>Years of Experience</label>
+                  <input
+                    type="text"
+                    value={editFormData.yearsOfExperience}
+                    onChange={(e) => setEditFormData({...editFormData, yearsOfExperience: e.target.value})}
+                    style={{ padding: "12px 16px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "14px", outline: "none" }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <label style={{ fontSize: "14px", fontWeight: 500, color: "#374151" }}>Job Type</label>
+                  <select
+                    value={editFormData.jobType}
+                    onChange={(e) => setEditFormData({...editFormData, jobType: e.target.value})}
+                    style={{ padding: "12px 16px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "14px", outline: "none", background: "#ffffff", cursor: "pointer" }}
+                  >
+                    <option value="">Select Job Type</option>
+                    <option value="Full time">Full time</option>
+                    <option value="Part time">Part time</option>
+                    <option value="Remote">Remote</option>
+                    <option value="Hybrid">Hybrid</option>
+                    <option value="Internship">Internship</option>
+                  </select>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <label style={{ fontSize: "14px", fontWeight: 500, color: "#374151" }}>Contract Type</label>
+                  <select
+                    value={editFormData.contractType}
+                    onChange={(e) => setEditFormData({...editFormData, contractType: e.target.value})}
+                    style={{ padding: "12px 16px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "14px", outline: "none", background: "#ffffff", cursor: "pointer" }}
+                  >
+                    <option value="">Select Contract Type</option>
+                    <option value="Contract hybrid">Contract hybrid</option>
+                    <option value="Contract remote">Contract remote</option>
+                    <option value="Contract onsite">Contract onsite</option>
+                    <option value="Hourly based">Hourly based</option>
+                  </select>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <label style={{ fontSize: "14px", fontWeight: 500, color: "#374151" }}>Estimated Salary (e.g., 2500 - 3000)</label>
+                  <input
+                    type="text"
+                    value={editFormData.estimatedSalary}
+                    onChange={(e) => setEditFormData({...editFormData, estimatedSalary: e.target.value})}
+                    style={{ padding: "12px 16px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "14px", outline: "none" }}
+                    placeholder="2500 - 3000"
+                  />
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <label style={{ fontSize: "14px", fontWeight: 500, color: "#374151" }}>Job Description *</label>
+                  <textarea
+                    required
+                    value={editFormData.jobDescription}
+                    onChange={(e) => setEditFormData({...editFormData, jobDescription: e.target.value})}
+                    style={{ padding: "12px 16px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "14px", outline: "none", minHeight: "120px", resize: "vertical", fontFamily: "inherit" }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <label style={{ fontSize: "14px", fontWeight: 500, color: "#374151" }}>Requirements *</label>
+                  <textarea
+                    required
+                    value={editFormData.jobRequirement}
+                    onChange={(e) => setEditFormData({...editFormData, jobRequirement: e.target.value})}
+                    style={{ padding: "12px 16px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "14px", outline: "none", minHeight: "120px", resize: "vertical", fontFamily: "inherit" }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <label style={{ fontSize: "14px", fontWeight: 500, color: "#374151" }}>External Apply URL (optional)</label>
+                  <input
+                    type="url"
+                    value={editFormData.url}
+                    onChange={(e) => setEditFormData({...editFormData, url: e.target.value})}
+                    style={{ padding: "12px 16px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "14px", outline: "none" }}
+                    placeholder="https://example.com/apply"
+                  />
+                </div>
+
+                <div style={{ display: "flex", gap: "12px", marginTop: "12px" }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowEditModal(false)}
+                    style={{
+                      flex: 1,
+                      padding: "14px 28px",
+                      borderRadius: "12px",
+                      border: "1px solid #e5e7eb",
+                      background: "#ffffff",
+                      color: "#374151",
+                      fontSize: "15px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={updating}
+                    style={{
+                      flex: 1,
+                      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+                      color: "#ffffff",
+                      border: "none",
+                      padding: "14px 28px",
+                      borderRadius: "12px",
+                      fontSize: "15px",
+                      fontWeight: 600,
+                      cursor: updating ? "not-allowed" : "pointer",
+                      opacity: updating ? 0.6 : 1,
+                      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+                    }}
+                  >
+                    {updating ? "Updating..." : "Update Job"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && jobToDelete && (
+        <div style={styles.modalOverlay} onClick={() => setShowDeleteConfirm(false)}>
+          <div style={{...styles.modalContent, maxWidth: "500px"}} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <h2 style={styles.modalTitle}>Delete Job</h2>
+              <button
+                style={styles.modalCloseBtn}
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setJobToDelete(null);
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = "#f3f4f6";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = "transparent";
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div style={styles.modalBody}>
+              <p style={{ fontSize: "16px", color: "#374151", marginBottom: "24px", lineHeight: "1.6" }}>
+                Are you sure you want to delete the job <strong>"{jobToDelete.jobTitle}"</strong>? This action cannot be undone.
+              </p>
+              <div style={{ display: "flex", gap: "12px" }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    setJobToDelete(null);
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: "14px 28px",
+                    borderRadius: "12px",
+                    border: "1px solid #e5e7eb",
+                    background: "#ffffff",
+                    color: "#374151",
+                    fontSize: "15px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmDelete}
+                  disabled={deleting}
+                  style={{
+                    flex: 1,
+                    background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+                    color: "#ffffff",
+                    border: "none",
+                    padding: "14px 28px",
+                    borderRadius: "12px",
+                    fontSize: "15px",
+                    fontWeight: 600,
+                    cursor: deleting ? "not-allowed" : "pointer",
+                    opacity: deleting ? 0.6 : 1,
+                    boxShadow: "0 4px 12px rgba(239, 68, 68, 0.3)",
+                  }}
+                >
+                  {deleting ? "Deleting..." : "Delete Job"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

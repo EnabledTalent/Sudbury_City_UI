@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchEmployerJobs, fetchEmployerJobStats } from "../../services/jobService";
+import { fetchEmployerJobs, fetchEmployerJobStats, fetchAcceptedCandidates, fetchEmployerMetrics } from "../../services/jobService";
+import { logoutUser } from "../../services/authService";
 import Toast from "../../components/Toast";
 
 export default function EmployerDashboard() {
@@ -8,15 +9,33 @@ export default function EmployerDashboard() {
   const [timeFilter, setTimeFilter] = useState("1Y");
   const [loading, setLoading] = useState(true);
   const [recentJobs, setRecentJobs] = useState([]);
+  const [acceptedCandidates, setAcceptedCandidates] = useState([]);
+  const [jobStats, setJobStats] = useState([]);
+  const [allJobs, setAllJobs] = useState([]);
+  const [acceptanceRateData, setAcceptanceRateData] = useState(null);
   const [toast, setToast] = useState({ message: "", type: "error" });
+
+  // Map time filter to windowDays
+  const getWindowDays = (filter) => {
+    const map = {
+      "1W": 7,
+      "1M": 30,
+      "3M": 90,
+      "1Y": 365,
+    };
+    return map[filter] || 30;
+  };
 
   useEffect(() => {
     const loadJobs = async () => {
       try {
         setLoading(true);
-        const [jobs, stats] = await Promise.all([
+        const windowDays = getWindowDays(timeFilter);
+        const [jobs, stats, accepted, metrics] = await Promise.all([
           fetchEmployerJobs(),
           fetchEmployerJobStats(),
+          fetchAcceptedCandidates(),
+          fetchEmployerMetrics(null, windowDays),
         ]);
 
         // Combine jobs with stats
@@ -39,6 +58,10 @@ export default function EmployerDashboard() {
           };
         });
 
+        // Store all jobs and stats for metrics calculation
+        setAllJobs(jobs);
+        setJobStats(stats);
+
         // Sort by posted date (most recent first) and take first 3
         const sortedJobs = jobsWithStats
           .sort((a, b) => {
@@ -49,17 +72,46 @@ export default function EmployerDashboard() {
           .slice(0, 3);
 
         setRecentJobs(sortedJobs);
+
+        // Transform accepted candidates data from API response
+        const transformedCandidates = accepted.map((candidate) => {
+          const candidateName = candidate.candidateName || "Unknown";
+          const yearsOfExp = candidate.candidateYearsOfExperience || 0;
+          const location = candidate.jobLocation || "Location not specified";
+          const role = candidate.jobRole || "Job Seeker";
+          const matchPercentage = candidate.matchPercentage || 0;
+
+          return {
+            id: candidate.applicationId || candidate.id,
+            name: candidateName,
+            role: role,
+            status: "Active",
+            location: location,
+            experience: yearsOfExp > 0 ? `${yearsOfExp} Yrs` : "No experience",
+            matching: matchPercentage,
+            profilePic: candidateName.charAt(0).toUpperCase(),
+          };
+        });
+
+        setAcceptedCandidates(transformedCandidates);
+        
+        // Store acceptance rate metrics data
+        setAcceptanceRateData(metrics);
       } catch (error) {
         console.error("Error loading jobs:", error);
         setRecentJobs([]);
-        setToast({ message: `Failed to load jobs: ${error.message}`, type: "error" });
+        setAcceptedCandidates([]);
+        setJobStats([]);
+        setAllJobs([]);
+        setAcceptanceRateData(null);
+        setToast({ message: `Failed to load data: ${error.message}`, type: "error" });
       } finally {
         setLoading(false);
       }
     };
 
     loadJobs();
-  }, []);
+  }, [timeFilter]);
 
   const getTimeAgo = (date) => {
     const now = new Date();
@@ -74,49 +126,34 @@ export default function EmployerDashboard() {
     return `${Math.floor(diffInDays / 7)} weeks ago`;
   };
 
-  // Hardcoded data (keeping for accepted candidates)
-  const acceptedCandidates = [
-    {
-      id: 1,
-      name: "Jennifer Allison",
-      role: "UX Designer",
-      status: "Active",
-      location: "Allentown, New Mexico 31134",
-      experience: "12 Yrs",
-      matching: 97,
-      profilePic: "👩",
-    },
-    {
-      id: 2,
-      name: "Henry Creel",
-      role: "Marketing Analyst",
-      status: "Active",
-      location: "Allentown, New Mexico 31134",
-      experience: "12 Yrs",
-      matching: 97,
-      profilePic: "👨",
-    },
-    {
-      id: 3,
-      name: "Milley Arthur",
-      role: "Data Analyst",
-      status: "Active",
-      location: "Allentown, New Mexico 31134",
-      experience: "12 Yrs",
-      matching: 97,
-      profilePic: "👩",
-    },
-    {
-      id: 4,
-      name: "Milley Arthur",
-      role: "Data Analyst",
-      status: "Active",
-      location: "Allentown, New Mexico 31134",
-      experience: "12 Yrs",
-      matching: 97,
-      profilePic: "👩",
-    },
-  ];
+  // Calculate metrics from job stats
+  const calculateMetrics = () => {
+    if (!jobStats || jobStats.length === 0) {
+      return {
+        matchingApplicants: 0,
+        activeJobs: 0,
+        candidatesAccepted: 0,
+        avgMatchingPerJob: 0,
+        hasData: false,
+      };
+    }
+
+    const totalMatching = jobStats.reduce((sum, stat) => sum + (stat.matchingCandidates || 0), 0);
+    const totalAccepted = jobStats.reduce((sum, stat) => sum + (stat.acceptedCandidates || 0), 0);
+    const activeJobsCount = allJobs.length || jobStats.length;
+    const avgMatchingPerJob = activeJobsCount > 0 ? (totalMatching / activeJobsCount).toFixed(1) : 0;
+
+    return {
+      matchingApplicants: totalMatching,
+      activeJobs: activeJobsCount,
+      candidatesAccepted: totalAccepted,
+      avgMatchingPerJob: avgMatchingPerJob,
+      hasData: true,
+    };
+  };
+
+  const metrics = calculateMetrics();
+
 
   const styles = {
     page: {
@@ -125,20 +162,28 @@ export default function EmployerDashboard() {
     },
     topNav: {
       background: "#ffffff",
-      padding: "16px 40px",
+      padding: "20px 40px",
       borderBottom: "1px solid #e5e7eb",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
+      position: "sticky",
+      top: 0,
+      zIndex: 100,
+      backdropFilter: "blur(10px)",
     },
     logo: {
       display: "flex",
       alignItems: "center",
       gap: "10px",
-      fontWeight: 600,
-      fontSize: "18px",
-      color: "#111827",
+      fontWeight: 700,
+      fontSize: "20px",
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      backgroundClip: "text",
+      letterSpacing: "-0.02em",
     },
     logoIcon: {
       width: "32px",
@@ -148,9 +193,10 @@ export default function EmployerDashboard() {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      color: "#fff",
+      color: "#ffffff",
       fontWeight: 700,
-      fontSize: "16px",
+      fontSize: "18px",
+      lineHeight: "1",
     },
     navLinks: {
       display: "flex",
@@ -203,18 +249,35 @@ export default function EmployerDashboard() {
       alignItems: "center",
       gap: "6px",
     },
-    postJobBtn: {
-      background: "linear-gradient(90deg, #16a34a, #15803d)",
+    logoutBtn: {
+      background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
       color: "#ffffff",
       border: "none",
-      padding: "10px 20px",
-      borderRadius: "8px",
+      padding: "10px 18px",
+      borderRadius: "10px",
+      cursor: "pointer",
+      fontSize: "13px",
+      fontWeight: 600,
+      display: "flex",
+      alignItems: "center",
+      gap: "6px",
+      boxShadow: "0 4px 12px rgba(239, 68, 68, 0.3)",
+      transition: "all 0.3s ease",
+    },
+    postJobBtn: {
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      color: "#ffffff",
+      border: "none",
+      padding: "12px 24px",
+      borderRadius: "12px",
       cursor: "pointer",
       fontSize: "14px",
-      fontWeight: 500,
+      fontWeight: 600,
       display: "flex",
       alignItems: "center",
       gap: "8px",
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      transition: "all 0.3s ease",
     },
     container: {
       maxWidth: "1400px",
@@ -231,10 +294,12 @@ export default function EmployerDashboard() {
     },
     card: {
       background: "#ffffff",
-      borderRadius: "12px",
-      padding: "24px",
+      borderRadius: "16px",
+      padding: "28px",
       marginBottom: "24px",
-      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
+      border: "1px solid rgba(0, 0, 0, 0.04)",
+      transition: "all 0.3s ease",
     },
     cardTitle: {
       fontSize: "18px",
@@ -248,24 +313,28 @@ export default function EmployerDashboard() {
       marginBottom: "20px",
     },
     timeFilterBtn: {
-      padding: "6px 12px",
-      borderRadius: "6px",
-      border: "1px solid #e5e7eb",
+      padding: "8px 16px",
+      borderRadius: "10px",
+      border: "2px solid #e5e7eb",
       background: "#ffffff",
       cursor: "pointer",
-      fontSize: "12px",
-      fontWeight: 500,
+      fontSize: "13px",
+      fontWeight: 600,
       color: "#6b7280",
+      transition: "all 0.3s ease",
+      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.04)",
     },
     timeFilterBtnActive: {
-      padding: "6px 12px",
-      borderRadius: "6px",
-      border: "1px solid #16a34a",
-      background: "#fff7ed",
+      padding: "8px 16px",
+      borderRadius: "10px",
+      border: "2px solid #16a34a",
+      background: "linear-gradient(135deg, rgba(22, 163, 74, 0.1) 0%, rgba(21, 128, 61, 0.1) 100%)",
       cursor: "pointer",
-      fontSize: "12px",
-      fontWeight: 500,
+      fontSize: "13px",
+      fontWeight: 600,
       color: "#16a34a",
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.2)",
+      transition: "all 0.3s ease",
     },
     graphContainer: {
       height: "200px",
@@ -307,12 +376,13 @@ export default function EmployerDashboard() {
     },
     jobCard: {
       background: "#ffffff",
-      borderRadius: "12px",
-      padding: "20px",
+      borderRadius: "16px",
+      padding: "24px",
       marginBottom: "16px",
-      border: "1px solid #e5e7eb",
+      border: "2px solid transparent",
       cursor: "pointer",
-      transition: "box-shadow 0.2s",
+      transition: "all 0.3s ease",
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
     },
     jobCardHeader: {
       display: "flex",
@@ -388,10 +458,11 @@ export default function EmployerDashboard() {
     },
     summaryCard: {
       background: "#ffffff",
-      borderRadius: "12px",
-      padding: "20px",
-      marginBottom: "16px",
-      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+      borderRadius: "16px",
+      padding: "24px",
+      marginBottom: "20px",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
+      border: "1px solid rgba(0, 0, 0, 0.04)",
     },
     summaryTitle: {
       fontSize: "14px",
@@ -577,22 +648,37 @@ export default function EmployerDashboard() {
           />
         </div>
         <div style={styles.userActions}>
-          <span style={styles.userActionLink}>
+          <span
+            style={styles.userActionLink}
+            onClick={() => navigate("/employer/company-profile")}
+          >
             <span>👤</span>
             Profile
           </span>
-          <span
-            style={styles.userActionLink}
-            onClick={() => {
+          <button
+            style={styles.logoutBtn}
+            onClick={async () => {
+              // Call logout API
+              await logoutUser();
               localStorage.removeItem("token");
               localStorage.removeItem("role");
               localStorage.removeItem("profileData");
               navigate("/");
             }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)";
+              e.target.style.transform = "translateY(-2px)";
+              e.target.style.boxShadow = "0 6px 16px rgba(239, 68, 68, 0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)";
+              e.target.style.transform = "translateY(0)";
+              e.target.style.boxShadow = "0 4px 12px rgba(239, 68, 68, 0.3)";
+            }}
           >
             <span>🚪</span>
             Log Out
-          </span>
+          </button>
           <button
             style={styles.postJobBtn}
             onClick={() => navigate("/employer/post-job")}
@@ -625,11 +711,69 @@ export default function EmployerDashboard() {
               ))}
             </div>
             <div style={styles.graphContainer}>
-              <div style={styles.graphPlaceholder}>
-                Line Graph: Actual (blue) vs Projected (orange dashed)
-                <br />
-                Data point: May 5 - 30%
-              </div>
+              {loading ? (
+                <div style={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  justifyContent: "center", 
+                  height: "100%",
+                  color: "#6b7280",
+                  fontSize: "14px"
+                }}>
+                  Loading...
+                </div>
+              ) : !acceptanceRateData ? (
+                <div style={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  justifyContent: "center", 
+                  height: "100%",
+                  color: "#6b7280",
+                  fontSize: "14px"
+                }}>
+                  No data
+                </div>
+              ) : (
+                <div style={styles.graphPlaceholder}>
+                  {/* Display metrics data from API */}
+                  {acceptanceRateData && (
+                    <div style={{ padding: "20px", textAlign: "center", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                      <div style={{ fontSize: "16px", fontWeight: 600, marginBottom: "16px", color: "#111827" }}>
+                        Acceptance Rate Metrics
+                      </div>
+                      {acceptanceRateData.acceptanceRate !== undefined && (
+                        <div style={{ fontSize: "32px", fontWeight: 700, color: "#16a34a", marginBottom: "12px" }}>
+                          {typeof acceptanceRateData.acceptanceRate === "number" 
+                            ? (acceptanceRateData.acceptanceRate < 1 
+                                ? (acceptanceRateData.acceptanceRate * 100).toFixed(1) 
+                                : acceptanceRateData.acceptanceRate.toFixed(1))
+                            : acceptanceRateData.acceptanceRate}%
+                        </div>
+                      )}
+                      {acceptanceRateData.totalApplications !== undefined && (
+                        <div style={{ fontSize: "14px", color: "#6b7280", marginBottom: "6px" }}>
+                          Total Applications: {acceptanceRateData.totalApplications}
+                        </div>
+                      )}
+                      {acceptanceRateData.acceptedApplications !== undefined && (
+                        <div style={{ fontSize: "14px", color: "#6b7280", marginBottom: "6px" }}>
+                          Accepted: {acceptanceRateData.acceptedApplications}
+                        </div>
+                      )}
+                      {acceptanceRateData.rejectedApplications !== undefined && (
+                        <div style={{ fontSize: "14px", color: "#6b7280", marginBottom: "6px" }}>
+                          Rejected: {acceptanceRateData.rejectedApplications}
+                        </div>
+                      )}
+                      {acceptanceRateData.windowDays && (
+                        <div style={{ fontSize: "12px", color: "#9ca3af", marginTop: "12px" }}>
+                          Window: {acceptanceRateData.windowDays} days
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <div style={styles.legend}>
               <div style={styles.legendItem}>
@@ -719,9 +863,11 @@ export default function EmployerDashboard() {
           {/* Matching Applicants Card */}
           <div style={styles.summaryCard}>
             <div style={styles.summaryTitle}>Matching applicants</div>
-            <div style={styles.summaryNumber}>97</div>
+            <div style={styles.summaryNumber}>{metrics.matchingApplicants}</div>
             <div style={styles.summarySubtitle}>
-              Across 42 jobs (avg. 2.3/job)
+              {metrics.activeJobs > 0 
+                ? `Across ${metrics.activeJobs} job${metrics.activeJobs !== 1 ? 's' : ''} (avg. ${metrics.avgMatchingPerJob}/job)`
+                : "No jobs posted yet"}
             </div>
           </div>
 
@@ -730,77 +876,53 @@ export default function EmployerDashboard() {
             <div style={styles.summaryMetrics}>
               <div style={styles.summaryMetric}>
                 <div style={styles.summaryMetricLabel}>Active Jobs</div>
-                <div style={styles.summaryMetricValue}>42</div>
-                <div style={styles.summaryMetricChange}>6% last month</div>
+                <div style={styles.summaryMetricValue}>{metrics.activeJobs}</div>
+                <div style={styles.summaryMetricChange}>
+                  {metrics.hasData ? "—" : "No data"}
+                </div>
               </div>
               <div style={styles.summaryMetric}>
                 <div style={styles.summaryMetricLabel}>Candidates accepted</div>
-                <div style={styles.summaryMetricValue}>367</div>
-                <div style={styles.summaryMetricChange}>20% last month</div>
+                <div style={styles.summaryMetricValue}>{metrics.candidatesAccepted}</div>
+                <div style={styles.summaryMetricChange}>
+                  {metrics.hasData ? "—" : "No data"}
+                </div>
               </div>
             </div>
-          </div>
-
-          {/* Attention Needed Card */}
-          <div style={styles.attentionCard}>
-            <div style={styles.attentionTitle}>Attention Needed</div>
-            <div style={styles.attentionSummary}>
-              3 issues require action this week
-            </div>
-            <ul style={styles.attentionList}>
-              <li style={styles.attentionItem}>
-                <div
-                  style={{
-                    ...styles.attentionBullet,
-                    ...styles.attentionBulletOrange,
-                  }}
-                />
-                <span>3 candidates pending review</span>
-              </li>
-              <li style={styles.attentionItem}>
-                <div
-                  style={{
-                    ...styles.attentionBullet,
-                    ...styles.attentionBulletOrange,
-                  }}
-                />
-                <span>1 job nearing deadline</span>
-              </li>
-              <li style={styles.attentionItem}>
-                <div
-                  style={{
-                    ...styles.attentionBullet,
-                    ...styles.attentionBulletRed,
-                  }}
-                />
-                <span>Low match rate for 'SE Role'</span>
-              </li>
-            </ul>
-            <button style={styles.reviewBtn}>Review all alerts +</button>
           </div>
 
           {/* Accepted Candidates Section */}
           <div>
             <h2 style={styles.cardTitle}>Accepted Candidates</h2>
-            {acceptedCandidates.map((candidate) => (
-              <div key={candidate.id} style={styles.candidateCard}>
-                <div style={styles.candidatePic}>{candidate.profilePic}</div>
-                <div style={styles.candidateInfo}>
-                  <div style={styles.candidateName}>{candidate.name}</div>
-                  <div style={styles.candidateRole}>{candidate.role}</div>
-                  <div style={styles.candidateStatus}>{candidate.status}</div>
-                  <div style={styles.candidateDetails}>
-                    {candidate.location}
-                  </div>
-                  <div style={styles.candidateDetails}>
-                    {candidate.experience}
-                  </div>
-                  <div style={styles.candidateMatching}>
-                    {candidate.matching}% Matching
+            {loading ? (
+              <div style={{ padding: "20px", textAlign: "center", color: "#6b7280" }}>
+                Loading accepted candidates...
+              </div>
+            ) : acceptedCandidates.length === 0 ? (
+              <div style={{ padding: "20px", textAlign: "center", color: "#6b7280" }}>
+                No accepted candidates yet.
+              </div>
+            ) : (
+              acceptedCandidates.map((candidate) => (
+                <div key={candidate.id} style={styles.candidateCard}>
+                  <div style={styles.candidatePic}>{candidate.profilePic}</div>
+                  <div style={styles.candidateInfo}>
+                    <div style={styles.candidateName}>{candidate.name}</div>
+                    <div style={styles.candidateRole}>{candidate.role}</div>
+                    <div style={styles.candidateStatus}>{candidate.status}</div>
+                    <div style={styles.candidateDetails}>
+                      {candidate.location}
+                    </div>
+                    <div style={styles.candidateDetails}>
+                      {candidate.experience}
+                    </div>
+                    <div style={styles.candidateMatching}>
+                      {candidate.matching}% Matching
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>

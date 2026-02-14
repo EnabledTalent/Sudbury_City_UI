@@ -1,7 +1,8 @@
 import BASE_URL from "../config/api";
+import { getToken } from "./authService";
 
 export const apiFetch = async (endpoint, options = {}) => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
   const headers = {
     ...(options.headers || {}),

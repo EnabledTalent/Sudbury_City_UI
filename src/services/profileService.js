@@ -1,4 +1,5 @@
 import { BUSINESS_BASE_URL } from "../config/api";
+import { getToken } from "./authService";
 
 /**
  * Transform profile data from context format to API format
@@ -125,7 +126,7 @@ const transformProfileForAPI = (profile) => {
  * Save profile to backend API
  */
 export const saveProfile = async (profile) => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
   const email = profile.basicInfo?.email;
 
   if (!token) {
@@ -137,9 +138,6 @@ export const saveProfile = async (profile) => {
   }
 
   const transformedData = transformProfileForAPI(profile);
-  
-  console.log("Saving profile with data:", transformedData);
-  console.log("API URL:", `${BUSINESS_BASE_URL}/api/jobseeker/profile?email=${encodeURIComponent(email)}`);
 
   const response = await fetch(
     `${BUSINESS_BASE_URL}/api/jobseeker/profile?email=${encodeURIComponent(email)}`,
@@ -153,8 +151,6 @@ export const saveProfile = async (profile) => {
       body: JSON.stringify(transformedData),
     }
   );
-  
-  console.log("Response status:", response.status);
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -168,7 +164,6 @@ export const saveProfile = async (profile) => {
   
   // If response is empty, treat as success (common for POST endpoints)
   if (!responseText || !responseText.trim()) {
-    console.log("Empty response, treating as success");
     return { success: true, message: "Profile saved successfully" };
   }
 
@@ -181,7 +176,6 @@ export const saveProfile = async (profile) => {
     console.warn("Response text:", responseText.substring(0, 200)); // Log first 200 chars
     // If status is 200, treat as success even if JSON parsing fails
     // This handles cases where backend returns 200 with non-JSON response
-    console.log("Status is 200, treating as success despite JSON parse error");
     return { success: true, message: "Profile saved successfully" };
   }
 };
@@ -190,7 +184,7 @@ export const saveProfile = async (profile) => {
  * Update profile to backend API (PUT request)
  */
 export const updateProfile = async (profile) => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
   const email = profile.basicInfo?.email;
 
   if (!token) {
@@ -202,9 +196,6 @@ export const updateProfile = async (profile) => {
   }
 
   const transformedData = transformProfileForAPI(profile);
-  
-  console.log("Updating profile with data:", transformedData);
-  console.log("API URL:", `${BUSINESS_BASE_URL}/api/jobseeker/profile?email=${encodeURIComponent(email)}`);
 
   const response = await fetch(
     `${BUSINESS_BASE_URL}/api/jobseeker/profile?email=${encodeURIComponent(email)}`,
@@ -218,8 +209,6 @@ export const updateProfile = async (profile) => {
       body: JSON.stringify(transformedData),
     }
   );
-  
-  console.log("Response status:", response.status);
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -233,7 +222,6 @@ export const updateProfile = async (profile) => {
   
   // If response is empty, treat as success (common for PUT endpoints)
   if (!responseText || !responseText.trim()) {
-    console.log("Empty response, treating as success");
     return { success: true, message: "Profile updated successfully" };
   }
 
@@ -245,7 +233,6 @@ export const updateProfile = async (profile) => {
     console.warn("Response is not valid JSON:", parseError);
     console.warn("Response text:", responseText.substring(0, 200));
     // If status is 200, treat as success even if JSON parsing fails
-    console.log("Status is 200, treating as success despite JSON parse error");
     return { success: true, message: "Profile updated successfully" };
   }
 };
@@ -254,7 +241,7 @@ export const updateProfile = async (profile) => {
  * Fetch profile from backend API
  */
 export const fetchProfile = async (email) => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
   if (!token) {
     throw new Error("No auth token found");
@@ -284,13 +271,9 @@ export const fetchProfile = async (email) => {
 
   // Get response as text first to handle potential JSON parsing issues
   const responseText = await response.text();
-  
-  console.log("Raw response text length:", responseText.length);
-  console.log("Raw response text (first 1000 chars):", responseText.substring(0, 1000));
-  
+
   // If response is empty, return empty profile
   if (!responseText || !responseText.trim()) {
-    console.log("Empty response from fetch profile");
     return {};
   }
 
@@ -300,7 +283,6 @@ export const fetchProfile = async (email) => {
   // Try to parse JSON, but handle errors gracefully
   try {
     const data = JSON.parse(cleanedText);
-    console.log("Successfully parsed JSON response");
     return data;
   } catch (parseError) {
     console.warn("Initial JSON parse failed:", parseError.message);
@@ -316,11 +298,8 @@ export const fetchProfile = async (email) => {
         const jsonEnd = cleanedText.lastIndexOf('}');
         if (jsonEnd !== -1 && jsonEnd > jsonStart) {
           const extractedJson = cleanedText.substring(jsonStart, jsonEnd + 1);
-          console.log("Attempting to extract JSON from position", jsonStart, "to", jsonEnd);
-          console.log("Extracted JSON (first 500 chars):", extractedJson.substring(0, 500));
           
           const data = JSON.parse(extractedJson);
-          console.log("Successfully extracted valid JSON from malformed response");
           return data;
         }
       }
@@ -332,7 +311,6 @@ export const fetchProfile = async (email) => {
         if (arrayEnd !== -1 && arrayEnd > arrayStart) {
           const extractedJson = cleanedText.substring(arrayStart, arrayEnd + 1);
           const data = JSON.parse(extractedJson);
-          console.log("Successfully extracted valid JSON array from malformed response");
           return data;
         }
       }
@@ -355,7 +333,7 @@ export const fetchProfile = async (email) => {
  * Fetch all jobseeker profiles
  */
 export const fetchAllJobseekerProfiles = async () => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
   if (!token) {
     throw new Error("No auth token found");

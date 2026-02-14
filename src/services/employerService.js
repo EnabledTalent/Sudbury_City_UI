@@ -1,10 +1,11 @@
 import { BUSINESS_BASE_URL } from "../config/api";
+import { getToken } from "./authService";
 
 /**
  * Get email from JWT token
  */
 const getEmailFromToken = () => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
   if (!token) {
     throw new Error("No auth token found");
   }
@@ -21,7 +22,7 @@ const getEmailFromToken = () => {
  * Fetch organization profile for employer
  */
 export const fetchOrganizationProfile = async (email = null) => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
   if (!token) {
     throw new Error("No auth token found");
@@ -71,7 +72,7 @@ export const fetchOrganizationProfile = async (email = null) => {
  * Save organization profile for employer
  */
 export const saveOrganizationProfile = async (organizationData, email = null) => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
   if (!token) {
     throw new Error("No auth token found");
@@ -127,7 +128,7 @@ export const saveOrganizationProfile = async (organizationData, email = null) =>
  * Update organization profile for employer (PUT request)
  */
 export const updateOrganizationProfile = async (organizationData, email = null) => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
   if (!token) {
     throw new Error("No auth token found");

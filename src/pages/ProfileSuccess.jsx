@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { logoutUser } from "../services/authService";
 
 export default function ProfileSuccess() {
   const navigate = useNavigate();
@@ -22,7 +23,9 @@ export default function ProfileSuccess() {
           <span>Profile</span>
           <span
             style={{ cursor: "pointer" }}
-            onClick={() => {
+            onClick={async () => {
+              // Call logout API
+              await logoutUser();
               localStorage.clear();
               navigate("/");
             }}

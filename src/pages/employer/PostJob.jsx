@@ -5,26 +5,21 @@ import Toast from "../../components/Toast";
 
 export default function PostJob() {
   const navigate = useNavigate();
+  const [applicationType, setApplicationType] = useState(null); // null, "easy-apply", or "apply-link"
   const [formData, setFormData] = useState({
-    jobTitle: "System Assistant",
-    companyName: "Meta",
-    jobLocation: "Toronto",
-    address: "Allentown, New Mexico 31134",
-    yearsOfExperience: "2-3",
-    jobType: "Remote",
-    contractType: "Contract onsite",
-    preferredLanguage: "English",
-    urgentlyHiring: "No",
-    jobDescription: `• Create wireframes, prototypes, and user flows to visualize and communicate design concepts.
-• Collaborate with cross-functional teams including product managers, developers, and other designers to ensure seamless implementation.
-• Translate research insights into actionable design solutions that enhance user satisfaction and engagement.`,
-    jobRequirement: `• 7+ years of experience evolving and scaling high-performing design systems in a highly matrixed company
-• 3+ years of experience in people leadership, with experience in hiring, leading, and coaching high performing teams
-• Solid understanding of Design Systems - creating, designing, governing, and scaling reusable component libraries - and an ability to communicate its value to a large, complex organizations
-• Understanding of best practices and process around governance and maintenance of large-scale design systems
-• Influence strategy by developing partnerships, engaging and collaborating effectively with design, product, and engineering
-• Operate comfortably in agile environments (e.g. sprints), helping the team prioritize work considering needs, resources and capacity`,
-    estimatedSalary: "CAD 2500 - 3000",
+    jobTitle: "",
+    companyName: "",
+    jobLocation: "",
+    address: "",
+    yearsOfExperience: "",
+    jobType: "",
+    contractType: "",
+    preferredLanguage: "",
+    urgentlyHiring: "",
+    jobDescription: "",
+    jobRequirement: "",
+    estimatedSalary: "",
+    url: "", // For apply-link type
   });
 
   const handleInputChange = (e) => {
@@ -49,6 +44,8 @@ export default function PostJob() {
     e.preventDefault();
     try {
       setSubmitting(true);
+      
+      // Use the same endpoint for both types, URL will be included if it's apply-link
       await postJob(formData);
       setToast({ message: "Job posted successfully!", type: "success" });
       // Navigate to listed jobs on success after a short delay
@@ -73,10 +70,10 @@ export default function PostJob() {
       maxWidth: "900px",
       margin: "0 auto",
       background: "#ffffff",
-      borderRadius: "12px",
+      borderRadius: "20px",
       border: "2px solid #16a34a",
-      padding: "32px",
-      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+      padding: "40px",
+      boxShadow: "0 10px 30px rgba(22, 163, 74, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1)",
     },
     header: {
       display: "flex",
@@ -224,16 +221,18 @@ export default function PostJob() {
       gap: "12px",
     },
     submitButton: {
-      background: "linear-gradient(90deg, #16a34a, #15803d)",
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
       color: "#ffffff",
       border: "none",
-      padding: "14px 32px",
-      borderRadius: "8px",
+      padding: "16px 36px",
+      borderRadius: "12px",
       cursor: "pointer",
       fontSize: "16px",
       fontWeight: 600,
       width: "100%",
-      marginTop: "8px",
+      marginTop: "12px",
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      transition: "all 0.3s ease",
     },
     sectionTitle: {
       fontSize: "16px",
@@ -241,7 +240,171 @@ export default function PostJob() {
       color: "#111827",
       marginBottom: "12px",
     },
+    selectionContainer: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "24px",
+      alignItems: "center",
+      padding: "40px 20px",
+    },
+    selectionTitle: {
+      fontSize: "20px",
+      fontWeight: 600,
+      color: "#111827",
+      marginBottom: "12px",
+    },
+    selectionOptions: {
+      display: "flex",
+      gap: "24px",
+      width: "100%",
+      maxWidth: "600px",
+    },
+    selectionCard: {
+      flex: 1,
+      padding: "40px",
+      borderRadius: "16px",
+      border: "2px solid #e5e7eb",
+      cursor: "pointer",
+      textAlign: "center",
+      transition: "all 0.3s ease",
+      background: "#ffffff",
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
+    },
+    selectionCardHover: {
+      borderColor: "#16a34a",
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.2)",
+    },
+    selectionCardSelected: {
+      borderColor: "#16a34a",
+      background: "#f0fdf4",
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.2)",
+    },
+    selectionCardTitle: {
+      fontSize: "18px",
+      fontWeight: 600,
+      color: "#111827",
+      marginBottom: "8px",
+    },
+    selectionCardDescription: {
+      fontSize: "14px",
+      color: "#6b7280",
+      lineHeight: "1.5",
+    },
+    continueButton: {
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      color: "#ffffff",
+      border: "none",
+      padding: "16px 36px",
+      borderRadius: "12px",
+      cursor: "pointer",
+      fontSize: "16px",
+      fontWeight: 600,
+      marginTop: "32px",
+      minWidth: "200px",
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      transition: "all 0.3s ease",
+    },
+    continueButtonDisabled: {
+      background: "#d1d5db",
+      cursor: "not-allowed",
+    },
   };
+
+  // Show selection screen if application type is not selected
+  if (applicationType === null) {
+    return (
+      <div style={styles.page}>
+        <div style={styles.container}>
+          {/* Header */}
+          <div style={styles.header}>
+            <button
+              style={styles.backButton}
+              onClick={() => navigate(-1)}
+            >
+              <span>←</span>
+              Back
+            </button>
+            <h1 style={styles.title}>Post a Job</h1>
+            <button
+              style={styles.closeButton}
+              onClick={() => navigate(-1)}
+            >
+              ×
+            </button>
+          </div>
+
+          {/* Selection Screen */}
+          <div style={styles.selectionContainer}>
+            <h2 style={styles.selectionTitle}>Choose Application Type</h2>
+            <div style={styles.selectionOptions}>
+              <div
+                style={{
+                  ...styles.selectionCard,
+                  ...(applicationType === "easy-apply" ? styles.selectionCardSelected : {}),
+                }}
+                onClick={() => setApplicationType("easy-apply")}
+                onMouseEnter={(e) => {
+                  if (applicationType !== "easy-apply") {
+                    e.currentTarget.style.borderColor = "#16a34a";
+                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(22, 163, 74, 0.2)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (applicationType !== "easy-apply") {
+                    e.currentTarget.style.borderColor = "#e5e7eb";
+                    e.currentTarget.style.boxShadow = "none";
+                  }
+                }}
+              >
+                <div style={styles.selectionCardTitle}>Easy Apply</div>
+                <div style={styles.selectionCardDescription}>
+                  Candidates can apply directly through the platform using their profile
+                </div>
+              </div>
+              <div
+                style={{
+                  ...styles.selectionCard,
+                  ...(applicationType === "apply-link" ? styles.selectionCardSelected : {}),
+                }}
+                onClick={() => setApplicationType("apply-link")}
+                onMouseEnter={(e) => {
+                  if (applicationType !== "apply-link") {
+                    e.currentTarget.style.borderColor = "#16a34a";
+                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(22, 163, 74, 0.2)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (applicationType !== "apply-link") {
+                    e.currentTarget.style.borderColor = "#e5e7eb";
+                    e.currentTarget.style.boxShadow = "none";
+                  }
+                }}
+              >
+                <div style={styles.selectionCardTitle}>Apply Link</div>
+                <div style={styles.selectionCardDescription}>
+                  Candidates will be redirected to your external application URL
+                </div>
+              </div>
+            </div>
+            <button
+              style={{
+                ...styles.continueButton,
+                ...(!applicationType ? styles.continueButtonDisabled : {}),
+              }}
+              onClick={() => {
+                if (applicationType) {
+                  // Form will be shown on next render
+                }
+              }}
+              disabled={!applicationType}
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.page}>
@@ -250,7 +413,7 @@ export default function PostJob() {
         <div style={styles.header}>
           <button
             style={styles.backButton}
-            onClick={() => navigate(-1)}
+            onClick={() => setApplicationType(null)}
           >
             <span>←</span>
             Back
@@ -268,7 +431,7 @@ export default function PostJob() {
         <form style={styles.form} onSubmit={handleSubmit}>
           {/* Job Title */}
           <div style={styles.formGroup}>
-            <label style={styles.label}>Job Location</label>
+            <label style={styles.label}>Job Title</label>
             <input
               type="text"
               name="jobTitle"
@@ -287,22 +450,19 @@ export default function PostJob() {
           {/* Company Name */}
           <div style={styles.formGroup}>
             <label style={styles.label}>Company Name</label>
-            <div style={styles.inputWrapper}>
-              <input
-                type="text"
-                name="companyName"
-                value={formData.companyName}
-                onChange={handleInputChange}
-                style={styles.input}
-                onFocus={(e) => {
-                  e.target.style.borderColor = "#16a34a";
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = "#e5e7eb";
-                }}
-              />
-              <span style={styles.calendarIcon}>📅</span>
-            </div>
+            <input
+              type="text"
+              name="companyName"
+              value={formData.companyName}
+              onChange={handleInputChange}
+              style={styles.input}
+              onFocus={(e) => {
+                e.target.style.borderColor = "#16a34a";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "#e5e7eb";
+              }}
+            />
           </div>
 
           {/* Job Location */}
@@ -520,6 +680,28 @@ export default function PostJob() {
               }}
             />
           </div>
+
+          {/* URL Field - Only shown for Apply Link */}
+          {applicationType === "apply-link" && (
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Application URL</label>
+              <input
+                type="url"
+                name="url"
+                value={formData.url}
+                onChange={handleInputChange}
+                placeholder="https://example.com/apply"
+                style={styles.input}
+                onFocus={(e) => {
+                  e.target.style.borderColor = "#16a34a";
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = "#e5e7eb";
+                }}
+                required
+              />
+            </div>
+          )}
 
           {/* Submit Button */}
           <button type="submit" style={styles.submitButton} disabled={submitting}>

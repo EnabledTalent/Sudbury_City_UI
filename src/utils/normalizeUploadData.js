@@ -7,11 +7,16 @@ export const normalizeUploadData = (uploadData) => {
 
   const normalized = {
     basicInfo: {
-      name: uploadData.basicInfo?.name || "",
-      email: uploadData.basicInfo?.email || "",
-      phone: uploadData.basicInfo?.phone || "",
-      linkedin: uploadData.basicInfo?.linkedin || "",
+      name: uploadData.basicInfo?.name || uploadData.fullName || "",
+      email: uploadData.basicInfo?.email || uploadData.email || "",
+      phone: uploadData.basicInfo?.phone || uploadData.phone || "",
+      linkedin: uploadData.basicInfo?.linkedin || uploadData.linkedin || "",
     },
+    // Also preserve root-level fields for compatibility
+    fullName: uploadData.fullName || uploadData.basicInfo?.name || "",
+    email: uploadData.email || uploadData.basicInfo?.email || "",
+    phone: uploadData.phone || uploadData.basicInfo?.phone || "",
+    linkedin: uploadData.linkedin || uploadData.basicInfo?.linkedin || "",
     education: Array.isArray(uploadData.education) 
       ? uploadData.education.map((edu) => ({
           degree: edu.degree || "",

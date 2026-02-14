@@ -1,13 +1,16 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchProfile } from "../services/profileService";
+import { logoutUser, getToken } from "../services/authService";
+import { fetchProfile, updateProfile } from "../services/profileService";
+import { fetchJobseekerNotifications } from "../services/jobService";
 import { calculateProfileCompletion } from "../utils/profileCompletion";
 import ChatWidget from "../components/ChatWidget";
 import { useProfile } from "../context/ProfileContext";
+import Toast from "../components/Toast";
 
 export default function ViewProfile() {
   const navigate = useNavigate();
-  const { profile: contextProfile } = useProfile();
+  const { profile: contextProfile, loadProfileData } = useProfile();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -24,6 +27,12 @@ export default function ViewProfile() {
     otherDetails: false,
   });
   const [showChatWidget, setShowChatWidget] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const [aboutText, setAboutText] = useState("");
+  const [isEditingAbout, setIsEditingAbout] = useState(false);
+  const [savingAbout, setSavingAbout] = useState(false);
+  const [toast, setToast] = useState({ message: "", type: "error" });
 
   // Get email from localStorage or context
   const getEmail = () => {
@@ -36,13 +45,13 @@ export default function ViewProfile() {
         console.error("Error parsing profileData:", e);
       }
     }
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split(".")[1]));
         return payload.sub || payload.email;
       } catch (e) {
-        console.error("Error parsing token:", e);
+        // Error parsing token
       }
     }
     return null;
@@ -59,13 +68,17 @@ export default function ViewProfile() {
 
       try {
         const data = await fetchProfile(email);
-        console.log("Fetched profile data:", data);
         
         if (data && Object.keys(data).length > 0) {
           setProfile(data);
+          // Also update the context to keep it in sync
+          loadProfileData(data);
+          // Initialize about text from otherDetails.otherDetailsText
+          setAboutText(data.otherDetails?.otherDetailsText || "");
         } else {
           setProfile({});
           setError("No profile data found. Please complete your profile first.");
+          setAboutText("");
         }
       } catch (err) {
         console.error("Error fetching profile:", err);
@@ -86,6 +99,32 @@ export default function ViewProfile() {
     loadProfile();
   }, []);
 
+  // Ensure context is always in sync with fetched profile
+  // This keeps both ViewProfile and ProfileHeader using the same data source
+
+  // Fetch notifications
+  useEffect(() => {
+    const loadNotifications = async () => {
+      const email = getEmail();
+      if (!email) {
+        return;
+      }
+
+      try {
+        setLoadingNotifications(true);
+        const data = await fetchJobseekerNotifications(email);
+        setNotifications(data || []);
+      } catch (err) {
+        console.error("Error fetching notifications:", err);
+        setNotifications([]);
+      } finally {
+        setLoadingNotifications(false);
+      }
+    };
+
+    loadNotifications();
+  }, []);
+
   const toggleSection = (section) => {
     setExpandedSections((prev) => ({
       ...prev,
@@ -98,10 +137,16 @@ export default function ViewProfile() {
     return Array.isArray(array) ? array.length : 0;
   };
 
+  // Use context profile as primary source to match ProfileHeader in Update Profile page
+  // This ensures both pages calculate completion from the same data source
+  const profileToUse = (contextProfile && Object.keys(contextProfile).length > 0) 
+    ? contextProfile 
+    : (profile && Object.keys(profile).length > 0 ? profile : {});
+  
   const completionPercentage = useMemo(() => {
-    if (!profile) return 0;
-    return calculateProfileCompletion(profile);
-  }, [profile]);
+    if (!profileToUse || Object.keys(profileToUse).length === 0) return 0;
+    return calculateProfileCompletion(profileToUse);
+  }, [profileToUse, contextProfile, profile]);
 
   // Calculate SVG circle progress
   const radius = 48;
@@ -177,17 +222,35 @@ export default function ViewProfile() {
       color: "#374151",
       cursor: "pointer",
     },
+    logoutBtn: {
+      background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+      color: "#ffffff",
+      border: "none",
+      padding: "10px 18px",
+      borderRadius: "10px",
+      cursor: "pointer",
+      fontSize: "13px",
+      fontWeight: 600,
+      display: "flex",
+      alignItems: "center",
+      gap: "6px",
+      boxShadow: "0 4px 12px rgba(239, 68, 68, 0.3)",
+      transition: "all 0.3s ease",
+    },
     aiCoachBtn: {
-      background: "#ef4444",
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
       color: "#fff",
       border: "none",
-      padding: "10px 16px",
-      borderRadius: "8px",
+      padding: "12px 20px",
+      borderRadius: "12px",
       cursor: "pointer",
       fontSize: "14px",
+      fontWeight: 600,
       display: "flex",
       alignItems: "center",
       gap: "8px",
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      transition: "all 0.3s ease",
     },
     container: {
       maxWidth: "1400px",
@@ -195,16 +258,17 @@ export default function ViewProfile() {
       padding: "24px 40px",
     },
     banner: {
-      background: "linear-gradient(90deg, #15803d 0%, #16a34a 100%)",
-      borderRadius: "16px",
-      padding: "32px 40px",
-      marginBottom: "32px",
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 50%, #166534 100%)",
+      borderRadius: "20px",
+      padding: "40px 48px",
+      marginBottom: "40px",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
       position: "relative",
-      overflow: "visible",
-      minHeight: "140px",
+      overflow: "hidden",
+      minHeight: "160px",
+      boxShadow: "0 10px 30px rgba(22, 163, 74, 0.25), 0 4px 12px rgba(0, 0, 0, 0.1)",
     },
     bannerLeft: {
       flex: 1,
@@ -225,14 +289,17 @@ export default function ViewProfile() {
       lineHeight: "1.2",
     },
     updateProfileBtn: {
-      background: "#374151",
+      background: "rgba(255, 255, 255, 0.2)",
       color: "#ffffff",
-      border: "none",
-      padding: "12px 24px",
-      borderRadius: "8px",
+      border: "2px solid rgba(255, 255, 255, 0.3)",
+      padding: "12px 28px",
+      borderRadius: "12px",
       cursor: "pointer",
       fontSize: "14px",
-      fontWeight: 500,
+      fontWeight: 600,
+      backdropFilter: "blur(10px)",
+      transition: "all 0.3s ease",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
     },
     progressContainer: {
       display: "flex",
@@ -309,26 +376,31 @@ export default function ViewProfile() {
       flex: "0 0 35%",
     },
     profileCard: {
-      background: "#fef3c7",
-      borderRadius: "12px",
-      padding: "20px",
-      marginBottom: "16px",
+      background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
+      borderRadius: "16px",
+      padding: "24px",
+      marginBottom: "20px",
       display: "flex",
       alignItems: "center",
-      gap: "16px",
+      gap: "20px",
+      boxShadow: "0 4px 12px rgba(251, 191, 36, 0.2), 0 2px 4px rgba(0, 0, 0, 0.05)",
+      transition: "all 0.3s ease",
+      border: "1px solid rgba(251, 191, 36, 0.2)",
     },
     profilePicture: {
-      width: "60px",
-      height: "60px",
+      width: "72px",
+      height: "72px",
       borderRadius: "50%",
-      background: "#16a34a",
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       color: "#fff",
-      fontSize: "24px",
-      fontWeight: 600,
+      fontSize: "28px",
+      fontWeight: 700,
       flexShrink: 0,
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      border: "3px solid rgba(255, 255, 255, 0.3)",
     },
     profileInfo: {
       flex: 1,
@@ -350,10 +422,12 @@ export default function ViewProfile() {
     },
     sectionCard: {
       background: "#ffffff",
-      borderRadius: "12px",
-      padding: "20px",
-      marginBottom: "16px",
-      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+      borderRadius: "16px",
+      padding: "24px",
+      marginBottom: "20px",
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
+      border: "1px solid rgba(0, 0, 0, 0.04)",
+      transition: "all 0.3s ease",
     },
     sectionHeader: {
       display: "flex",
@@ -376,15 +450,17 @@ export default function ViewProfile() {
       fontWeight: 400,
     },
     chevronButton: {
-      width: "32px",
-      height: "32px",
+      width: "36px",
+      height: "36px",
       borderRadius: "50%",
-      background: "#f3f4f6",
+      background: "linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)",
       border: "none",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       cursor: "pointer",
+      transition: "all 0.3s ease",
+      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
     },
     getChevronIcon: (expanded) => ({
       fontSize: "16px",
@@ -402,6 +478,61 @@ export default function ViewProfile() {
       fontSize: "14px",
       color: "#374151",
       lineHeight: "1.6",
+      whiteSpace: "pre-wrap",
+      marginBottom: "12px",
+    },
+    aboutTextarea: {
+      width: "100%",
+      padding: "12px",
+      borderRadius: "8px",
+      border: "1px solid #e5e7eb",
+      fontSize: "14px",
+      fontFamily: "inherit",
+      resize: "vertical",
+      outline: "none",
+      minHeight: "120px",
+      lineHeight: "1.6",
+    },
+    aboutActions: {
+      display: "flex",
+      gap: "12px",
+      justifyContent: "flex-end",
+      marginTop: "12px",
+    },
+    aboutEditBtn: {
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      color: "#ffffff",
+      border: "none",
+      padding: "10px 20px",
+      borderRadius: "10px",
+      cursor: "pointer",
+      fontSize: "13px",
+      fontWeight: 600,
+      marginTop: "12px",
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      transition: "all 0.3s ease",
+    },
+    aboutSaveBtn: {
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      color: "#ffffff",
+      border: "none",
+      padding: "10px 20px",
+      borderRadius: "10px",
+      cursor: "pointer",
+      fontSize: "13px",
+      fontWeight: 600,
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      transition: "all 0.3s ease",
+    },
+    aboutCancelBtn: {
+      background: "#f3f4f6",
+      color: "#374151",
+      border: "none",
+      padding: "8px 16px",
+      borderRadius: "6px",
+      cursor: "pointer",
+      fontSize: "13px",
+      fontWeight: 500,
     },
     itemCard: {
       background: "#f9fafb",
@@ -477,6 +608,17 @@ export default function ViewProfile() {
       cursor: "pointer",
       fontSize: "13px",
       fontWeight: 500,
+    },
+    applyJobsBtn: {
+      background: "#16a34a",
+      color: "#ffffff",
+      border: "none",
+      padding: "10px 20px",
+      borderRadius: "8px",
+      cursor: "pointer",
+      fontSize: "14px",
+      fontWeight: 500,
+      width: "100%",
     },
     warningBox: {
       background: "#fff1f2",
@@ -591,9 +733,11 @@ export default function ViewProfile() {
           </span>
         </div>
         <div style={styles.userActions}>
-          <span 
-            style={styles.userActionLink}
-            onClick={() => {
+          <button 
+            style={styles.logoutBtn}
+            onClick={async () => {
+              // Call logout API
+              await logoutUser();
               // Clear all stored data
               localStorage.removeItem("token");
               localStorage.removeItem("role");
@@ -602,9 +746,20 @@ export default function ViewProfile() {
               // Navigate to login page
               navigate("/");
             }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)";
+              e.target.style.transform = "translateY(-2px)";
+              e.target.style.boxShadow = "0 6px 16px rgba(239, 68, 68, 0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)";
+              e.target.style.transform = "translateY(0)";
+              e.target.style.boxShadow = "0 4px 12px rgba(239, 68, 68, 0.3)";
+            }}
           >
+            <span>🚪</span>
             Log Out
-          </span>
+          </button>
           <button 
             style={styles.aiCoachBtn}
             onClick={() => setShowChatWidget(true)}
@@ -689,11 +844,84 @@ export default function ViewProfile() {
               </div>
               {expandedSections.about && (
                 <div style={styles.sectionContent}>
-                  <div style={styles.aboutText}>
-                    {profile?.otherDetails?.otherDetailsText ||
-                      profile?.basicInfo?.summary ||
-                      "No about information available."}
-                  </div>
+                  {isEditingAbout ? (
+                    <div>
+                      <textarea
+                        style={styles.aboutTextarea}
+                        value={aboutText}
+                        onChange={(e) => setAboutText(e.target.value)}
+                        placeholder="Tell us about yourself..."
+                        rows={6}
+                      />
+                      <div style={styles.aboutActions}>
+                        <button
+                          style={styles.aboutCancelBtn}
+                          onClick={() => {
+                            setIsEditingAbout(false);
+                            // Reset to original value
+                            setAboutText(profileToUse?.otherDetails?.otherDetailsText || "");
+                          }}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          style={styles.aboutSaveBtn}
+                          onClick={async () => {
+                            setSavingAbout(true);
+                            try {
+                              const email = getEmail();
+                              if (!email) {
+                                setToast({ message: "Email not found", type: "error" });
+                                setSavingAbout(false);
+                                return;
+                              }
+
+                              // Get current profile
+                              const currentProfile = profileToUse || {};
+                              
+                              // Update profile with new about text in otherDetails
+                              const updatedProfile = {
+                                ...currentProfile,
+                                otherDetails: {
+                                  ...currentProfile.otherDetails,
+                                  otherDetailsText: aboutText,
+                                },
+                              };
+
+                              await updateProfile(updatedProfile);
+                              
+                              // Update local state
+                              setProfile(updatedProfile);
+                              loadProfileData(updatedProfile);
+                              
+                              setIsEditingAbout(false);
+                              setToast({ message: "About section updated successfully!", type: "success" });
+                            } catch (error) {
+                              console.error("Error updating about:", error);
+                              setToast({ message: `Failed to update: ${error.message}`, type: "error" });
+                            } finally {
+                              setSavingAbout(false);
+                            }
+                          }}
+                          disabled={savingAbout}
+                        >
+                          {savingAbout ? "Saving..." : "Save"}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div style={styles.aboutText}>
+                        {aboutText || "No about information available. Click Edit to add information about yourself."}
+                      </div>
+                      <button
+                        style={styles.aboutEditBtn}
+                        onClick={() => setIsEditingAbout(true)}
+                      >
+                        {aboutText ? "Edit" : "Add About"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1061,50 +1289,68 @@ export default function ViewProfile() {
 
           {/* Right Column - Notifications */}
           <div style={styles.rightColumn}>
-            <h3 style={styles.notificationsHeader}>Notifications (2 Unread)</h3>
+            <h3 style={styles.notificationsHeader}>
+              Notifications {notifications.length > 0 ? `(${notifications.filter(n => !n.read).length} Unread)` : ""}
+            </h3>
             
-            <div style={styles.notificationCard}>
-              <div style={styles.notificationText}>
-                Recruiter from Meta sent an invitation request for a matching job
+            {loadingNotifications ? (
+              <div style={{ padding: "20px", textAlign: "center", color: "#6b7280" }}>
+                Loading notifications...
               </div>
-              <div style={styles.notificationTime}>3 minutes ago</div>
-              <div style={styles.notificationButtons}>
-                <button style={styles.acceptBtn}>Accept request</button>
-                <button style={styles.declineBtn}>Decline request</button>
+            ) : notifications.length === 0 ? (
+              <div style={{ padding: "20px", textAlign: "center", color: "#6b7280" }}>
+                No notifications available
               </div>
-              <div style={styles.warningBox}>
-                <span>⚠️</span>
-                <span>48-hours for accept the job request. After that, It will automatically decline.</span>
-              </div>
-            </div>
-
-            <div style={styles.notificationCard}>
-              <div style={styles.notificationText}>
-                Recruiter from Amazon sent an invitation request for a matching job
-              </div>
-              <div style={styles.notificationTime}>5 minutes ago</div>
-              <div style={styles.notificationButtons}>
-                <button style={styles.acceptBtn}>Accept request</button>
-                <button style={styles.declineBtn}>Decline request</button>
-              </div>
-              <div style={styles.warningBox}>
-                <span>⚠️</span>
-                <span>48-hours for accept the job request. After that, It will automatically decline.</span>
-              </div>
-            </div>
-
-            <div style={styles.notificationCard}>
-              <div style={styles.notificationText}>
-                Talent recruiter from Google viewed your profile
-              </div>
-              <div style={styles.notificationTime}>10 minutes ago</div>
-            </div>
+            ) : (
+              notifications.map((notification, index) => {
+                const jobId = notification.jobId || notification.job?.id;
+                const isJobInvitation = notification.type === "JOB_INVITATION" || jobId;
+                
+                return (
+                  <div key={notification.id || index} style={styles.notificationCard}>
+                    <div style={styles.notificationText}>
+                      {notification.message || notification.text || "New notification"}
+                    </div>
+                    {notification.createdAt && (
+                      <div style={styles.notificationTime}>
+                        {new Date(notification.createdAt).toLocaleString()}
+                      </div>
+                    )}
+                    {isJobInvitation && (
+                      <div style={styles.notificationButtons}>
+                        <button 
+                          style={styles.acceptBtn}
+                          onClick={() => {
+                            // Navigate to My Jobs page to apply
+                            // Pass jobId in state if available
+                            navigate("/student/my-jobs", { 
+                              state: jobId ? { selectedJobId: jobId } : {} 
+                            });
+                          }}
+                        >
+                          Accept request
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       </div>
 
       {/* Chat Widget */}
       {showChatWidget && <ChatWidget onClose={() => setShowChatWidget(false)} />}
+      
+      {/* Toast */}
+      {toast.message && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ message: "", type: "error" })}
+        />
+      )}
     </div>
   );
 }

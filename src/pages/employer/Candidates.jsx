@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchAllJobseekerProfiles } from "../../services/profileService";
+import { logoutUser } from "../../services/authService";
+import { fetchEmployerJobs, inviteToApply } from "../../services/jobService";
 import Toast from "../../components/Toast";
 
 export default function Candidates() {
@@ -24,6 +26,11 @@ export default function Candidates() {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState({ message: "", type: "error" });
+  
+  // Jobs and invite dropdown state
+  const [employerJobs, setEmployerJobs] = useState([]);
+  const [showJobDropdown, setShowJobDropdown] = useState(false);
+  const [sendingInvite, setSendingInvite] = useState(false);
 
   // Filter candidates based on search
   const filteredCandidates = candidates.filter((candidate) => {
@@ -115,6 +122,20 @@ export default function Candidates() {
     loadCandidates();
   }, []);
 
+  // Fetch employer jobs
+  useEffect(() => {
+    const loadJobs = async () => {
+      try {
+        const jobs = await fetchEmployerJobs();
+        setEmployerJobs(jobs || []);
+      } catch (error) {
+        console.error("Error loading jobs:", error);
+        setEmployerJobs([]);
+      }
+    };
+    loadJobs();
+  }, []);
+
   const toggleSection = (section) => {
     setExpandedSections((prev) => ({
       ...prev,
@@ -126,6 +147,58 @@ export default function Candidates() {
     if (!array) return 0;
     return Array.isArray(array) ? array.length : 0;
   };
+
+  // Handle job selection and send invite
+  const handleSendInvite = async (jobId) => {
+    if (!selectedCandidate || !jobId) {
+      setToast({ message: "Please select a candidate and job", type: "error" });
+      return;
+    }
+
+    if (!selectedCandidate.email) {
+      setToast({ message: "Candidate email is missing", type: "error" });
+      return;
+    }
+
+    setSendingInvite(true);
+    setShowJobDropdown(false);
+
+    try {
+      // Call invite endpoint
+      await inviteToApply(jobId, selectedCandidate.email);
+
+      const selectedJob = employerJobs.find(j => j.id === jobId);
+      setToast({ 
+        message: `Invitation sent to ${selectedCandidate.name} for ${selectedJob?.role || selectedJob?.jobTitle || "the selected job"}!`, 
+        type: "success" 
+      });
+    } catch (error) {
+      console.error("Error sending invite:", error);
+      setToast({ 
+        message: `Failed to send invitation: ${error.message}`, 
+        type: "error" 
+      });
+    } finally {
+      setSendingInvite(false);
+    }
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showJobDropdown && !event.target.closest('[data-dropdown-container]')) {
+        setShowJobDropdown(false);
+      }
+    };
+
+    if (showJobDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showJobDropdown]);
 
   const styles = {
     page: {
@@ -145,9 +218,13 @@ export default function Candidates() {
       display: "flex",
       alignItems: "center",
       gap: "10px",
-      fontWeight: 600,
-      fontSize: "18px",
-      color: "#111827",
+      fontWeight: 700,
+      fontSize: "20px",
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      backgroundClip: "text",
+      letterSpacing: "-0.02em",
     },
     logoIcon: {
       width: "32px",
@@ -157,9 +234,10 @@ export default function Candidates() {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      color: "#fff",
+      color: "#ffffff",
       fontWeight: 700,
-      fontSize: "16px",
+      fontSize: "18px",
+      lineHeight: "1",
     },
     navLinks: {
       display: "flex",
@@ -195,18 +273,35 @@ export default function Candidates() {
       alignItems: "center",
       gap: "6px",
     },
-    postJobBtn: {
-      background: "#ef4444",
+    logoutBtn: {
+      background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
       color: "#ffffff",
       border: "none",
-      padding: "10px 20px",
-      borderRadius: "8px",
+      padding: "10px 18px",
+      borderRadius: "10px",
+      cursor: "pointer",
+      fontSize: "13px",
+      fontWeight: 600,
+      display: "flex",
+      alignItems: "center",
+      gap: "6px",
+      boxShadow: "0 4px 12px rgba(239, 68, 68, 0.3)",
+      transition: "all 0.3s ease",
+    },
+    postJobBtn: {
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      color: "#ffffff",
+      border: "none",
+      padding: "12px 24px",
+      borderRadius: "12px",
       cursor: "pointer",
       fontSize: "14px",
-      fontWeight: 500,
+      fontWeight: 600,
       display: "flex",
       alignItems: "center",
       gap: "8px",
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      transition: "all 0.3s ease",
     },
     container: {
       display: "flex",
@@ -242,15 +337,17 @@ export default function Candidates() {
       color: "#6b7280",
     },
     filtersBtn: {
-      background: "linear-gradient(90deg, #16a34a, #15803d)",
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
       color: "#ffffff",
       border: "none",
-      padding: "10px 16px",
-      borderRadius: "8px",
+      padding: "12px 20px",
+      borderRadius: "12px",
       cursor: "pointer",
       fontSize: "14px",
-      fontWeight: 500,
+      fontWeight: 600,
       width: "100%",
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      transition: "all 0.3s ease",
     },
     candidatesList: {
       flex: 1,
@@ -259,21 +356,24 @@ export default function Candidates() {
     },
     candidateCard: {
       background: "#ffffff",
-      borderRadius: "12px",
-      padding: "16px",
-      marginBottom: "12px",
-      border: "1px solid #e5e7eb",
+      borderRadius: "16px",
+      padding: "20px",
+      marginBottom: "16px",
+      border: "2px solid transparent",
       cursor: "pointer",
-      transition: "all 0.2s",
+      transition: "all 0.3s ease",
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
     },
     candidateCardSelected: {
-      background: "#eff6ff",
-      borderRadius: "12px",
-      padding: "16px",
-      marginBottom: "12px",
+      background: "linear-gradient(135deg, rgba(22, 163, 74, 0.05) 0%, rgba(21, 128, 61, 0.05) 100%)",
+      borderRadius: "16px",
+      padding: "20px",
+      marginBottom: "16px",
       border: "2px solid #16a34a",
       cursor: "pointer",
-      transition: "all 0.2s",
+      transition: "all 0.3s ease",
+      boxShadow: "0 8px 24px rgba(22, 163, 74, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08)",
+      transform: "translateY(-2px)",
     },
     candidateCardHeader: {
       display: "flex",
@@ -372,14 +472,53 @@ export default function Candidates() {
       marginBottom: "16px",
     },
     sendInviteBtn: {
-      background: "#16a34a",
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
       color: "#ffffff",
       border: "none",
-      padding: "12px 24px",
-      borderRadius: "8px",
+      padding: "14px 28px",
+      borderRadius: "12px",
       cursor: "pointer",
       fontSize: "14px",
+      fontWeight: 600,
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      transition: "all 0.3s ease",
+    },
+    sendInviteBtnDisabled: {
+      background: "#d1d5db",
+      cursor: "not-allowed",
+    },
+    jobDropdown: {
+      position: "absolute",
+      top: "100%",
+      left: 0,
+      marginTop: "8px",
+      background: "#ffffff",
+      border: "1px solid #e5e7eb",
+      borderRadius: "8px",
+      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+      minWidth: "300px",
+      maxHeight: "300px",
+      overflowY: "auto",
+      zIndex: 1000,
+    },
+    jobDropdownItem: {
+      padding: "12px 16px",
+      cursor: "pointer",
+      borderBottom: "1px solid #f3f4f6",
+      transition: "background 0.2s",
+    },
+    jobDropdownItemHover: {
+      background: "#f9fafb",
+    },
+    jobDropdownItemTitle: {
+      fontSize: "14px",
       fontWeight: 500,
+      color: "#111827",
+      marginBottom: "4px",
+    },
+    jobDropdownItemLocation: {
+      fontSize: "12px",
+      color: "#6b7280",
     },
     matchingScore: {
       background: "#fef3c7",
@@ -391,10 +530,12 @@ export default function Candidates() {
       alignSelf: "flex-start",
     },
     sectionCard: {
-      marginBottom: "16px",
-      border: "1px solid #e5e7eb",
-      borderRadius: "8px",
+      marginBottom: "20px",
+      border: "1px solid rgba(0, 0, 0, 0.06)",
+      borderRadius: "16px",
       overflow: "hidden",
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
+      background: "#ffffff",
     },
     sectionHeader: {
       display: "flex",
@@ -487,22 +628,37 @@ export default function Candidates() {
           </span>
         </div>
         <div style={styles.userActions}>
-          <span style={styles.userActionLink}>
+          <span
+            style={styles.userActionLink}
+            onClick={() => navigate("/employer/company-profile")}
+          >
             <span>👤</span>
             Profile
           </span>
-          <span
-            style={styles.userActionLink}
-            onClick={() => {
+          <button
+            style={styles.logoutBtn}
+            onClick={async () => {
+              // Call logout API
+              await logoutUser();
               localStorage.removeItem("token");
               localStorage.removeItem("role");
               localStorage.removeItem("profileData");
               navigate("/");
             }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)";
+              e.target.style.transform = "translateY(-2px)";
+              e.target.style.boxShadow = "0 6px 16px rgba(239, 68, 68, 0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)";
+              e.target.style.transform = "translateY(0)";
+              e.target.style.boxShadow = "0 4px 12px rgba(239, 68, 68, 0.3)";
+            }}
           >
             <span>🚪</span>
             Log Out
-          </span>
+          </button>
           <button
             style={styles.postJobBtn}
             onClick={() => navigate("/employer/post-job")}
@@ -566,9 +722,6 @@ export default function Candidates() {
                   <span>💼</span>
                   <span>Experience: {candidate.experience}</span>
                 </div>
-                <div style={styles.matchingBadge}>
-                  {candidate.matching}% Matching
-                </div>
               </div>
               ))
             )}
@@ -586,12 +739,43 @@ export default function Candidates() {
                 <div style={styles.profileInfo}>
                   <div style={styles.profileName}>{selectedCandidate.name}</div>
                   <div style={styles.profileTitle}>{selectedCandidate.title}</div>
-                  <button style={styles.sendInviteBtn}>
-                    Send Invites for Jobs +
-                  </button>
-                </div>
-                <div style={styles.matchingScore}>
-                  {selectedCandidate.matching}% Matching
+                  <div style={{ position: "relative" }} data-dropdown-container>
+                    <button 
+                      style={{
+                        ...styles.sendInviteBtn,
+                        ...((sendingInvite || employerJobs.length === 0) ? styles.sendInviteBtnDisabled : {})
+                      }}
+                      onClick={() => setShowJobDropdown(!showJobDropdown)}
+                      disabled={sendingInvite || employerJobs.length === 0}
+                    >
+                      {sendingInvite ? "Sending..." : "Send Invites for Jobs +"}
+                    </button>
+                    {showJobDropdown && employerJobs.length > 0 && (
+                      <div style={styles.jobDropdown}>
+                        {employerJobs.map((job) => (
+                          <div
+                            key={job.id}
+                            style={styles.jobDropdownItem}
+                            onClick={() => handleSendInvite(job.id)}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = "#f9fafb";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = "#ffffff";
+                            }}
+                          >
+                            <div style={styles.jobDropdownItemTitle}>{job.role || job.jobTitle}</div>
+                            <div style={styles.jobDropdownItemLocation}>{job.location || job.jobLocation}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {showJobDropdown && employerJobs.length === 0 && (
+                      <div style={styles.jobDropdown}>
+                        <div style={styles.jobDropdownItem}>No jobs posted yet</div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 

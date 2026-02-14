@@ -1,19 +1,41 @@
 import { BUSINESS_BASE_URL } from "../config/api";
 import { saveProfile } from "./profileService";
 import { normalizeUploadData } from "../utils/normalizeUploadData";
+import { getToken } from "./authService";
+
+/**
+ * Get email from JWT token
+ */
+const getEmailFromToken = () => {
+  const token = getToken();
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+  
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.sub || payload.email || payload.username;
+  } catch (e) {
+    throw new Error("Failed to decode token");
+  }
+};
 
 /**
  * Fetch jobs from backend API
+ * GET /api/v1/jobs/job?email=<jobseekerEmail>
  */
 export const fetchJobs = async () => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
   if (!token) {
     throw new Error("No auth token found");
   }
 
+  // Get email from token
+  const email = getEmailFromToken();
+
   const response = await fetch(
-    `${BUSINESS_BASE_URL}/api/v1/jobs/job`,
+    `${BUSINESS_BASE_URL}/api/v1/jobs/job?email=${encodeURIComponent(email)}`,
     {
       method: "GET",
       headers: {
@@ -34,7 +56,6 @@ export const fetchJobs = async () => {
   const responseText = await response.text();
   
   if (!responseText || !responseText.trim()) {
-    console.log("Empty response from fetch jobs");
     return [];
   }
 
@@ -54,7 +75,6 @@ export const fetchJobs = async () => {
         if (jsonEnd !== -1 && jsonEnd > jsonStart) {
           const extractedJson = responseText.substring(jsonStart, jsonEnd + 1);
           const data = JSON.parse(extractedJson);
-          console.log("Successfully extracted valid JSON from malformed response");
           return Array.isArray(data) ? data : [];
         }
       }
@@ -74,7 +94,7 @@ export const fetchJobs = async () => {
  * @param {string} email - Optional email parameter. If not provided, will try to get from profileData or token
  */
 export const fetchAllApplications = async (email = null) => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
   if (!token) {
     throw new Error("No auth token found");
@@ -129,7 +149,6 @@ export const fetchAllApplications = async (email = null) => {
   const responseText = await response.text();
   
   if (!responseText || !responseText.trim()) {
-    console.log("Empty response from fetch applications");
     return [];
   }
 
@@ -149,7 +168,6 @@ export const fetchAllApplications = async (email = null) => {
         if (jsonEnd !== -1 && jsonEnd > jsonStart) {
           const extractedJson = responseText.substring(jsonStart, jsonEnd + 1);
           const data = JSON.parse(extractedJson);
-          console.log("Successfully extracted valid JSON from malformed response");
           return Array.isArray(data) ? data : [];
         }
       }
@@ -167,7 +185,7 @@ export const fetchAllApplications = async (email = null) => {
  * GET /api/v1/jobs/jobseeker/metrics?email={email}&windowDays={windowDays}
  */
 export const fetchJobseekerMetrics = async (email, windowDays = 30) => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
   if (!token) {
     throw new Error("No auth token found");
@@ -197,7 +215,6 @@ export const fetchJobseekerMetrics = async (email, windowDays = 30) => {
   const responseText = await response.text();
   
   if (!responseText || !responseText.trim()) {
-    console.log("Empty response from fetch metrics");
     return null;
   }
 
@@ -216,7 +233,6 @@ export const fetchJobseekerMetrics = async (email, windowDays = 30) => {
         if (jsonEnd !== -1 && jsonEnd > jsonStart) {
           const extractedJson = responseText.substring(jsonStart, jsonEnd + 1);
           const data = JSON.parse(extractedJson);
-          console.log("Successfully extracted valid JSON from malformed response");
           return data;
         }
       }
@@ -230,7 +246,7 @@ export const fetchJobseekerMetrics = async (email, windowDays = 30) => {
 };
 
 export const uploadResume = async (file) => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
   if (!token) {
     throw new Error("No auth token found");
@@ -250,14 +266,12 @@ export const uploadResume = async (file) => {
       body: formData,
     }
   );
-  console.log("Upload response status:", response.status);
 
   if (!response.ok) {
     throw new Error("Upload failed");
   }
   
   const data = await response.json();
-  console.log("Parsed resume data:", data);
 
   // ✅ STEP 2: NORMALIZE AND STORE PROFILE DATA
   const normalizedData = normalizeUploadData(data);
@@ -266,17 +280,14 @@ export const uploadResume = async (file) => {
     "profileData",
     JSON.stringify(normalizedData)
   );
-  console.log("Normalized profile data stored in localStorage", normalizedData);
-  
+
   // Trigger custom event to notify context of update (storage event only works across tabs)
   // We'll use a custom event for same-tab updates
   window.dispatchEvent(new CustomEvent("profileDataUpdated", { detail: normalizedData }));
 
   // ✅ STEP 3: SAVE PROFILE TO BACKEND API
   try {
-    console.log("Saving profile to backend...");
     await saveProfile(data);
-    console.log("Profile saved to backend successfully");
   } catch (saveError) {
     console.error("Error saving profile to backend:", saveError);
     // Don't throw error - upload was successful, just saving failed
@@ -430,7 +441,7 @@ const transformProfileForApplication = (profile) => {
  * Apply to a job with profile
  */
 export const applyWithProfile = async (jobId, profile) => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
   if (!token) {
     throw new Error("No auth token found");
@@ -445,9 +456,6 @@ export const applyWithProfile = async (jobId, profile) => {
   }
 
   const profileData = transformProfileForApplication(profile);
-  
-  console.log("Applying to job:", jobId);
-  console.log("Profile data:", profileData);
 
   const response = await fetch(
     `${BUSINESS_BASE_URL}/api/v1/jobs/${jobId}/apply-with-profile`,
@@ -461,8 +469,6 @@ export const applyWithProfile = async (jobId, profile) => {
       body: JSON.stringify(profileData),
     }
   );
-
-  console.log("Apply response status:", response.status);
 
   if (!response.ok) {
     let errorMessage = "Failed to submit application. Please try again.";
@@ -498,7 +504,6 @@ export const applyWithProfile = async (jobId, profile) => {
   const responseText = await response.text();
   
   if (!responseText || !responseText.trim()) {
-    console.log("Empty response, treating as success");
     return { success: true, message: "Application submitted successfully" };
   }
 
@@ -515,27 +520,10 @@ export const applyWithProfile = async (jobId, profile) => {
 };
 
 /**
- * Get email from JWT token
- */
-const getEmailFromToken = () => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    throw new Error("No auth token found");
-  }
-  
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.sub || payload.email || payload.username;
-  } catch (e) {
-    throw new Error("Failed to decode token");
-  }
-};
-
-/**
  * Post a new job (employer)
  */
 export const postJob = async (jobData) => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
   if (!token) {
     throw new Error("No auth token found");
@@ -599,6 +587,11 @@ export const postJob = async (jobData) => {
     salaryMax: salaryMax,
   };
 
+  // Add externalApplyUrl field if provided (for apply-link type)
+  if (jobData.url) {
+    payload.externalApplyUrl = jobData.url;
+  }
+
   // Get employer email from token
   const employerEmail = getEmailFromToken();
 
@@ -639,7 +632,7 @@ export const postJob = async (jobData) => {
  * Fetch employer's jobs
  */
 export const fetchEmployerJobs = async (email = null) => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
   if (!token) {
     throw new Error("No auth token found");
@@ -689,7 +682,7 @@ export const fetchEmployerJobs = async (email = null) => {
  * Fetch employer job stats
  */
 export const fetchEmployerJobStats = async (email = null) => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
   if (!token) {
     throw new Error("No auth token found");
@@ -728,4 +721,589 @@ export const fetchEmployerJobStats = async (email = null) => {
     console.error("Error parsing job stats:", e);
     return [];
   }
+};
+
+/**
+ * Fetch applications for a specific job
+ * GET /api/v1/jobs/employer/jobs/{jobId}/applications
+ */
+export const fetchJobApplications = async (jobId) => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
+  if (!jobId) {
+    throw new Error("Job ID is required");
+  }
+
+  const response = await fetch(
+    `${BUSINESS_BASE_URL}/api/v1/jobs/employer/jobs/${jobId}/applications`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        accept: "*/*",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to fetch job applications: ${response.status} ${errorText}`
+    );
+  }
+
+  const responseText = await response.text();
+  
+  if (!responseText || !responseText.trim()) {
+    return [];
+  }
+
+  try {
+    const data = JSON.parse(responseText);
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    console.error("Error parsing job applications:", e);
+    return [];
+  }
+};
+
+/**
+ * Send interview invitation
+ * POST /api/v1/jobs/employer/applications/{applicationId}/interview?email={email}
+ */
+export const sendInterviewInvitation = async (applicationId, email = null) => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
+  if (!applicationId) {
+    throw new Error("Application ID is required");
+  }
+
+  const employerEmail = email || getEmailFromToken();
+
+  const response = await fetch(
+    `${BUSINESS_BASE_URL}/api/v1/jobs/employer/applications/${applicationId}/interview?email=${encodeURIComponent(employerEmail)}`,
+    {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      accept: "*/*",
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to send interview invitation: ${response.status} ${errorText}`
+    );
+  }
+
+  try {
+    const responseText = await response.text();
+    if (responseText && responseText.trim()) {
+      return JSON.parse(responseText);
+    }
+    return { success: true };
+  } catch (e) {
+    return { success: true };
+  }
+};
+
+/**
+ * Send job offer
+ * POST /api/v1/jobs/employer/applications/{applicationId}/offer?email={email}
+ */
+export const sendJobOffer = async (applicationId, email = null) => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
+  if (!applicationId) {
+    throw new Error("Application ID is required");
+  }
+
+  const employerEmail = email || getEmailFromToken();
+  const url = `${BUSINESS_BASE_URL}/api/v1/jobs/employer/applications/${applicationId}/offer?email=${encodeURIComponent(employerEmail)}`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      accept: "*/*",
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to send job offer: ${response.status} ${errorText}`
+    );
+  }
+
+  try {
+    const responseText = await response.text();
+    if (responseText && responseText.trim()) {
+      return JSON.parse(responseText);
+    }
+    return { success: true };
+  } catch (e) {
+    return { success: true };
+  }
+};
+
+/**
+ * Fetch jobseeker notifications
+ * GET /api/v1/jobs/jobseeker/notifications?email={email}
+ */
+export const fetchJobseekerNotifications = async (email = null) => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
+  // Get email if not provided
+  let userEmail = email;
+  if (!userEmail) {
+    // Try to get from profileData
+    const profileData = localStorage.getItem("profileData");
+    if (profileData) {
+      try {
+        const parsed = JSON.parse(profileData);
+        userEmail = parsed.basicInfo?.email;
+      } catch (e) {
+        console.error("Error parsing profileData:", e);
+      }
+    }
+    
+    // If still not found, try to get from token
+    if (!userEmail) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        userEmail = payload.sub || payload.email || payload.username;
+      } catch (e) {
+        console.error("Error parsing token:", e);
+      }
+    }
+  }
+
+  const url = userEmail
+    ? `${BUSINESS_BASE_URL}/api/v1/jobs/jobseeker/notifications?email=${encodeURIComponent(userEmail)}`
+    : `${BUSINESS_BASE_URL}/api/v1/jobs/jobseeker/notifications`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      accept: "*/*",
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to fetch notifications: ${response.status} ${errorText}`
+    );
+  }
+
+  const responseText = await response.text();
+  
+  if (!responseText || !responseText.trim()) {
+    return [];
+  }
+
+  try {
+    const data = JSON.parse(responseText);
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    console.error("Error parsing notifications:", e);
+    return [];
+  }
+};
+
+/**
+ * Invite candidate to apply for a job
+ * POST /api/v1/jobs/employer/jobs/{jobId}/invite?inviteeEmail={inviteeEmail}&email={email}
+ */
+export const inviteToApply = async (jobId, inviteeEmail, email = null) => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
+  if (!jobId) {
+    throw new Error("Job ID is required");
+  }
+
+  if (!inviteeEmail) {
+    throw new Error("Invitee email is required");
+  }
+
+  const employerEmail = email || getEmailFromToken();
+  const url = `${BUSINESS_BASE_URL}/api/v1/jobs/employer/jobs/${jobId}/invite?inviteeEmail=${encodeURIComponent(inviteeEmail)}&email=${encodeURIComponent(employerEmail)}`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      accept: "*/*",
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to invite candidate: ${response.status} ${errorText}`
+    );
+  }
+
+  try {
+    const responseText = await response.text();
+    if (responseText && responseText.trim()) {
+      return JSON.parse(responseText);
+    }
+    return { success: true };
+  } catch (e) {
+    return { success: true };
+  }
+};
+
+/**
+ * Reject application
+ * POST /api/v1/jobs/employer/applications/{applicationId}/reject?email={email}
+ */
+export const rejectApplication = async (applicationId, email = null) => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
+  if (!applicationId) {
+    throw new Error("Application ID is required");
+  }
+
+  const employerEmail = email || getEmailFromToken();
+  const url = `${BUSINESS_BASE_URL}/api/v1/jobs/employer/applications/${applicationId}/reject?email=${encodeURIComponent(employerEmail)}`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      accept: "*/*",
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to reject application: ${response.status} ${errorText}`
+    );
+  }
+
+  try {
+    const responseText = await response.text();
+    if (responseText && responseText.trim()) {
+      return JSON.parse(responseText);
+    }
+    return { success: true };
+  } catch (e) {
+    return { success: true };
+  }
+};
+
+/**
+ * Update application status
+ * PUT /api/v1/jobs/employer/applications/{applicationId}/status?status={STATUS}
+ */
+export const updateApplicationStatus = async (applicationId, status) => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
+  if (!applicationId) {
+    throw new Error("Application ID is required");
+  }
+
+  if (!status) {
+    throw new Error("Status is required");
+  }
+
+  const response = await fetch(
+    `${BUSINESS_BASE_URL}/api/v1/jobs/employer/applications/${applicationId}/status?status=${encodeURIComponent(status)}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        accept: "*/*",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to update application status: ${response.status} ${errorText}`
+    );
+  }
+
+  // Return success even if response body is empty
+  try {
+    const responseText = await response.text();
+    if (responseText && responseText.trim()) {
+      return JSON.parse(responseText);
+    }
+    return { success: true };
+  } catch (e) {
+    return { success: true };
+  }
+};
+
+/**
+ * Fetch employer metrics
+ * GET /api/v1/jobs/employer/metrics?email={email}&windowDays={windowDays}
+ */
+export const fetchEmployerMetrics = async (email = null, windowDays = 30) => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
+  const employerEmail = email || getEmailFromToken();
+
+  const response = await fetch(
+    `${BUSINESS_BASE_URL}/api/v1/jobs/employer/metrics?email=${encodeURIComponent(employerEmail)}&windowDays=${windowDays}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        accept: "*/*",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to fetch employer metrics: ${response.status} ${errorText}`
+    );
+  }
+
+  const responseText = await response.text();
+  
+  if (!responseText || !responseText.trim()) {
+    return null;
+  }
+
+  try {
+    const data = JSON.parse(responseText);
+    return data;
+  } catch (e) {
+    console.error("Error parsing employer metrics:", e);
+    return null;
+  }
+};
+
+/**
+ * Fetch accepted candidates for employer
+ * GET /api/v1/jobs/employer/candidates/accepted?email=<employerEmail>
+ */
+export const fetchAcceptedCandidates = async (email = null) => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
+  const employerEmail = email || getEmailFromToken();
+
+  const response = await fetch(
+    `${BUSINESS_BASE_URL}/api/v1/jobs/employer/candidates/accepted?email=${encodeURIComponent(employerEmail)}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        accept: "*/*",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to fetch accepted candidates: ${response.status} ${errorText}`
+    );
+  }
+
+  const responseText = await response.text();
+  
+  if (!responseText || !responseText.trim()) {
+    return [];
+  }
+
+  try {
+    const data = JSON.parse(responseText);
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    console.error("Error parsing accepted candidates:", e);
+    return [];
+  }
+};
+
+/**
+ * Update an existing job
+ * PUT /api/v1/jobs/employer/jobs/{jobId}?email=<employerEmail>
+ */
+export const updateJob = async (jobId, jobData) => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
+  // Parse salary range from "CAD 2500 - 3000" format
+  let salaryMin = 0;
+  let salaryMax = 0;
+  if (jobData.estimatedSalary) {
+    const salaryMatch = jobData.estimatedSalary.match(/(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)/);
+    if (salaryMatch) {
+      salaryMin = parseFloat(salaryMatch[1]);
+      salaryMax = parseFloat(salaryMatch[2]);
+    }
+  }
+
+  // Determine employmentType and typeOfWork from jobType and contractType
+  let employmentType = jobData.jobType || "Full time";
+  let typeOfWork = jobData.contractType || jobData.jobType || "Remote";
+
+  // Map jobType to employmentType
+  const jobTypeMap = {
+    "Full time": "Full-time",
+    "Part time": "Part-time",
+    "Remote": "Remote",
+    "Hybrid": "Hybrid",
+    "Internship": "Internship",
+  };
+
+  if (jobTypeMap[jobData.jobType]) {
+    employmentType = jobTypeMap[jobData.jobType];
+  }
+
+  // Map contractType to typeOfWork
+  const contractTypeMap = {
+    "Contract hybrid": "Hybrid",
+    "Contract remote": "Remote",
+    "Contract onsite": "On-site",
+    "Hourly based": "Hourly",
+  };
+
+  if (contractTypeMap[jobData.contractType]) {
+    typeOfWork = contractTypeMap[jobData.contractType];
+  } else if (jobData.jobType && !jobData.contractType) {
+    typeOfWork = jobData.jobType;
+  }
+
+  const payload = {
+    role: jobData.jobTitle || "",
+    companyName: jobData.companyName || "",
+    jobLocation: jobData.jobLocation || "",
+    address: jobData.address || "",
+    experienceRange: jobData.yearsOfExperience || "",
+    employmentType: employmentType,
+    typeOfWork: typeOfWork,
+    preferredLanguage: jobData.preferredLanguage || "English",
+    urgentlyHiring: jobData.urgentlyHiring === "Yes" || jobData.urgentlyHiring === true,
+    jobDescription: jobData.jobDescription || "",
+    requirements: jobData.jobRequirement || "",
+    salaryMin: salaryMin,
+    salaryMax: salaryMax,
+  };
+
+  // Add externalApplyUrl field if provided
+  if (jobData.url) {
+    payload.externalApplyUrl = jobData.url;
+  }
+
+  // Get employer email from token
+  const employerEmail = getEmailFromToken();
+
+  const response = await fetch(
+    `${BUSINESS_BASE_URL}/api/v1/jobs/employer/jobs/${jobId}?email=${encodeURIComponent(employerEmail)}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        accept: "*/*",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to update job: ${response.status} ${errorText}`
+    );
+  }
+
+  const responseText = await response.text();
+  
+  if (!responseText || !responseText.trim()) {
+    return { success: true, message: "Job updated successfully" };
+  }
+
+  try {
+    return JSON.parse(responseText);
+  } catch (e) {
+    return { success: true, message: "Job updated successfully" };
+  }
+};
+
+/**
+ * Delete a job
+ * DELETE /api/v1/jobs/employer/jobs/{jobId}?email=<employerEmail>
+ */
+export const deleteJob = async (jobId) => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
+  // Get employer email from token
+  const employerEmail = getEmailFromToken();
+
+  const response = await fetch(
+    `${BUSINESS_BASE_URL}/api/v1/jobs/employer/jobs/${jobId}?email=${encodeURIComponent(employerEmail)}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        accept: "*/*",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to delete job: ${response.status} ${errorText}`
+    );
+  }
+
+  return { success: true, message: "Job deleted successfully" };
 };

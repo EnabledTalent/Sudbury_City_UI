@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchJobseekerMetrics } from "../services/jobService";
+import { logoutUser, getToken } from "../services/authService";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -20,13 +21,13 @@ export default function Dashboard() {
         console.error("Error parsing profileData:", e);
       }
     }
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split(".")[1]));
         return payload.sub || payload.email;
       } catch (e) {
-        console.error("Error parsing token:", e);
+        // Error parsing token
       }
     }
     return null;
@@ -47,7 +48,6 @@ export default function Dashboard() {
 
       try {
         const data = await fetchJobseekerMetrics(email, windowDays);
-        console.log("Fetched metrics:", data);
         setMetrics(data);
       } catch (err) {
         console.error("Error fetching metrics:", err);
@@ -75,9 +75,13 @@ export default function Dashboard() {
       boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
     },
     logo: {
-      fontSize: "20px",
-      fontWeight: 600,
-      color: "#111827",
+      fontSize: "22px",
+      fontWeight: 700,
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      backgroundClip: "text",
+      letterSpacing: "-0.02em",
     },
     navLinks: {
       display: "flex",
@@ -111,17 +115,35 @@ export default function Dashboard() {
       color: "#374151",
       cursor: "pointer",
     },
+    logoutBtn: {
+      background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+      color: "#ffffff",
+      border: "none",
+      padding: "10px 18px",
+      borderRadius: "10px",
+      cursor: "pointer",
+      fontSize: "13px",
+      fontWeight: 600,
+      display: "flex",
+      alignItems: "center",
+      gap: "6px",
+      boxShadow: "0 4px 12px rgba(239, 68, 68, 0.3)",
+      transition: "all 0.3s ease",
+    },
     aiCoachBtn: {
-      background: "#ef4444",
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
       color: "#fff",
       border: "none",
-      padding: "10px 16px",
-      borderRadius: "8px",
+      padding: "12px 20px",
+      borderRadius: "12px",
       cursor: "pointer",
       fontSize: "14px",
+      fontWeight: 600,
       display: "flex",
       alignItems: "center",
       gap: "8px",
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      transition: "all 0.3s ease",
     },
     container: {
       maxWidth: "1400px",
@@ -184,10 +206,11 @@ export default function Dashboard() {
     },
     metricCard: {
       background: "#ffffff",
-      borderRadius: "12px",
-      padding: "24px",
-      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-      border: "1px solid #e5e7eb",
+      borderRadius: "16px",
+      padding: "28px",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
+      border: "1px solid rgba(0, 0, 0, 0.04)",
+      transition: "all 0.3s ease",
     },
     metricTitle: {
       fontSize: "14px",
@@ -223,10 +246,11 @@ export default function Dashboard() {
     },
     statusCard: {
       background: "#ffffff",
-      borderRadius: "12px",
-      padding: "20px",
-      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-      border: "1px solid #e5e7eb",
+      borderRadius: "16px",
+      padding: "24px",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
+      border: "1px solid rgba(0, 0, 0, 0.04)",
+      transition: "all 0.3s ease",
     },
     statusHeader: {
       display: "flex",
@@ -296,18 +320,31 @@ export default function Dashboard() {
           <span style={styles.navLinkActive}>Dashboard</span>
         </div>
         <div style={styles.userActions}>
-          <span 
-            style={styles.userActionLink}
-            onClick={() => {
+          <button 
+            style={styles.logoutBtn}
+            onClick={async () => {
+              // Call logout API
+              await logoutUser();
               localStorage.removeItem("token");
               localStorage.removeItem("role");
               localStorage.removeItem("profileData");
               localStorage.removeItem("profileEditMode");
               navigate("/");
             }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)";
+              e.target.style.transform = "translateY(-2px)";
+              e.target.style.boxShadow = "0 6px 16px rgba(239, 68, 68, 0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)";
+              e.target.style.transform = "translateY(0)";
+              e.target.style.boxShadow = "0 4px 12px rgba(239, 68, 68, 0.3)";
+            }}
           >
+            <span>🚪</span>
             Log Out
-          </span>
+          </button>
         </div>
       </nav>
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchOrganizationProfile, updateOrganizationProfile } from "../../services/employerService";
+import { logoutUser } from "../../services/authService";
 import Toast from "../../components/Toast";
 
 export default function CompanyProfile() {
@@ -137,20 +138,28 @@ export default function CompanyProfile() {
     },
     topNav: {
       background: "#ffffff",
-      padding: "16px 40px",
+      padding: "20px 40px",
       borderBottom: "1px solid #e5e7eb",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
+      position: "sticky",
+      top: 0,
+      zIndex: 100,
+      backdropFilter: "blur(10px)",
     },
     logo: {
       display: "flex",
       alignItems: "center",
       gap: "10px",
-      fontWeight: 600,
-      fontSize: "18px",
-      color: "#111827",
+      fontWeight: 700,
+      fontSize: "20px",
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      backgroundClip: "text",
+      letterSpacing: "-0.02em",
     },
     logoIcon: {
       width: "32px",
@@ -160,9 +169,10 @@ export default function CompanyProfile() {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      color: "#fff",
+      color: "#ffffff",
       fontWeight: 700,
-      fontSize: "16px",
+      fontSize: "18px",
+      lineHeight: "1",
     },
     navLinks: {
       display: "flex",
@@ -198,18 +208,35 @@ export default function CompanyProfile() {
       alignItems: "center",
       gap: "6px",
     },
-    postJobBtn: {
-      background: "linear-gradient(90deg, #16a34a, #15803d)",
+    logoutBtn: {
+      background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
       color: "#ffffff",
       border: "none",
-      padding: "10px 20px",
-      borderRadius: "8px",
+      padding: "10px 18px",
+      borderRadius: "10px",
+      cursor: "pointer",
+      fontSize: "13px",
+      fontWeight: 600,
+      display: "flex",
+      alignItems: "center",
+      gap: "6px",
+      boxShadow: "0 4px 12px rgba(239, 68, 68, 0.3)",
+      transition: "all 0.3s ease",
+    },
+    postJobBtn: {
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      color: "#ffffff",
+      border: "none",
+      padding: "12px 24px",
+      borderRadius: "12px",
       cursor: "pointer",
       fontSize: "14px",
-      fontWeight: 500,
+      fontWeight: 600,
       display: "flex",
       alignItems: "center",
       gap: "8px",
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      transition: "all 0.3s ease",
     },
     container: {
       maxWidth: "1400px",
@@ -218,15 +245,16 @@ export default function CompanyProfile() {
       flex: 1,
     },
     companyBanner: {
-      background: "linear-gradient(135deg, #fef3c7, #fde68a)",
-      borderRadius: "16px",
-      padding: "40px",
-      marginBottom: "32px",
+      background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
+      borderRadius: "20px",
+      padding: "48px",
+      marginBottom: "40px",
       display: "flex",
       alignItems: "center",
-      gap: "24px",
+      gap: "28px",
       position: "relative",
-      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+      boxShadow: "0 10px 30px rgba(251, 191, 36, 0.25), 0 4px 12px rgba(0, 0, 0, 0.1)",
+      border: "1px solid rgba(251, 191, 36, 0.2)",
     },
     companyLogoContainer: {
       width: "120px",
@@ -280,9 +308,10 @@ export default function CompanyProfile() {
     },
     aboutCard: {
       background: "#ffffff",
-      borderRadius: "16px",
-      padding: "32px",
-      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+      borderRadius: "20px",
+      padding: "40px",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
+      border: "1px solid rgba(0, 0, 0, 0.04)",
     },
     aboutTitle: {
       fontSize: "24px",
@@ -480,14 +509,16 @@ export default function CompanyProfile() {
       fontWeight: 500,
     },
     saveBtn: {
-      background: "linear-gradient(90deg, #16a34a, #15803d)",
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
       color: "#ffffff",
       border: "none",
-      padding: "12px 24px",
-      borderRadius: "8px",
+      padding: "14px 28px",
+      borderRadius: "12px",
       cursor: "pointer",
-      fontSize: "14px",
-      fontWeight: 500,
+      fontSize: "15px",
+      fontWeight: 600,
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      transition: "all 0.3s ease",
     },
   };
 
@@ -521,22 +552,37 @@ export default function CompanyProfile() {
           <span style={styles.navLinkActive}>Company Profile</span>
         </div>
         <div style={styles.userActions}>
-          <span style={styles.userActionLink}>
+          <span
+            style={styles.userActionLink}
+            onClick={() => navigate("/employer/company-profile")}
+          >
             <span>👤</span>
             Profile
           </span>
-          <span
-            style={styles.userActionLink}
-            onClick={() => {
+          <button
+            style={styles.logoutBtn}
+            onClick={async () => {
+              // Call logout API
+              await logoutUser();
               localStorage.removeItem("token");
               localStorage.removeItem("role");
               localStorage.removeItem("profileData");
               navigate("/");
             }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)";
+              e.target.style.transform = "translateY(-2px)";
+              e.target.style.boxShadow = "0 6px 16px rgba(239, 68, 68, 0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)";
+              e.target.style.transform = "translateY(0)";
+              e.target.style.boxShadow = "0 4px 12px rgba(239, 68, 68, 0.3)";
+            }}
           >
             <span>🚪</span>
             Log Out
-          </span>
+          </button>
           <button
             style={styles.postJobBtn}
             onClick={() => navigate("/employer/post-job")}

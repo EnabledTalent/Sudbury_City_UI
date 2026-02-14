@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { getToken } from "../services/authService";
 
 const ChatWidget = ({ onClose }) => {
   const [messages, setMessages] = useState([
@@ -26,16 +27,16 @@ const ChatWidget = ({ onClose }) => {
         const parsed = JSON.parse(profileData);
         return parsed.basicInfo?.email;
       } catch (e) {
-        console.error("Error parsing profileData:", e);
+        // Error parsing profileData
       }
     }
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split(".")[1]));
         return payload.sub || payload.email;
       } catch (e) {
-        console.error("Error parsing token:", e);
+        // Error parsing token
       }
     }
     return null;
@@ -53,7 +54,7 @@ const ChatWidget = ({ onClose }) => {
 
     try {
       const email = getEmail();
-      const token = localStorage.getItem("token");
+      const token = getToken();
 
       if (!token) {
         throw new Error("No auth token found");
@@ -137,57 +138,62 @@ const ChatWidget = ({ onClose }) => {
   const styles = {
     widget: {
       position: "fixed",
-      bottom: "20px",
-      right: "20px",
-      width: "380px",
-      height: "500px",
+      bottom: "24px",
+      right: "24px",
+      width: "400px",
+      height: "560px",
       background: "#ffffff",
-      borderRadius: "12px",
-      boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
+      borderRadius: "20px",
+      boxShadow: "0 20px 60px rgba(0, 0, 0, 0.15), 0 8px 24px rgba(0, 0, 0, 0.1)",
       display: "flex",
       flexDirection: "column",
       zIndex: 10000,
-      border: "1px solid #e5e7eb",
+      border: "1px solid rgba(0, 0, 0, 0.06)",
+      overflow: "hidden",
+      animation: "slideUp 0.4s ease-out",
     },
     header: {
-      background: "#16a34a",
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
       color: "#ffffff",
-      padding: "16px 20px",
-      borderRadius: "12px 12px 0 0",
+      padding: "20px 24px",
+      borderRadius: "20px 20px 0 0",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.2)",
     },
     headerTitle: {
-      fontSize: "16px",
-      fontWeight: 600,
+      fontSize: "18px",
+      fontWeight: 700,
       display: "flex",
       alignItems: "center",
-      gap: "8px",
+      gap: "10px",
+      letterSpacing: "-0.01em",
     },
     closeButton: {
-      background: "transparent",
+      background: "rgba(255, 255, 255, 0.15)",
       border: "none",
       color: "#ffffff",
-      fontSize: "20px",
+      fontSize: "22px",
       cursor: "pointer",
       padding: "0",
-      width: "24px",
-      height: "24px",
+      width: "32px",
+      height: "32px",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      borderRadius: "4px",
-      transition: "background 0.2s",
+      borderRadius: "8px",
+      transition: "all 0.3s ease",
+      backdropFilter: "blur(10px)",
     },
     messagesContainer: {
       flex: 1,
       overflowY: "auto",
-      padding: "16px",
+      padding: "20px",
       display: "flex",
       flexDirection: "column",
-      gap: "12px",
-      background: "#f9fafb",
+      gap: "16px",
+      background: "linear-gradient(to bottom, #f9fafb 0%, #ffffff 100%)",
     },
     message: {
       display: "flex",
@@ -204,53 +210,60 @@ const ChatWidget = ({ onClose }) => {
       alignItems: "flex-start",
     },
     messageBubble: {
-      padding: "10px 14px",
-      borderRadius: "12px",
+      padding: "12px 16px",
+      borderRadius: "16px",
       fontSize: "14px",
-      lineHeight: "1.5",
+      lineHeight: "1.6",
       wordWrap: "break-word",
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+      transition: "all 0.2s ease",
     },
     userBubble: {
-      background: "#16a34a",
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
       color: "#ffffff",
       borderBottomRightRadius: "4px",
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.25)",
     },
     assistantBubble: {
       background: "#ffffff",
       color: "#374151",
-      border: "1px solid #e5e7eb",
+      border: "1px solid rgba(0, 0, 0, 0.06)",
       borderBottomLeftRadius: "4px",
       whiteSpace: "pre-wrap", // Preserve line breaks and formatting
     },
     inputContainer: {
-      padding: "16px",
-      borderTop: "1px solid #e5e7eb",
+      padding: "20px",
+      borderTop: "1px solid rgba(0, 0, 0, 0.06)",
       background: "#ffffff",
-      borderRadius: "0 0 12px 12px",
+      borderRadius: "0 0 20px 20px",
       display: "flex",
-      gap: "8px",
+      gap: "12px",
+      boxShadow: "0 -4px 12px rgba(0, 0, 0, 0.04)",
     },
     input: {
       flex: 1,
-      padding: "10px 14px",
-      border: "1px solid #e5e7eb",
-      borderRadius: "8px",
+      padding: "12px 16px",
+      border: "2px solid #e5e7eb",
+      borderRadius: "12px",
       fontSize: "14px",
       outline: "none",
       resize: "none",
       fontFamily: "inherit",
+      transition: "all 0.3s ease",
+      background: "#f9fafb",
     },
     sendButton: {
-      background: "#16a34a",
+      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
       color: "#ffffff",
       border: "none",
-      padding: "10px 20px",
-      borderRadius: "8px",
+      padding: "12px 24px",
+      borderRadius: "12px",
       cursor: "pointer",
       fontSize: "14px",
-      fontWeight: 500,
-      transition: "background 0.2s",
+      fontWeight: 600,
+      transition: "all 0.3s ease",
       whiteSpace: "nowrap",
+      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
     },
     sendButtonDisabled: {
       background: "#16a34a",
@@ -272,8 +285,24 @@ const ChatWidget = ({ onClose }) => {
     },
   };
 
+  // Add CSS animation for slide up effect
+  const animationStyle = `
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  `;
+
   return (
-    <div style={styles.widget}>
+    <>
+      <style>{animationStyle}</style>
+      <div style={styles.widget}>
       <div style={styles.header}>
         <div style={styles.headerTitle}>
           <span>Q</span>
@@ -348,6 +377,7 @@ const ChatWidget = ({ onClose }) => {
         </button>
       </div>
     </div>
+    </>
   );
 };
 

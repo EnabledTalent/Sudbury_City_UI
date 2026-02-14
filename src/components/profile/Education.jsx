@@ -1,11 +1,62 @@
+import { useState, useEffect } from "react";
 import { useProfile } from "../../context/ProfileContext";
 import ProfileHeader from "./ProfileHeader";
 
 export default function Education({ onPrev, onNext }) {
-  const { profile } = useProfile();
+  const { profile, updateProfile } = useProfile();
   const edu = profile.education?.[0] || {};
 
-  const hasError = !edu.degree;
+  // Local state for form inputs
+  const [degree, setDegree] = useState(edu.degree || "");
+  const [fieldOfStudy, setFieldOfStudy] = useState(edu.fieldOfStudy || "");
+  const [institution, setInstitution] = useState(edu.institution || "");
+  const [endDate, setEndDate] = useState(edu.endDate || "");
+
+  // Update local state when profile changes
+  useEffect(() => {
+    setDegree(edu.degree || "");
+    setFieldOfStudy(edu.fieldOfStudy || "");
+    setInstitution(edu.institution || "");
+    setEndDate(edu.endDate || "");
+  }, [edu]);
+
+  const handleDegreeChange = (e) => {
+    setDegree(e.target.value);
+    const educationArray = [{
+      ...edu,
+      degree: e.target.value,
+    }];
+    updateProfile("education", educationArray);
+  };
+
+  const handleFieldOfStudyChange = (e) => {
+    setFieldOfStudy(e.target.value);
+    const educationArray = [{
+      ...edu,
+      fieldOfStudy: e.target.value,
+    }];
+    updateProfile("education", educationArray);
+  };
+
+  const handleInstitutionChange = (e) => {
+    setInstitution(e.target.value);
+    const educationArray = [{
+      ...edu,
+      institution: e.target.value,
+    }];
+    updateProfile("education", educationArray);
+  };
+
+  const handleEndDateChange = (e) => {
+    setEndDate(e.target.value);
+    const educationArray = [{
+      ...edu,
+      endDate: e.target.value,
+    }];
+    updateProfile("education", educationArray);
+  };
+
+  const hasError = !degree;
 
   return (
     <>
@@ -16,7 +67,8 @@ export default function Education({ onPrev, onNext }) {
         <label>Please enter the Course Name</label>
         <input
           className={hasError ? "input-error" : ""}
-          value={edu.degree || ""}
+          value={degree}
+          onChange={handleDegreeChange}
           placeholder="Course name"
         />
         {hasError && (
@@ -26,17 +78,26 @@ export default function Education({ onPrev, onNext }) {
 
       <div className="form-group">
         <label>Major</label>
-        <input value={edu.fieldOfStudy || ""} />
+        <input 
+          value={fieldOfStudy} 
+          onChange={handleFieldOfStudyChange}
+        />
       </div>
 
       <div className="form-group">
         <label>Institution</label>
-        <input value={edu.institution || ""} />
+        <input 
+          value={institution} 
+          onChange={handleInstitutionChange}
+        />
       </div>
 
       <div className="form-group">
         <label>Graduation Date</label>
-        <input value={edu.endDate || ""} />
+        <input 
+          value={endDate} 
+          onChange={handleEndDateChange}
+        />
       </div>
 
       <div className="form-actions">
