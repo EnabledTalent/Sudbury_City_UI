@@ -144,7 +144,7 @@ export default function MyJobs() {
 
     try {
       const jobId = selectedJob.id;
-      const result = await applyWithProfile(jobId, profile);
+      await applyWithProfile(jobId, profile);
       setApplySuccess(true);
       setToast({ message: "Application submitted successfully!", type: "success" });
       // Optionally refresh jobs or show success message
@@ -455,24 +455,6 @@ export default function MyJobs() {
       boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
       transition: "all 0.3s ease",
       zIndex: 10,
-    },
-    applyButtonHover: {
-      background: "linear-gradient(135deg, #15803d 0%, #166534 100%)",
-      transform: "translateY(-2px)",
-      boxShadow: "0 6px 16px rgba(22, 163, 74, 0.4)",
-      color: "#ffffff",
-      border: "none",
-      padding: "12px 24px",
-      borderRadius: "8px",
-      cursor: "pointer",
-      fontSize: "14px",
-      fontWeight: 600,
-      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-      transition: "all 0.2s",
-    },
-    applyButtonHover: {
-      background: "#15803d",
-      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.15)",
     },
     jobDetailsLogo: {
       width: "64px",

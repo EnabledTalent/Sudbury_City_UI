@@ -97,6 +97,7 @@ export default function ViewProfile() {
     };
 
     loadProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Ensure context is always in sync with fetched profile
@@ -146,7 +147,7 @@ export default function ViewProfile() {
   const completionPercentage = useMemo(() => {
     if (!profileToUse || Object.keys(profileToUse).length === 0) return 0;
     return calculateProfileCompletion(profileToUse);
-  }, [profileToUse, contextProfile, profile]);
+  }, [profileToUse]);
 
   // Calculate SVG circle progress
   const radius = 48;

@@ -1350,7 +1350,7 @@ export default function ListedJobs() {
                             {application.status && (
                               <div style={styles.applicationStatus}>
                                 Status: <span style={{
-                                  ...styles.statusBadge,
+                                  ...styles.statusBadgeModal,
                                   ...(application.status === "HIRED" || application.status === "OFFERED" || application.status === "ACCEPTED"
                                     ? { background: "#d1fae5", color: "#065f46" }
                                     : application.status === "UNDER_REVIEW"

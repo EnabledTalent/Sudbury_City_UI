@@ -53,10 +53,9 @@ export default function ReviewAgree({ onPrev, onNext }) {
 
     // Save or update profile to API
     setLoading(true);
-    const action = isEditMode ? "Updating" : "Saving";
     
     try {
-      const result = isEditMode 
+      isEditMode 
         ? await updateProfile(updatedProfile)
         : await saveProfile(updatedProfile);
       

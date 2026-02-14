@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useProfile } from "../../context/ProfileContext";
 import ProfileHeader from "./ProfileHeader";
 
 export default function BasicInfo({ onNext, onPrev }) {
   const { profile, updateProfile } = useProfile();
-  const data = profile.basicInfo || {};
+  const data = useMemo(() => profile.basicInfo || {}, [profile.basicInfo]);
   
   // Get name from various possible sources
   const getName = () => {

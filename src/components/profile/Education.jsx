@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useProfile } from "../../context/ProfileContext";
 import ProfileHeader from "./ProfileHeader";
 
 export default function Education({ onPrev, onNext }) {
   const { profile, updateProfile } = useProfile();
-  const edu = profile.education?.[0] || {};
+  const edu = useMemo(() => profile.education?.[0] || {}, [profile.education]);
 
   // Local state for form inputs
   const [degree, setDegree] = useState(edu.degree || "");
