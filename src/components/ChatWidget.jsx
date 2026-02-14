@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { getToken } from "../services/authService";
+import { BUSINESS_BASE_URL } from "../config/api";
 
 const ChatWidget = ({ onClose }) => {
   const [messages, setMessages] = useState([
@@ -70,7 +71,7 @@ const ChatWidget = ({ onClose }) => {
       }
 
       const response = await fetch(
-        "http://localhost:8083/api/jobseeker/ai/chat",
+        `${BUSINESS_BASE_URL}/api/jobseeker/ai/chat`,
         {
           method: "POST",
           headers: {
