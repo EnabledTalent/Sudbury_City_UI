@@ -140,9 +140,11 @@ export default function ViewProfile() {
 
   // Use context profile as primary source to match ProfileHeader in Update Profile page
   // This ensures both pages calculate completion from the same data source
-  const profileToUse = (contextProfile && Object.keys(contextProfile).length > 0) 
-    ? contextProfile 
-    : (profile && Object.keys(profile).length > 0 ? profile : {});
+  const profileToUse = useMemo(() => {
+    if (contextProfile && Object.keys(contextProfile).length > 0) return contextProfile;
+    if (profile && Object.keys(profile).length > 0) return profile;
+    return {};
+  }, [contextProfile, profile]);
   
   const completionPercentage = useMemo(() => {
     if (!profileToUse || Object.keys(profileToUse).length === 0) return 0;

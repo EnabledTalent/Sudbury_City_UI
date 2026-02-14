@@ -844,7 +844,7 @@ export default function ListedJobs() {
       fontSize: "12px",
       color: "#6b7280",
     },
-    statusBadge: {
+    statusBadgeModal: {
       display: "inline-block",
       padding: "2px 8px",
       borderRadius: "4px",
