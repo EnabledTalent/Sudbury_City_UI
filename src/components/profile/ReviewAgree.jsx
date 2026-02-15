@@ -339,41 +339,6 @@ export default function ReviewAgree({ onPrev, onNext }) {
       </div>
 
       <div style={styles.formGroup}>
-        <label style={styles.label}>
-          Do you have a disability? <span style={{ color: "#ef4444" }}>*</span>
-        </label>
-        <div style={styles.radioGroup}>
-          <div style={styles.radioOption}>
-            <input
-              type="radio"
-              id="disability-yes"
-              name="disability"
-              value="yes"
-              style={styles.radioInput}
-              checked={reviewAgree.hasDisability === true || reviewAgree.hasDisability === "yes"}
-              onChange={() => updateField("hasDisability", true)}
-            />
-            <label htmlFor="disability-yes" style={styles.radioLabel}>Yes</label>
-          </div>
-          <div style={styles.radioOption}>
-            <input
-              type="radio"
-              id="disability-no"
-              name="disability"
-              value="no"
-              style={styles.radioInput}
-              checked={reviewAgree.hasDisability === false || reviewAgree.hasDisability === "no"}
-              onChange={() => updateField("hasDisability", false)}
-            />
-            <label htmlFor="disability-no" style={styles.radioLabel}>No</label>
-          </div>
-        </div>
-        {errors.hasDisability && (
-          <div style={styles.errorText}>{errors.hasDisability}</div>
-        )}
-      </div>
-
-      <div style={styles.formGroup}>
         <label style={styles.label}>Comments</label>
         <textarea
           style={styles.textarea}

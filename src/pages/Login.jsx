@@ -23,82 +23,107 @@ export default function Login() {
     role: "employer",
   });
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
-  setLoading(true);
+  const switchAuthMode = (nextMode) => {
+    setMode(nextMode);
+    setError("");
+    setShowPassword(false);
 
-  try {
-    if (mode === "login") {
-     
-      // ⏳ WAIT FOR RESPONSE
-      const data = await loginUser(form.username, form.password);
-      // ✅ CONFIRM TOKEN IS STORED
-      const token = localStorage.getItem("token");
-      const role = localStorage.getItem("role");
+    // Never carry password across screens/modes
+    setForm((prev) => {
+      if (nextMode === "login") {
+        return {
+          ...prev,
+          username: prev.username || prev.email, // convenient, but safe
+          password: "",
+        };
+      }
 
-      if (token) {
-        // Route based on role
-        if (role === "EMPLOYER") {
-          // Check if organization profile exists
-          try {
-            const orgProfile = await fetchOrganizationProfile();
-            if (orgProfile) {
-              // Organization profile exists, navigate to dashboard
-              navigate("/employer/dashboard");
-            } else {
-              // No organization profile, navigate to home to fill it
+      // signup
+      return {
+        ...prev,
+        password: "",
+      };
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      if (mode === "login") {
+        // ⏳ WAIT FOR RESPONSE
+        const data = await loginUser(form.username, form.password);
+        // ✅ CONFIRM TOKEN IS STORED
+        const token = localStorage.getItem("token");
+        const role = localStorage.getItem("role");
+
+        if (token) {
+          // Route based on role
+          if (role === "EMPLOYER") {
+            // Check if organization profile exists
+            try {
+              const orgProfile = await fetchOrganizationProfile();
+              if (orgProfile) {
+                // Organization profile exists, navigate to dashboard
+                navigate("/employer/dashboard");
+              } else {
+                // No organization profile, navigate to home to fill it
+                navigate("/employer/home");
+              }
+            } catch (err) {
+              console.error("Error checking organization profile:", err);
+              // If error, still navigate to home to fill organization info
               navigate("/employer/home");
             }
-          } catch (err) {
-            console.error("Error checking organization profile:", err);
-            // If error, still navigate to home to fill organization info
-            navigate("/employer/home");
-          }
-        } else {
-          // Student login - check if profile exists
-          try {
-            const email = data.sub || data.email || data.username;
-            if (email) {
-              const profile = await fetchProfile(email);
-              if (profile && Object.keys(profile).length > 0) {
-                // Profile exists, navigate to view profile
-                navigate("/student/view-profile");
+          } else {
+            // Student login - check if profile exists
+            try {
+              const email = data.sub || data.email || data.username;
+              if (email) {
+                const profile = await fetchProfile(email);
+                if (profile && Object.keys(profile).length > 0) {
+                  // Profile exists, navigate to view profile
+                  navigate("/student/view-profile");
+                } else {
+                  // No profile, navigate to upload resume
+                  navigate("/student");
+                }
               } else {
-                // No profile, navigate to upload resume
                 navigate("/student");
               }
-            } else {
+            } catch (err) {
+              console.error("Error checking profile:", err);
               navigate("/student");
             }
-          } catch (err) {
-            console.error("Error checking profile:", err);
-            navigate("/student");
           }
+        } else {
+          setError("Token not stored");
         }
       } else {
-        setError("Token not stored");
+        await registerUser({
+          name: form.name,
+          role: form.role,
+          username: form.email,
+          password: form.password,
+        });
+        setToast({
+          message: "Signup successful! Please verify your email, then log in.",
+          type: "success",
+        });
+        // Switch to login mode after successful signup
+        setTimeout(() => {
+          switchAuthMode("login");
+          setToast({ message: "", type: "error" });
+        }, 2000);
       }
-    } else {
-      await registerUser({
-        name: form.name,
-        role: form.role,
-        username: form.email,
-        password: form.password,
-      });
-      setToast({ message: "Signup successful! You can now login.", type: "success" });
-      // Switch to login mode after successful signup
-      setTimeout(() => {
-        setMode("login");
-        setToast({ message: "", type: "error" });
-      }, 2000);
+    } catch (err) {
+      setError(err.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    setError(err.message || "Login failed");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   return (
@@ -224,7 +249,7 @@ const handleSubmit = async (e) => {
                 : "Don’t have an account?"}{" "}
               <span
                 onClick={() =>
-                  setMode(mode === "signup" ? "login" : "signup")
+                  switchAuthMode(mode === "signup" ? "login" : "signup")
                 }
               >
                 {mode === "signup" ? "Login" : "Sign Up"}
