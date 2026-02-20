@@ -13,6 +13,7 @@ import ReviewAgree from "../components/profile/ReviewAgree";
 import { fetchProfile } from "../services/profileService";
 import { useProfile } from "../context/ProfileContext";
 import { getToken } from "../services/authService";
+import TourOverlay from "../components/TourOverlay";
 
 
 const steps = [
@@ -31,9 +32,11 @@ const steps = [
 export default function ProfileBuilder() {
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [showTour, setShowTour] = useState(false);
   const { loadProfileData } = useProfile();
   const hasFetchedProfile = useRef(false);
   const ActiveComponent = steps[activeStep].component;
+  const tourKey = "tour:student:profileBuilder:v1";
 
   // Get email from token (prioritize token over profile data)
   const getEmail = () => {
@@ -104,6 +107,70 @@ export default function ProfileBuilder() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array - only run once on mount
 
+  useEffect(() => {
+    const firstTimeLogin = localStorage.getItem("firstTimeLogin") === "true";
+    const pending = localStorage.getItem("tour:student:profileBuilder:pending") === "true";
+    const status = localStorage.getItem(tourKey);
+
+    if (firstTimeLogin && pending && !status) {
+      setShowTour(true);
+      localStorage.removeItem("tour:student:profileBuilder:pending");
+    }
+  }, []);
+
+  const tourSteps = [
+    {
+      title: "Basic Info",
+      body: "Start here to confirm your name, contact details, and headline.",
+      target: '[data-tour="profile-step-basicInfo"]',
+    },
+    {
+      title: "Education",
+      body: "Add your school details so employers can understand your background.",
+      target: '[data-tour="profile-step-education"]',
+    },
+    {
+      title: "Work Experience",
+      body: "List internships, part-time roles, and achievements.",
+      target: '[data-tour="profile-step-workExperience"]',
+    },
+    {
+      title: "Skills",
+      body: "Select skills to improve job matching.",
+      target: '[data-tour="profile-step-skills"]',
+    },
+    {
+      title: "Projects",
+      body: "Showcase projects to stand out quickly.",
+      target: '[data-tour="profile-step-projects"]',
+    },
+    {
+      title: "Achievements",
+      body: "Add awards, competitions, and accomplishments.",
+      target: '[data-tour="profile-step-achievements"]',
+    },
+    {
+      title: "Certification",
+      body: "Include certifications that strengthen your profile.",
+      target: '[data-tour="profile-step-certification"]',
+    },
+    {
+      title: "Preference",
+      body: "Set the roles, locations, and preferences you’re looking for.",
+      target: '[data-tour="profile-step-preference"]',
+    },
+    {
+      title: "Other Details",
+      body: "Add any extra details that help recruiters understand you.",
+      target: '[data-tour="profile-step-otherDetails"]',
+    },
+    {
+      title: "Review & Agree",
+      body: "Review everything and submit to finish.",
+      target: '[data-tour="profile-step-reviewAgree"]',
+    },
+  ];
+
   return (
     <div className="profile-layout">
       {/* LEFT PANEL */}
@@ -130,6 +197,13 @@ export default function ProfileBuilder() {
           />
         )}
       </div>
+
+      <TourOverlay
+        open={showTour}
+        steps={tourSteps}
+        storageKey={tourKey}
+        onClose={() => setShowTour(false)}
+      />
     </div>
   );
 }

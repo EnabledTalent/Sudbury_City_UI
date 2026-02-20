@@ -29,6 +29,8 @@ export default function StudentHome() {
 
     try {
       await uploadResume(file);
+      // Trigger first-time tour in profile builder after successful upload
+      localStorage.setItem("tour:student:profileBuilder:pending", "true");
       // Navigate to profile builder so user can review and edit the parsed data
       // The profile context will automatically load the normalized data from localStorage
       navigate("/student/profile");

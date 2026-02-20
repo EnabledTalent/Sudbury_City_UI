@@ -145,6 +145,7 @@ export default function Stepper({ steps, activeStep, onStepClick }) {
         return (
           <div
             key={step.key}
+            data-tour={`profile-step-${step.key}`}
             style={{
               ...styles.step,
               ...(isActive ? styles.stepActive : {}),

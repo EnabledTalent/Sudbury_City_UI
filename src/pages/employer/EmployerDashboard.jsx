@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { fetchEmployerJobs, fetchEmployerJobStats, fetchAcceptedCandidates, fetchEmployerMetrics } from "../../services/jobService";
 import { logoutUser } from "../../services/authService";
 import Toast from "../../components/Toast";
+import TourOverlay from "../../components/TourOverlay";
 
 export default function EmployerDashboard() {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ export default function EmployerDashboard() {
   const [allJobs, setAllJobs] = useState([]);
   const [acceptanceRateData, setAcceptanceRateData] = useState(null);
   const [toast, setToast] = useState({ message: "", type: "error" });
+  const [showTour, setShowTour] = useState(false);
 
   // Map time filter to windowDays
   const getWindowDays = (filter) => {
@@ -112,6 +114,16 @@ export default function EmployerDashboard() {
 
     loadJobs();
   }, [timeFilter]);
+
+  useEffect(() => {
+    const firstTimeLogin = localStorage.getItem("firstTimeLogin") === "true";
+    const pending = localStorage.getItem("tour:employer:mainNav:pending") === "true";
+    const status = localStorage.getItem("tour:employer:mainNav:v1");
+    if ((firstTimeLogin || pending) && !status) {
+      setShowTour(true);
+      localStorage.removeItem("tour:employer:mainNav:pending");
+    }
+  }, []);
 
   const getTimeAgo = (date) => {
     const now = new Date();
@@ -619,22 +631,25 @@ export default function EmployerDashboard() {
           <span>Sudburry</span>
         </div>
         <div style={styles.navLinks}>
-          <span style={styles.navLinkActive}>Dashboard</span>
+          <span style={styles.navLinkActive} data-tour="employer-nav-dashboard">Dashboard</span>
           <span
             style={styles.navLink}
             onClick={() => navigate("/employer/candidates")}
+            data-tour="employer-nav-candidates"
           >
             Candidates
           </span>
           <span
             style={styles.navLink}
             onClick={() => navigate("/employer/listed-jobs")}
+            data-tour="employer-nav-listedjobs"
           >
             Listed Jobs
           </span>
           <span
             style={styles.navLink}
             onClick={() => navigate("/employer/company-profile")}
+            data-tour="employer-nav-companyprofile"
           >
             Company Profile
           </span>
@@ -682,6 +697,7 @@ export default function EmployerDashboard() {
           <button
             style={styles.postJobBtn}
             onClick={() => navigate("/employer/post-job")}
+            data-tour="employer-postjob"
           >
             Post a Job +
           </button>
@@ -930,6 +946,39 @@ export default function EmployerDashboard() {
         message={toast.message}
         type={toast.type}
         onClose={() => setToast({ message: "", type: "error" })}
+      />
+
+      <TourOverlay
+        open={showTour}
+        steps={[
+          {
+            title: "Dashboard",
+            body: "Your high-level metrics and activity overview.",
+            target: '[data-tour="employer-nav-dashboard"]',
+          },
+          {
+            title: "Candidates",
+            body: "Review candidates and manage your pipeline.",
+            target: '[data-tour="employer-nav-candidates"]',
+          },
+          {
+            title: "Listed Jobs",
+            body: "See and manage all jobs you’ve posted.",
+            target: '[data-tour="employer-nav-listedjobs"]',
+          },
+          {
+            title: "Company Profile",
+            body: "Update your organization details anytime.",
+            target: '[data-tour="employer-nav-companyprofile"]',
+          },
+          {
+            title: "Post a Job",
+            body: "Create a new job posting and start receiving candidates.",
+            target: '[data-tour="employer-postjob"]',
+          },
+        ]}
+        storageKey="tour:employer:mainNav:v1"
+        onClose={() => setShowTour(false)}
       />
     </div>
   );

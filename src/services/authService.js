@@ -45,9 +45,38 @@ export const registerUser = async (payload) => {
     body: JSON.stringify(payload),
   });
 
-  if (!res.ok) throw new Error("Registration failed");
-  
-  const response = await res.json();
+  const raw = await res.text();
+
+  const parseApiMessage = (text) => {
+    if (!text) return null;
+    try {
+      const data = JSON.parse(text);
+      if (typeof data === "string") return data;
+      if (data?.message) return data.message;
+      if (data?.error) return data.error;
+      if (data?.detail) return data.detail;
+      if (data?.title) return data.title;
+      if (Array.isArray(data?.errors) && data.errors.length > 0) {
+        return data.errors.join(", ");
+      }
+      return text; // fallback: show whatever backend returned
+    } catch {
+      return text; // plain-text error
+    }
+  };
+
+  if (!res.ok) {
+    const apiMessage = parseApiMessage(raw);
+    throw new Error(apiMessage || `Registration failed (${res.status})`);
+  }
+
+  const response = raw ? (() => {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return raw;
+    }
+  })() : {};
   
   // Handle new response format: { token: { token: "...", role: { role: "..." } } }
   if (response.token) {
@@ -89,11 +118,31 @@ export const loginUser = async (username, password) => {
 
   // ⛔ must be 200
   if (!response.ok) {
-    throw new Error("Login failed");
+    const rawError = await response.text();
+    throw new Error(rawError || "Login failed");
   }
 
-  // ✅ READ RAW TOKEN STRING
-  const token = await response.text();
+  // Response can be either:
+  // - raw token string
+  // - JSON: { token: { token: "...", role: { role: "..." } }, firstTimeLogin: true }
+  const raw = await response.text();
+
+  let token = "";
+  let role = "";
+  let firstTimeLogin = false;
+
+  try {
+    const data = JSON.parse(raw);
+    if (data?.token?.token) {
+      token = data.token.token;
+      role = data.token.role?.role || data.token.role || "";
+      firstTimeLogin = Boolean(data.firstTimeLogin);
+    } else if (typeof data === "string") {
+      token = data;
+    }
+  } catch {
+    token = raw;
+  }
 
   if (!token) {
     throw new Error("Token missing");
@@ -104,9 +153,10 @@ export const loginUser = async (username, password) => {
 
   // ✅ DECODE ROLE FROM JWT PAYLOAD
   const payload = JSON.parse(atob(token.split(".")[1]));
-  localStorage.setItem("role", payload.role);
+  localStorage.setItem("role", role || payload.role);
+  localStorage.setItem("firstTimeLogin", firstTimeLogin ? "true" : "false");
 
-  return payload; // contains role, sub, exp, etc.
+  return { ...payload, firstTimeLogin }; // contains role, sub, exp, etc.
 };
 
 /**

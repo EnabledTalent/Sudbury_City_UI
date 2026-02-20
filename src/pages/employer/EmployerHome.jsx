@@ -51,6 +51,8 @@ export default function EmployerHome() {
       // Save organization info to API
       await saveOrganizationProfile(formData);
       setToast({ message: "Organization profile saved successfully!", type: "success" });
+      // Trigger first-time tour on employer dashboard
+      localStorage.setItem("tour:employer:mainNav:pending", "true");
       // Navigate to dashboard on success after a short delay
       setTimeout(() => {
         navigate("/employer/dashboard");

@@ -49,6 +49,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setToast({ message: "", type: "error" });
     setLoading(true);
 
     try {
@@ -104,7 +105,7 @@ export default function Login() {
       } else {
         await registerUser({
           name: form.name,
-          role: form.role,
+          role: form.role === "student" ? "Student" : form.role,
           username: form.email,
           password: form.password,
         });
@@ -119,7 +120,13 @@ export default function Login() {
         }, 2000);
       }
     } catch (err) {
-      setError(err.message || "Login failed");
+      const message = err?.message || (mode === "signup" ? "Signup failed" : "Login failed");
+      if (mode === "signup") {
+        setError("");
+        setToast({ message, type: "error" });
+      } else {
+        setError(message);
+      }
     } finally {
       setLoading(false);
     }
@@ -185,7 +192,7 @@ export default function Login() {
                         setForm({ ...form, role: e.target.value })
                       }
                     >
-                      <option value="student">Student</option>
+                      <option value="student">Talent</option>
                       <option value="employer">Employer</option>
                     </select>
                   </div>

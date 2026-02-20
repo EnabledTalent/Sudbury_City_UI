@@ -7,6 +7,7 @@ import { calculateProfileCompletion } from "../utils/profileCompletion";
 import ChatWidget from "../components/ChatWidget";
 import { useProfile } from "../context/ProfileContext";
 import Toast from "../components/Toast";
+import TourOverlay from "../components/TourOverlay";
 
 export default function ViewProfile() {
   const navigate = useNavigate();
@@ -33,6 +34,7 @@ export default function ViewProfile() {
   const [isEditingAbout, setIsEditingAbout] = useState(false);
   const [savingAbout, setSavingAbout] = useState(false);
   const [toast, setToast] = useState({ message: "", type: "error" });
+  const [showTour, setShowTour] = useState(false);
 
   // Get email from localStorage or context
   const getEmail = () => {
@@ -98,6 +100,15 @@ export default function ViewProfile() {
 
     loadProfile();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const firstTimeLogin = localStorage.getItem("firstTimeLogin") === "true";
+    const tourKey = "tour:student:mainNav:v1";
+    const status = localStorage.getItem(tourKey);
+    if (firstTimeLogin && !status) {
+      setShowTour(true);
+    }
   }, []);
 
   // Ensure context is always in sync with fetched profile
@@ -721,16 +732,18 @@ export default function ViewProfile() {
           <span>Sudburry</span>
         </div>
         <div style={styles.navLinks}>
-          <span style={styles.navLinkActive}>Home</span>
+          <span style={styles.navLinkActive} data-tour="student-nav-home">Home</span>
           <span 
             style={styles.navLink}
             onClick={() => navigate("/student/my-jobs")}
+            data-tour="student-nav-myjobs"
           >
             My Jobs
           </span>
           <span 
             style={styles.navLink}
             onClick={() => navigate("/student/dashboard")}
+            data-tour="student-nav-dashboard"
           >
             Dashboard
           </span>
@@ -766,6 +779,7 @@ export default function ViewProfile() {
           <button 
             style={styles.aiCoachBtn}
             onClick={() => setShowChatWidget(true)}
+            data-tour="student-ai-coach"
           >
             <span>Q</span>
             AI Career Coach
@@ -1354,6 +1368,34 @@ export default function ViewProfile() {
           onClose={() => setToast({ message: "", type: "error" })}
         />
       )}
+
+      <TourOverlay
+        open={showTour}
+        steps={[
+          {
+            title: "Home",
+            body: "Your profile overview and recommended next steps live here.",
+            target: '[data-tour="student-nav-home"]',
+          },
+          {
+            title: "My Jobs",
+            body: "Track jobs you’ve applied to and see updates in one place.",
+            target: '[data-tour="student-nav-myjobs"]',
+          },
+          {
+            title: "Dashboard",
+            body: "Quick insights, notifications, and activity summary.",
+            target: '[data-tour="student-nav-dashboard"]',
+          },
+          {
+            title: "AI Career Coach",
+            body: "Use the coach to improve your resume, answers, and job search strategy.",
+            target: '[data-tour="student-ai-coach"]',
+          },
+        ]}
+        storageKey="tour:student:mainNav:v1"
+        onClose={() => setShowTour(false)}
+      />
     </div>
   );
 }
