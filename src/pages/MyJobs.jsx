@@ -21,6 +21,8 @@ export default function MyJobs() {
   const [toast, setToast] = useState({ message: "", type: "error" });
   const [searchQuery, setSearchQuery] = useState("");
   const [showChatWidget, setShowChatWidget] = useState(false);
+  const [showExternalConfirm, setShowExternalConfirm] = useState(false);
+  const [pendingExternalApply, setPendingExternalApply] = useState(null);
 
   // Fetch jobs/applications from API based on filter
   useEffect(() => {
@@ -74,6 +76,7 @@ export default function MyJobs() {
                 ...app, // Include all application fields
               };
             });
+
         }
         
         setJobs(data || []);
@@ -114,6 +117,28 @@ export default function MyJobs() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- filter is the only intended trigger; profile email/selectedJob used inside but would cause unnecessary re-fetches or loops
   }, [filter]);
 
+  // If user opened an external apply link, ask for confirmation when they return focus.
+  useEffect(() => {
+    const onFocus = () => {
+      if (document.visibilityState === "visible" && pendingExternalApply && !showExternalConfirm) {
+        setShowExternalConfirm(true);
+      }
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible" && pendingExternalApply && !showExternalConfirm) {
+        setShowExternalConfirm(true);
+      }
+    };
+
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [pendingExternalApply, showExternalConfirm]);
+
   const handleJobClick = (job) => {
     setSelectedJob(job);
     setApplyError("");
@@ -126,9 +151,24 @@ export default function MyJobs() {
       return;
     }
 
+    if (selectedJob.externalApplied) {
+      setToast({ message: "Already marked as applied.", type: "success" });
+      return;
+    }
+
     // Check if job has externalApplyUrl - if so, navigate to that URL
     if (selectedJob.externalApplyUrl && selectedJob.externalApplyUrl !== null && selectedJob.externalApplyUrl.trim() !== "") {
+      setPendingExternalApply({
+        jobId: selectedJob.id,
+        url: selectedJob.externalApplyUrl,
+        ts: Date.now(),
+        role: selectedJob.role || selectedJob.jobTitle || "",
+      });
+      // Show confirmation prompt immediately on Apply click
+      setShowExternalConfirm(true);
+      // Open the external link in a new tab
       window.open(selectedJob.externalApplyUrl, "_blank");
+      setToast({ message: "Complete the application, then confirm here.", type: "success" });
       return;
     }
 
@@ -543,6 +583,64 @@ export default function MyJobs() {
       padding: "60px 20px",
       color: "#6b7280",
     },
+    modalOverlay: {
+      position: "fixed",
+      inset: 0,
+      background: "rgba(17, 24, 39, 0.55)",
+      zIndex: 20000,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "20px",
+    },
+    modal: {
+      width: "100%",
+      maxWidth: "520px",
+      background: "#ffffff",
+      borderRadius: "16px",
+      boxShadow: "0 25px 50px -12px rgba(0,0,0,0.35)",
+      border: "1px solid rgba(0,0,0,0.08)",
+      padding: "18px",
+    },
+    modalTitle: {
+      margin: 0,
+      fontSize: "16px",
+      fontWeight: 800,
+      color: "#111827",
+      marginBottom: "6px",
+    },
+    modalText: {
+      margin: 0,
+      fontSize: "13px",
+      color: "#374151",
+      lineHeight: 1.5,
+    },
+    modalActions: {
+      display: "flex",
+      justifyContent: "flex-end",
+      gap: "10px",
+      marginTop: "16px",
+    },
+    modalBtnSecondary: {
+      background: "#f3f4f6",
+      border: "none",
+      padding: "10px 14px",
+      borderRadius: "10px",
+      cursor: "pointer",
+      fontSize: "13px",
+      fontWeight: 700,
+      color: "#374151",
+    },
+    modalBtnPrimary: {
+      background: "#16a34a",
+      color: "#ffffff",
+      border: "none",
+      padding: "10px 14px",
+      borderRadius: "10px",
+      cursor: "pointer",
+      fontSize: "13px",
+      fontWeight: 800,
+    },
   };
 
   // Filter jobs by search query (role and company name) - client-side filtering
@@ -747,26 +845,26 @@ export default function MyJobs() {
                   style={{
                     ...styles.applyButton,
                     ...(applying ? { opacity: 0.7, cursor: "not-allowed" } : {}),
-                    ...(applySuccess ? { background: "#22c55e" } : {}),
+                    ...((applySuccess || selectedJob.externalApplied) ? { background: "#22c55e" } : {}),
                   }}
                   onClick={handleApply}
-                  disabled={applying}
+                  disabled={applying || selectedJob.externalApplied}
                   onMouseEnter={(e) => {
-                    if (!applying && !applySuccess) {
+                    if (!applying && !applySuccess && !selectedJob.externalApplied) {
                       e.target.style.background = "#15803d";
                       e.target.style.boxShadow = "0 6px 16px rgba(22, 163, 74, 0.4)";
                       e.target.style.transform = "translateY(-2px)";
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (!applying && !applySuccess) {
+                    if (!applying && !applySuccess && !selectedJob.externalApplied) {
                       e.target.style.background = "linear-gradient(135deg, #16a34a 0%, #15803d 100%)";
                       e.target.style.boxShadow = "0 4px 12px rgba(22, 163, 74, 0.3)";
                       e.target.style.transform = "translateY(0)";
                     }
                   }}
                 >
-                  {applying ? "Applying..." : applySuccess ? "✓ Applied" : "Apply"}
+                  {applying ? "Applying..." : (applySuccess || selectedJob.externalApplied) ? "✓ Applied" : "Apply"}
                 </button>
               )}
               <div style={styles.jobDetailsHeader}>
@@ -868,6 +966,91 @@ export default function MyJobs() {
         onClose={() => setToast({ message: "", type: "error" })}
         duration={toast.type === "error" ? 5000 : 3000}
       />
+
+      {showExternalConfirm && (
+        <div
+          style={styles.modalOverlay}
+          onClick={() => {
+            setShowExternalConfirm(false);
+          }}
+        >
+          <div
+            style={styles.modal}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <h3 style={styles.modalTitle}>Did you complete your application?</h3>
+            <p style={styles.modalText}>
+              {pendingExternalApply?.role
+                ? `For “${pendingExternalApply.role}”.`
+                : "For the job you just opened."}{" "}
+              If yes, we’ll mark it as Applied by submitting your profile in the portal.
+            </p>
+            <div style={styles.modalActions}>
+              <button
+                type="button"
+                style={styles.modalBtnSecondary}
+                onClick={() => {
+                  setShowExternalConfirm(false);
+                  setPendingExternalApply(null);
+                }}
+              >
+                No
+              </button>
+              <button
+                type="button"
+                style={styles.modalBtnPrimary}
+                onClick={async () => {
+                  const pending = pendingExternalApply;
+                  if (!pending?.jobId) {
+                    setShowExternalConfirm(false);
+                    setPendingExternalApply(null);
+                    return;
+                  }
+                  if (!profile || !profile.basicInfo?.email) {
+                    setToast({
+                      message: "Profile data is missing. Please complete your profile first.",
+                      type: "error",
+                    });
+                    return;
+                  }
+
+                  try {
+                    setApplying(true);
+                    await applyWithProfile(pending.jobId, profile);
+                    setToast({ message: "Marked as Applied.", type: "success" });
+
+                    // Update local UI state only (no localStorage persistence)
+                    setJobs((prev) =>
+                      (prev || []).map((j) =>
+                        j.id === pending.jobId ? { ...j, externalApplied: true } : j
+                      )
+                    );
+                    if (selectedJob?.id === pending.jobId) {
+                      setSelectedJob((prev) => ({ ...prev, externalApplied: true }));
+                    }
+                    setApplySuccess(true);
+                    setTimeout(() => setApplySuccess(false), 2500);
+                    setShowExternalConfirm(false);
+                    setPendingExternalApply(null);
+                  } catch (err) {
+                    console.error("Error marking external apply as applied:", err);
+                    setToast({
+                      message: err.message || "Failed to mark as applied. Please try again.",
+                      type: "error",
+                    });
+                  } finally {
+                    setApplying(false);
+                  }
+                }}
+              >
+                Yes, I applied
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Chat Widget */}
       {showChatWidget && <ChatWidget onClose={() => setShowChatWidget(false)} />}

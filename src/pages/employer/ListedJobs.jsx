@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { fetchEmployerJobs, fetchEmployerJobStats, fetchJobApplications, updateApplicationStatus, sendInterviewInvitation, sendJobOffer, rejectApplication, updateJob, deleteJob } from "../../services/jobService";
 import { logoutUser } from "../../services/authService";
 import Toast from "../../components/Toast";
+import { fetchProfile } from "../../services/profileService";
 
 export default function ListedJobs() {
   const navigate = useNavigate();
@@ -16,6 +17,10 @@ export default function ListedJobs() {
   const [showCandidatesModal, setShowCandidatesModal] = useState(false);
   const [jobCandidates, setJobCandidates] = useState([]);
   const [selectedApplication, setSelectedApplication] = useState(null);
+  const [statusDraftById, setStatusDraftById] = useState({});
+  const [selectedCandidateProfile, setSelectedCandidateProfile] = useState(null);
+  const [loadingCandidateProfile, setLoadingCandidateProfile] = useState(false);
+  const [candidateProfileError, setCandidateProfileError] = useState("");
   const [loadingCandidates, setLoadingCandidates] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -127,6 +132,8 @@ export default function ListedJobs() {
     if (!showCandidatesModal) return;
     if (!jobCandidates || jobCandidates.length === 0) {
       setSelectedApplication(null);
+      setSelectedCandidateProfile(null);
+      setCandidateProfileError("");
       return;
     }
     // Default to first application if none selected
@@ -139,6 +146,38 @@ export default function ListedJobs() {
       setSelectedApplication(jobCandidates[0]);
     }
   }, [jobCandidates, selectedApplication, showCandidatesModal]);
+
+  useEffect(() => {
+    if (!showCandidatesModal || !selectedApplication) return;
+
+    const candidate = selectedApplication.jobSeekerProfile || selectedApplication;
+    const email = candidate.email || selectedApplication.email || "";
+    if (!email) {
+      setSelectedCandidateProfile(null);
+      setCandidateProfileError("Email not available for this candidate.");
+      return;
+    }
+
+    let cancelled = false;
+    setLoadingCandidateProfile(true);
+    setCandidateProfileError("");
+    setSelectedCandidateProfile(null);
+
+    fetchProfile(email)
+      .then((data) => {
+        if (!cancelled) setSelectedCandidateProfile(data || {});
+      })
+      .catch((err) => {
+        if (!cancelled) setCandidateProfileError(err.message || "Failed to load candidate profile");
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingCandidateProfile(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [showCandidatesModal, selectedApplication]);
 
   // Filter jobs based on search query - must be defined before useEffect that uses it
   const filteredJobs = jobs.filter((job) => {
@@ -814,56 +853,60 @@ export default function ListedJobs() {
     },
     candidateCardModal: {
       display: "flex",
-      gap: "20px",
-      padding: "20px",
+      alignItems: "flex-start",
+      gap: "14px",
+      padding: "16px",
       background: "#ffffff",
       borderRadius: "16px",
-      border: "2px solid rgba(0, 0, 0, 0.06)",
-      transition: "all 0.3s ease",
-      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
+      border: "1px solid #e5e7eb",
+      transition: "box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease",
+      boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
       cursor: "pointer",
     },
     candidateCardModalSelected: {
-      border: "2px solid #16a34a",
-      background: "linear-gradient(135deg, rgba(22, 163, 74, 0.06) 0%, rgba(21, 128, 61, 0.04) 100%)",
-      boxShadow: "0 10px 26px rgba(22, 163, 74, 0.18), 0 4px 12px rgba(0, 0, 0, 0.08)",
+      border: "1px solid rgba(22, 163, 74, 0.55)",
+      background: "#f0fdf4",
+      boxShadow: "0 10px 24px rgba(22, 163, 74, 0.14), 0 6px 14px rgba(0, 0, 0, 0.06)",
     },
     candidatePicModal: {
-      width: "48px",
-      height: "48px",
+      width: "44px",
+      height: "44px",
       borderRadius: "50%",
       background: "linear-gradient(135deg, #16a34a, #15803d)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       color: "#ffffff",
-      fontSize: "20px",
-      fontWeight: 700,
+      fontSize: "18px",
+      fontWeight: 800,
       flexShrink: 0,
     },
     candidateInfoModal: {
       flex: 1,
+      minWidth: 0,
     },
     candidateNameModal: {
       fontSize: "16px",
-      fontWeight: 600,
+      fontWeight: 800,
       color: "#111827",
-      marginBottom: "4px",
+      marginBottom: "2px",
     },
     candidateRoleModal: {
       fontSize: "14px",
       color: "#6b7280",
-      marginBottom: "8px",
+      marginBottom: "6px",
     },
     candidateDetailsModal: {
       fontSize: "12px",
       color: "#9ca3af",
-      marginBottom: "8px",
+      marginBottom: "10px",
+      lineHeight: 1.4,
     },
     applicationStatusRow: {
       display: "flex",
       justifyContent: "space-between",
-      alignItems: "center",
+      alignItems: "flex-end",
+      gap: "10px",
       marginTop: "8px",
     },
     statusLeft: {
@@ -877,7 +920,7 @@ export default function ListedJobs() {
       color: "#6b7280",
     },
     matchBadgeModal: {
-      background: "#fef3c7",
+      background: "#fffbeb",
       color: "#92400e",
       padding: "4px 10px",
       borderRadius: "999px",
@@ -979,6 +1022,7 @@ export default function ListedJobs() {
       background: "#ffffff",
       cursor: "pointer",
       fontWeight: 500,
+      minWidth: "140px",
     },
   };
 
@@ -1287,6 +1331,7 @@ export default function ListedJobs() {
                     const applications = await fetchJobApplications(selectedJob.id);
                     setJobCandidates(applications);
                     setSelectedApplication(applications?.[0] || null);
+                    setStatusDraftById({});
                   } catch (error) {
                     console.error("Error fetching job applications:", error);
                     setToast({ message: `Failed to load candidates: ${error.message}`, type: "error" });
@@ -1469,6 +1514,20 @@ export default function ListedJobs() {
                           ...(isSelected ? styles.candidateCardModalSelected : {}),
                         }}
                         onClick={() => setSelectedApplication(application)}
+                        onMouseEnter={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.boxShadow = "0 10px 24px rgba(0,0,0,0.08)";
+                            e.currentTarget.style.transform = "translateY(-1px)";
+                            e.currentTarget.style.borderColor = "#d1d5db";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.boxShadow = styles.candidateCardModal.boxShadow;
+                            e.currentTarget.style.transform = "translateY(0)";
+                            e.currentTarget.style.borderColor = styles.candidateCardModal.border;
+                          }
+                        }}
                       >
                         <div style={styles.candidatePicModal}>
                           {fullName.charAt(0).toUpperCase()}
@@ -1507,10 +1566,14 @@ export default function ListedJobs() {
                             </div>
                             <div style={styles.statusActions}>
                               <select
-                                style={styles.statusSelect}
-                                value={application.status === "OFFERED" ? "ACCEPTED" : (application.status || "UNDER_REVIEW")}
+                                style={{
+                                  ...styles.statusSelect,
+                                  color: (statusDraftById[application.id] ?? "") ? "#111827" : "#9ca3af",
+                                }}
+                                value={statusDraftById[application.id] ?? ""}
                                 onChange={async (e) => {
                                   const uiStatus = e.target.value;
+                                  if (!uiStatus) return;
                                   // Map UI status to backend enum value
                                   // ACCEPTED in UI maps to OFFERED in backend (backend doesn't have ACCEPTED enum)
                                   const backendStatus = uiStatus === "ACCEPTED" ? "OFFERED" : uiStatus;
@@ -1547,6 +1610,7 @@ export default function ListedJobs() {
                                           : app
                                       )
                                     );
+                                    setStatusDraftById((prev) => ({ ...prev, [application.id]: "" }));
                                     setToast({ 
                                       message: `Status updated to ${uiStatus}${backendStatus === "OFFERED" || backendStatus === "REJECTED" || backendStatus === "UNDER_REVIEW" ? " and email sent" : ""}`, 
                                       type: "success" 
@@ -1618,6 +1682,7 @@ export default function ListedJobs() {
                                   }
                                 }}
                               >
+                                <option value="" disabled>---</option>
                                 <option value="UNDER_REVIEW">In Review</option>
                                 <option value="ACCEPTED">Accepted</option>
                                 <option value="HIRED">Hired</option>
@@ -1635,11 +1700,14 @@ export default function ListedJobs() {
                   <div style={styles.candidateDetailsPane}>
                     {selectedApplication ? (() => {
                       const c = selectedApplication.jobSeekerProfile || selectedApplication;
-                      const fullName = c.fullName || c.name || selectedApplication.firstName || "Unknown";
-                      const email = c.email || selectedApplication.email || "";
-                      const phone = c.phone || c.basicInfo?.phone || "";
-                      const location = c.city || c.location || "Location not specified";
-                      const role = c.workExperience?.[0]?.jobTitle || "Job Seeker";
+                      const p = selectedCandidateProfile && Object.keys(selectedCandidateProfile).length > 0
+                        ? selectedCandidateProfile
+                        : c;
+                      const fullName = p.fullName || p.basicInfo?.name || c.fullName || c.name || selectedApplication.firstName || "Unknown";
+                      const email = p.basicInfo?.email || p.email || c.email || selectedApplication.email || "";
+                      const phone = p.basicInfo?.phone || p.phone || c.phone || c.basicInfo?.phone || "";
+                      const location = p.basicInfo?.city || p.city || p.location || c.city || c.location || "Location not specified";
+                      const role = (p.workExperience?.[0]?.jobTitle || c.workExperience?.[0]?.jobTitle || "Job Seeker");
 
                       const matchPctRaw =
                         selectedApplication.matchPercentage ??
@@ -1652,7 +1720,7 @@ export default function ListedJobs() {
                           : Number(matchPctRaw);
                       const matchPctDisplay = Number.isFinite(matchPct) ? Math.round(matchPct) : null;
 
-                      const skillsRaw = c.skills || c.primarySkills || [];
+                      const skillsRaw = p.primarySkills || p.skills || c.skills || c.primarySkills || [];
                       const skills = Array.isArray(skillsRaw)
                         ? skillsRaw
                             .map((s) => (typeof s === "string" ? s : (s?.name || s?.skill || "")))
@@ -1660,8 +1728,8 @@ export default function ListedJobs() {
                             .filter(Boolean)
                         : [];
 
-                      const education = Array.isArray(c.education) ? c.education : [];
-                      const workExperience = Array.isArray(c.workExperience) ? c.workExperience : [];
+                      const education = Array.isArray(p.education) ? p.education : (Array.isArray(c.education) ? c.education : []);
+                      const workExperience = Array.isArray(p.workExperience) ? p.workExperience : (Array.isArray(c.workExperience) ? c.workExperience : []);
 
                       return (
                         <>
@@ -1689,6 +1757,12 @@ export default function ListedJobs() {
 
                           <div style={styles.detailsSection}>
                             <div style={styles.detailsSectionTitle}>Contact</div>
+                            {loadingCandidateProfile && (
+                              <div style={styles.detailsRow}>Loading full profile…</div>
+                            )}
+                            {candidateProfileError && (
+                              <div style={{ ...styles.detailsRow, color: "#ef4444" }}>{candidateProfileError}</div>
+                            )}
                             {email && <div style={styles.detailsRow}><strong>Email:</strong> {email}</div>}
                             {phone && <div style={styles.detailsRow}><strong>Phone:</strong> {phone}</div>}
                             {!email && !phone && (
@@ -1710,6 +1784,18 @@ export default function ListedJobs() {
                           </div>
 
                           <div style={styles.detailsSection}>
+                            <div style={styles.detailsSectionTitle}>About</div>
+                            <div style={styles.detailsRow}>
+                              {p.otherDetails?.otherDetailsText ||
+                                p.otherDetails?.summary ||
+                                p.summary ||
+                                c.summary ||
+                                c.about ||
+                                "No about information available."}
+                            </div>
+                          </div>
+
+                          <div style={styles.detailsSection}>
                             <div style={styles.detailsSectionTitle}>Education</div>
                             {education.length === 0 ? (
                               <div style={styles.detailsRow}>No education available.</div>
@@ -1718,7 +1804,7 @@ export default function ListedJobs() {
                                 <div key={i} style={styles.detailsRow}>
                                   <strong>{edu.degree || "Education"}</strong>
                                   {edu.institution ? ` • ${edu.institution}` : ""}
-                                  {edu.year ? ` • ${edu.year}` : ""}
+                                  {edu.endDate ? ` • ${edu.endDate}` : (edu.year ? ` • ${edu.year}` : "")}
                                 </div>
                               ))
                             )}
