@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from "react";
-import { Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { logoutUser, getToken } from "../services/authService";
 import { fetchProfile, updateProfile } from "../services/profileService";
@@ -430,19 +429,6 @@ export default function ViewProfile() {
       fontSize: "14px",
       color: "#6b7280",
     },
-    editIcon: {
-      width: "36px",
-      height: "36px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      background: "#ffffff",
-      color: "#111827",
-      border: "1px solid #e5e7eb",
-      borderRadius: "10px",
-      cursor: "pointer",
-      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
-    },
     sectionCard: {
       background: "#ffffff",
       borderRadius: "16px",
@@ -851,9 +837,6 @@ export default function ViewProfile() {
                 <div style={styles.profileName}>{name}</div>
                 <div style={styles.profileTitle}>{jobTitle}</div>
               </div>
-              <span style={styles.editIcon} aria-hidden="true">
-                <Pencil size={16} strokeWidth={2.5} />
-              </span>
             </div>
 
             {/* About Section */}
@@ -864,9 +847,6 @@ export default function ViewProfile() {
               >
                 <h3 style={styles.sectionTitle}>
                   About
-                  <span style={{ display: "inline-flex", alignItems: "center" }}>
-                    <Pencil size={14} strokeWidth={2.5} />
-                  </span>
                 </h3>
                 <button style={styles.chevronButton}>
                   <span style={styles.getChevronIcon(expandedSections.about)}>▼</span>

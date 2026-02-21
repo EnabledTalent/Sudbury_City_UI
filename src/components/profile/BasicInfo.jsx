@@ -16,8 +16,8 @@ export default function BasicInfo({ onNext, onPrev }) {
   // Local state for form inputs
   const [firstName, setFirstName] = useState(nameParts[0] || "");
   const [lastName, setLastName] = useState(nameParts.slice(1).join(" ") || "");
-  const [email, setEmail] = useState(data.email || profile.email || "");
-  const [phone, setPhone] = useState(data.phone || profile.phone || "");
+  const [email, setEmail] = useState(data.email ?? profile.email ?? "");
+  const [phone, setPhone] = useState(data.phone ?? profile.phone ?? "");
 
   // Update local state when profile changes
   useEffect(() => {
@@ -25,8 +25,8 @@ export default function BasicInfo({ onNext, onPrev }) {
     const nameParts = name.split(" ");
     setFirstName(nameParts[0] || "");
     setLastName(nameParts.slice(1).join(" ") || "");
-    setEmail(data.email || profile.email || "");
-    setPhone(data.phone || profile.phone || "");
+    setEmail(data.email ?? profile.email ?? "");
+    setPhone(data.phone ?? profile.phone ?? "");
   }, [data, profile]);
 
   const handleFirstNameChange = (e) => {

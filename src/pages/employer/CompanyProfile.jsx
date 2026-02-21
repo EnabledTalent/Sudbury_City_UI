@@ -13,6 +13,7 @@ export default function CompanyProfile() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ message: "", type: "error" });
+  const [websiteError, setWebsiteError] = useState("");
   const [companyData, setCompanyData] = useState({
     name: "",
     subtitle: "Software development company",
@@ -86,6 +87,9 @@ export default function CompanyProfile() {
       ...prev,
       [name]: value,
     }));
+    if (name === "website") {
+      setWebsiteError("");
+    }
   };
 
   const handleCompanySizeChange = (size) => {
@@ -105,6 +109,7 @@ export default function CompanyProfile() {
 
   const handleCancel = () => {
     setIsEditMode(false);
+    setWebsiteError("");
     // Reset form data to original values
     if (rawProfile) {
       setFormData({
@@ -119,10 +124,43 @@ export default function CompanyProfile() {
     }
   };
 
+  const normalizeHttpsUrl = (raw) => {
+    const v = String(raw || "").trim();
+    if (!v) return "";
+    if (v.startsWith("https://")) return v;
+    if (v.startsWith("http://")) return `https://${v.slice("http://".length)}`;
+    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(v)) return v;
+    return `https://${v}`;
+  };
+
+  const validateWebsite = (raw) => {
+    const v = String(raw || "").trim();
+    if (!v) return "Website is required";
+    const normalized = normalizeHttpsUrl(v);
+    if (!normalized.startsWith("https://")) return "Website must start with https://";
+    try {
+      // eslint-disable-next-line no-new
+      new URL(normalized);
+    } catch {
+      return "Please enter a valid website URL";
+    }
+    return "";
+  };
+
   const handleSave = async () => {
     try {
+      const websiteValidation = validateWebsite(formData.website);
+      if (websiteValidation) {
+        setWebsiteError(websiteValidation);
+        setToast({ message: websiteValidation, type: "error" });
+        return;
+      }
+
+      const normalizedWebsite = normalizeHttpsUrl(formData.website);
+      const payload = { ...formData, website: normalizedWebsite };
+
       setSaving(true);
-      await updateOrganizationProfile(formData);
+      await updateOrganizationProfile(payload);
       setToast({ message: "Organization profile updated successfully!", type: "success" });
       // Reload profile data
       await loadOrganizationProfile();
@@ -719,21 +757,34 @@ export default function CompanyProfile() {
 
                 {/* Website */}
                 <div style={styles.formGroup}>
-                  <label style={styles.label}>Website</label>
+                  <label style={styles.label}>Website *</label>
                   <input
                     type="url"
                     name="website"
                     value={formData.website}
                     onChange={handleInputChange}
-                    placeholder="Enter website link"
+                    placeholder="https://example.com"
                     style={styles.input}
+                    required
+                    pattern="https://.*"
+                    title="Website must start with https://"
                     onFocus={(e) => {
                       e.target.style.borderColor = "#16a34a";
                     }}
                     onBlur={(e) => {
                       e.target.style.borderColor = "#e5e7eb";
+                      const normalized = normalizeHttpsUrl(e.target.value);
+                      if (normalized !== e.target.value) {
+                        setFormData((prev) => ({ ...prev, website: normalized }));
+                      }
+                      setWebsiteError(validateWebsite(normalized));
                     }}
                   />
+                  {websiteError && (
+                    <div style={{ fontSize: "12px", color: "#ef4444", marginTop: "6px" }}>
+                      {websiteError}
+                    </div>
+                  )}
                 </div>
 
                 {/* Company Size */}

@@ -310,7 +310,7 @@ export default function OtherDetails({ onPrev, onNext }) {
       <div style={styles.formGroup}>
         <div style={styles.questionText}>
           What is your earliest availability for any full-time opportunities
-          that may come from the BReady Talent Access Service?
+          that may come from the Sudbury Talent Access Service?
         </div>
         <div style={styles.inputWrapper}>
           <input

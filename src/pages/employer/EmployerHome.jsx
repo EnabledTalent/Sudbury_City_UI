@@ -7,6 +7,7 @@ import YearPicker from "../../components/YearPicker";
 
 export default function EmployerHome() {
   const navigate = useNavigate();
+  const [websiteError, setWebsiteError] = useState("");
   const [formData, setFormData] = useState({
     organizationName: "",
     aboutOrganization: "",
@@ -26,6 +27,9 @@ export default function EmployerHome() {
 
     if (name === "organizationName") {
       localStorage.setItem("employer:orgName:draft", value);
+    }
+    if (name === "website") {
+      setWebsiteError("");
     }
   };
 
@@ -50,6 +54,30 @@ export default function EmployerHome() {
   };
 
   const [toast, setToast] = useState({ message: "", type: "error" });
+
+  const normalizeHttpsUrl = (raw) => {
+    const v = String(raw || "").trim();
+    if (!v) return "";
+    if (v.startsWith("https://")) return v;
+    if (v.startsWith("http://")) return `https://${v.slice("http://".length)}`;
+    // If they typed some other scheme (ftp:// etc) keep as-is so validation can block it
+    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(v)) return v;
+    return `https://${v}`;
+  };
+
+  const validateWebsite = (raw) => {
+    const v = String(raw || "").trim();
+    if (!v) return "Website is required";
+    const normalized = normalizeHttpsUrl(v);
+    if (!normalized.startsWith("https://")) return "Website must start with https://";
+    try {
+      // eslint-disable-next-line no-new
+      new URL(normalized);
+    } catch {
+      return "Please enter a valid website URL";
+    }
+    return "";
+  };
 
   useEffect(() => {
     const draftName = localStorage.getItem("employer:orgName:draft");
@@ -87,8 +115,21 @@ export default function EmployerHome() {
 
   const handleSaveAndNext = async () => {
     try {
+      const websiteValidation = validateWebsite(formData.website);
+      if (websiteValidation) {
+        setWebsiteError(websiteValidation);
+        setToast({ message: websiteValidation, type: "error" });
+        return;
+      }
+
+      const normalizedWebsite = normalizeHttpsUrl(formData.website);
+      const payload = {
+        ...formData,
+        website: normalizedWebsite,
+      };
+
       // Save organization info to API
-      await saveOrganizationProfile(formData);
+      await saveOrganizationProfile(payload);
       setToast({ message: "Organization profile saved successfully!", type: "success" });
       // Trigger first-time tour on employer dashboard
       localStorage.setItem("tour:employer:mainNav:pending", "true");
@@ -546,21 +587,35 @@ export default function EmployerHome() {
 
             {/* Website */}
             <div style={styles.formGroup}>
-              <label style={styles.label}>Website</label>
+              <label style={styles.label}>Website *</label>
               <input
                 type="url"
                 name="website"
                 value={formData.website}
                 onChange={handleInputChange}
-                placeholder="Enter website link"
+                placeholder="https://example.com"
                 style={styles.input}
+                required
+                pattern="https://.*"
+                title="Website must start with https://"
                 onFocus={(e) => {
                   e.target.style.borderColor = "#16a34a";
                 }}
                 onBlur={(e) => {
                   e.target.style.borderColor = "#e5e7eb";
+                  const normalized = normalizeHttpsUrl(e.target.value);
+                  if (normalized !== e.target.value) {
+                    setFormData((prev) => ({ ...prev, website: normalized }));
+                  }
+                  const msg = validateWebsite(normalized);
+                  setWebsiteError(msg);
                 }}
               />
+              {websiteError && (
+                <div style={{ fontSize: "12px", color: "#ef4444", marginTop: "6px" }}>
+                  {websiteError}
+                </div>
+              )}
             </div>
 
             {/* Company Size */}

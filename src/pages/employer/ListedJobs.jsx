@@ -15,6 +15,7 @@ export default function ListedJobs() {
   const [toast, setToast] = useState({ message: "", type: "error" });
   const [showCandidatesModal, setShowCandidatesModal] = useState(false);
   const [jobCandidates, setJobCandidates] = useState([]);
+  const [selectedApplication, setSelectedApplication] = useState(null);
   const [loadingCandidates, setLoadingCandidates] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -121,6 +122,23 @@ export default function ListedJobs() {
 
     loadJobs();
   }, []);
+
+  useEffect(() => {
+    if (!showCandidatesModal) return;
+    if (!jobCandidates || jobCandidates.length === 0) {
+      setSelectedApplication(null);
+      return;
+    }
+    // Default to first application if none selected
+    if (!selectedApplication) {
+      setSelectedApplication(jobCandidates[0]);
+      return;
+    }
+    const selectedId = selectedApplication.id;
+    if (selectedId && !jobCandidates.some((a) => a?.id === selectedId)) {
+      setSelectedApplication(jobCandidates[0]);
+    }
+  }, [jobCandidates, selectedApplication, showCandidatesModal]);
 
   // Filter jobs based on search query - must be defined before useEffect that uses it
   const filteredJobs = jobs.filter((job) => {
@@ -476,16 +494,6 @@ export default function ListedJobs() {
       flex: 1,
       color: "#374151",
     },
-    filtersBtn: {
-      background: "#ffffff",
-      border: "1px solid #e5e7eb",
-      padding: "8px 16px",
-      borderRadius: "8px",
-      cursor: "pointer",
-      fontSize: "14px",
-      color: "#374151",
-      fontWeight: 500,
-    },
     jobCard: {
       background: "#ffffff",
       borderRadius: "16px",
@@ -787,6 +795,18 @@ export default function ListedJobs() {
       overflowY: "auto",
       flex: 1,
     },
+    candidatesSplit: {
+      display: "flex",
+      gap: "16px",
+      height: "100%",
+      minHeight: "520px",
+    },
+    candidatesPane: {
+      width: "420px",
+      minWidth: "420px",
+      overflowY: "auto",
+      paddingRight: "4px",
+    },
     candidatesList: {
       display: "flex",
       flexDirection: "column",
@@ -801,6 +821,12 @@ export default function ListedJobs() {
       border: "2px solid rgba(0, 0, 0, 0.06)",
       transition: "all 0.3s ease",
       boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
+      cursor: "pointer",
+    },
+    candidateCardModalSelected: {
+      border: "2px solid #16a34a",
+      background: "linear-gradient(135deg, rgba(22, 163, 74, 0.06) 0%, rgba(21, 128, 61, 0.04) 100%)",
+      boxShadow: "0 10px 26px rgba(22, 163, 74, 0.18), 0 4px 12px rgba(0, 0, 0, 0.08)",
     },
     candidatePicModal: {
       width: "48px",
@@ -840,9 +866,96 @@ export default function ListedJobs() {
       alignItems: "center",
       marginTop: "8px",
     },
+    statusLeft: {
+      display: "flex",
+      alignItems: "center",
+      gap: "10px",
+      flexWrap: "wrap",
+    },
     applicationStatus: {
       fontSize: "12px",
       color: "#6b7280",
+    },
+    matchBadgeModal: {
+      background: "#fef3c7",
+      color: "#92400e",
+      padding: "4px 10px",
+      borderRadius: "999px",
+      fontSize: "12px",
+      fontWeight: 700,
+      border: "1px solid rgba(146, 64, 14, 0.2)",
+    },
+    candidateDetailsPane: {
+      flex: 1,
+      overflowY: "auto",
+      border: "1px solid rgba(0, 0, 0, 0.06)",
+      borderRadius: "16px",
+      padding: "20px",
+      background: "#ffffff",
+      boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
+    },
+    detailsHeader: {
+      display: "flex",
+      alignItems: "flex-start",
+      gap: "14px",
+      paddingBottom: "16px",
+      borderBottom: "1px solid #e5e7eb",
+      marginBottom: "16px",
+    },
+    detailsAvatar: {
+      width: "52px",
+      height: "52px",
+      borderRadius: "50%",
+      background: "linear-gradient(135deg, #16a34a, #15803d)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#ffffff",
+      fontSize: "22px",
+      fontWeight: 800,
+      flexShrink: 0,
+    },
+    detailsName: {
+      fontSize: "18px",
+      fontWeight: 800,
+      color: "#111827",
+      marginBottom: "4px",
+    },
+    detailsMeta: {
+      fontSize: "12px",
+      color: "#6b7280",
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "10px",
+      alignItems: "center",
+    },
+    detailsSection: {
+      marginTop: "14px",
+    },
+    detailsSectionTitle: {
+      fontSize: "13px",
+      fontWeight: 800,
+      color: "#111827",
+      marginBottom: "10px",
+    },
+    detailsRow: {
+      fontSize: "13px",
+      color: "#374151",
+      marginBottom: "8px",
+      wordBreak: "break-word",
+    },
+    skillsWrap: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "8px",
+    },
+    skillChip: {
+      background: "#eff6ff",
+      color: "#1e40af",
+      padding: "6px 10px",
+      borderRadius: "999px",
+      fontSize: "12px",
+      fontWeight: 700,
     },
     statusBadgeModal: {
       display: "inline-block",
@@ -954,7 +1067,6 @@ export default function ListedJobs() {
                 style={styles.searchInput}
               />
             </div>
-            <button style={styles.filtersBtn}>Filters</button>
           </div>
 
           {loading ? (
@@ -1174,6 +1286,7 @@ export default function ListedJobs() {
                     setShowCandidatesModal(true);
                     const applications = await fetchJobApplications(selectedJob.id);
                     setJobCandidates(applications);
+                    setSelectedApplication(applications?.[0] || null);
                   } catch (error) {
                     console.error("Error fetching job applications:", error);
                     setToast({ message: `Failed to load candidates: ${error.message}`, type: "error" });
@@ -1308,12 +1421,24 @@ export default function ListedJobs() {
                   No candidates have applied for this job yet.
                 </div>
               ) : (
-                <div style={styles.candidatesList}>
-                  {jobCandidates.map((application, index) => {
+                <div style={styles.candidatesSplit}>
+                  <div style={styles.candidatesPane}>
+                    <div style={styles.candidatesList}>
+                      {jobCandidates.map((application, index) => {
                     const candidate = application.jobSeekerProfile || application;
                     const fullName = candidate.fullName || candidate.name || application.firstName || "Unknown";
                     const email = candidate.email || application.email || "";
                     const location = candidate.city || candidate.location || "Location not specified";
+                    const matchPctRaw =
+                      application.matchPercentage ??
+                      candidate.matchPercentage ??
+                      application.matchingScore ??
+                      candidate.matchingScore;
+                    const matchPct =
+                      matchPctRaw === null || matchPctRaw === undefined || matchPctRaw === ""
+                        ? null
+                        : Number(matchPctRaw);
+                    const matchPctDisplay = Number.isFinite(matchPct) ? Math.round(matchPct) : null;
                     
                     // Calculate years of experience
                     let yearsOfExp = candidate.yearsOfExperience || 0;
@@ -1332,9 +1457,19 @@ export default function ListedJobs() {
 
                     // Get role/title
                     const role = candidate.workExperience?.[0]?.jobTitle || "Job Seeker";
+                    const isSelected = selectedApplication?.id
+                      ? selectedApplication.id === application.id
+                      : selectedApplication === application;
 
                     return (
-                      <div key={application.id || index} style={styles.candidateCardModal}>
+                      <div
+                        key={application.id || index}
+                        style={{
+                          ...styles.candidateCardModal,
+                          ...(isSelected ? styles.candidateCardModalSelected : {}),
+                        }}
+                        onClick={() => setSelectedApplication(application)}
+                      >
                         <div style={styles.candidatePicModal}>
                           {fullName.charAt(0).toUpperCase()}
                         </div>
@@ -1347,21 +1482,29 @@ export default function ListedJobs() {
                             {email && <span> • ✉️ {email}</span>}
                           </div>
                           <div style={styles.applicationStatusRow}>
-                            {application.status && (
-                              <div style={styles.applicationStatus}>
-                                Status: <span style={{
-                                  ...styles.statusBadgeModal,
-                                  ...(application.status === "HIRED" || application.status === "OFFERED" || application.status === "ACCEPTED"
-                                    ? { background: "#d1fae5", color: "#065f46" }
-                                    : application.status === "UNDER_REVIEW"
-                                    ? { background: "#dbeafe", color: "#1e40af" }
-                                    : application.status === "REJECTED"
-                                    ? { background: "#fee2e2", color: "#991b1b" }
-                                    : { background: "#f3f4f6", color: "#374151" }
-                                  )
-                                }}>{application.status === "OFFERED" ? "ACCEPTED" : application.status}</span>
-                              </div>
-                            )}
+                            <div style={styles.statusLeft}>
+                              {application.status && (
+                                <div style={styles.applicationStatus}>
+                                  Status:{" "}
+                                  <span style={{
+                                    ...styles.statusBadgeModal,
+                                    ...(application.status === "HIRED" || application.status === "OFFERED" || application.status === "ACCEPTED"
+                                      ? { background: "#d1fae5", color: "#065f46" }
+                                      : application.status === "UNDER_REVIEW"
+                                      ? { background: "#dbeafe", color: "#1e40af" }
+                                      : application.status === "REJECTED"
+                                      ? { background: "#fee2e2", color: "#991b1b" }
+                                      : { background: "#f3f4f6", color: "#374151" }
+                                    )
+                                  }}>{application.status === "OFFERED" ? "ACCEPTED" : application.status}</span>
+                                </div>
+                              )}
+                              {matchPctDisplay !== null && (
+                                <div style={styles.matchBadgeModal}>
+                                  🎯 {matchPctDisplay}% Match
+                                </div>
+                              )}
+                            </div>
                             <div style={styles.statusActions}>
                               <select
                                 style={styles.statusSelect}
@@ -1485,7 +1628,124 @@ export default function ListedJobs() {
                         </div>
                       </div>
                     );
-                  })}
+                      })}
+                    </div>
+                  </div>
+
+                  <div style={styles.candidateDetailsPane}>
+                    {selectedApplication ? (() => {
+                      const c = selectedApplication.jobSeekerProfile || selectedApplication;
+                      const fullName = c.fullName || c.name || selectedApplication.firstName || "Unknown";
+                      const email = c.email || selectedApplication.email || "";
+                      const phone = c.phone || c.basicInfo?.phone || "";
+                      const location = c.city || c.location || "Location not specified";
+                      const role = c.workExperience?.[0]?.jobTitle || "Job Seeker";
+
+                      const matchPctRaw =
+                        selectedApplication.matchPercentage ??
+                        c.matchPercentage ??
+                        selectedApplication.matchingScore ??
+                        c.matchingScore;
+                      const matchPct =
+                        matchPctRaw === null || matchPctRaw === undefined || matchPctRaw === ""
+                          ? null
+                          : Number(matchPctRaw);
+                      const matchPctDisplay = Number.isFinite(matchPct) ? Math.round(matchPct) : null;
+
+                      const skillsRaw = c.skills || c.primarySkills || [];
+                      const skills = Array.isArray(skillsRaw)
+                        ? skillsRaw
+                            .map((s) => (typeof s === "string" ? s : (s?.name || s?.skill || "")))
+                            .map((s) => (s || "").trim())
+                            .filter(Boolean)
+                        : [];
+
+                      const education = Array.isArray(c.education) ? c.education : [];
+                      const workExperience = Array.isArray(c.workExperience) ? c.workExperience : [];
+
+                      return (
+                        <>
+                          <div style={styles.detailsHeader}>
+                            <div style={styles.detailsAvatar}>
+                              {fullName.charAt(0).toUpperCase()}
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <div style={styles.detailsName}>{fullName}</div>
+                              <div style={styles.detailsMeta}>
+                                <span>💼 {role}</span>
+                                <span>📍 {location}</span>
+                                {matchPctDisplay !== null && <span>🎯 {matchPctDisplay}% Match</span>}
+                                {selectedApplication.status && (
+                                  <span>
+                                    Status:{" "}
+                                    <strong>
+                                      {selectedApplication.status === "OFFERED" ? "ACCEPTED" : selectedApplication.status}
+                                    </strong>
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div style={styles.detailsSection}>
+                            <div style={styles.detailsSectionTitle}>Contact</div>
+                            {email && <div style={styles.detailsRow}><strong>Email:</strong> {email}</div>}
+                            {phone && <div style={styles.detailsRow}><strong>Phone:</strong> {phone}</div>}
+                            {!email && !phone && (
+                              <div style={styles.detailsRow}>No contact details available in the application response.</div>
+                            )}
+                          </div>
+
+                          <div style={styles.detailsSection}>
+                            <div style={styles.detailsSectionTitle}>Skills</div>
+                            {skills.length === 0 ? (
+                              <div style={styles.detailsRow}>No skills available.</div>
+                            ) : (
+                              <div style={styles.skillsWrap}>
+                                {skills.slice(0, 24).map((s) => (
+                                  <span key={s} style={styles.skillChip}>{s}</span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          <div style={styles.detailsSection}>
+                            <div style={styles.detailsSectionTitle}>Education</div>
+                            {education.length === 0 ? (
+                              <div style={styles.detailsRow}>No education available.</div>
+                            ) : (
+                              education.slice(0, 5).map((edu, i) => (
+                                <div key={i} style={styles.detailsRow}>
+                                  <strong>{edu.degree || "Education"}</strong>
+                                  {edu.institution ? ` • ${edu.institution}` : ""}
+                                  {edu.year ? ` • ${edu.year}` : ""}
+                                </div>
+                              ))
+                            )}
+                          </div>
+
+                          <div style={styles.detailsSection}>
+                            <div style={styles.detailsSectionTitle}>Work Experience</div>
+                            {workExperience.length === 0 ? (
+                              <div style={styles.detailsRow}>No work experience available.</div>
+                            ) : (
+                              workExperience.slice(0, 5).map((exp, i) => (
+                                <div key={i} style={styles.detailsRow}>
+                                  <strong>{exp.jobTitle || exp.title || "Role"}</strong>
+                                  {exp.company ? ` • ${exp.company}` : ""}
+                                  {exp.duration ? ` • ${exp.duration}` : ""}
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </>
+                      );
+                    })() : (
+                      <div style={{ color: "#6b7280", fontSize: "14px" }}>
+                        Select a candidate to view details.
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

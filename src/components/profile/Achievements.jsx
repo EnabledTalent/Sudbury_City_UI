@@ -76,7 +76,13 @@ export default function Achievements({ onPrev, onNext }) {
 
     achievements.forEach((ach, index) => {
       const entryErrors = {};
-      if (!ach.title) {
+      const hasAnyValue =
+        Boolean(ach.title && ach.title.trim()) ||
+        Boolean(ach.issueDate && ach.issueDate.trim()) ||
+        Boolean(ach.description && ach.description.trim());
+
+      // Achievements are optional. Only validate an entry if user started filling it.
+      if (hasAnyValue && !ach.title?.trim()) {
         entryErrors.title = "Title is required";
         hasErrors = true;
       }
@@ -89,6 +95,17 @@ export default function Achievements({ onPrev, onNext }) {
     }
 
     setErrors([]);
+
+    // If user left the default empty achievement, store as empty list instead
+    const hasAtLeastOneFilled = achievements.some(
+      (ach) =>
+        Boolean(ach.title && ach.title.trim()) ||
+        Boolean(ach.issueDate && ach.issueDate.trim()) ||
+        Boolean(ach.description && ach.description.trim())
+    );
+    if (!hasAtLeastOneFilled) {
+      updateProfile("achievements", []);
+    }
     onNext();
   };
 
@@ -257,7 +274,7 @@ export default function Achievements({ onPrev, onNext }) {
           </div>
 
           <div style={styles.formGroup}>
-            <label style={styles.label}>Title *</label>
+            <label style={styles.label}>Title</label>
             <input
               style={errors[index]?.title ? styles.inputError : styles.input}
               value={ach.title}

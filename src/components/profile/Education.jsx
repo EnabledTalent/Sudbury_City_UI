@@ -97,6 +97,7 @@ export default function Education({ onPrev, onNext }) {
         <input 
           value={endDate} 
           onChange={handleEndDateChange}
+          placeholder="MM/YYYY"
         />
       </div>
 

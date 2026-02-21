@@ -84,12 +84,15 @@ export default function Certification({ onPrev, onNext }) {
 
     certifications.forEach((cert, index) => {
       const entryErrors = {};
-      if (!cert.name) {
+      const hasAnyValue =
+        Boolean(cert.name && cert.name.trim()) ||
+        Boolean(cert.issueDate && cert.issueDate.trim()) ||
+        Boolean(cert.issuedOrganization && cert.issuedOrganization.trim()) ||
+        Boolean(cert.credentialId && cert.credentialId.trim());
+
+      // Certifications are optional. Only validate an entry if user started filling it.
+      if (hasAnyValue && !cert.name?.trim()) {
         entryErrors.name = "Name of certification is required";
-        hasErrors = true;
-      }
-      if (!cert.credentialId) {
-        entryErrors.credentialId = "Credential ID/URL is required";
         hasErrors = true;
       }
       validationErrors[index] = entryErrors;
@@ -101,6 +104,18 @@ export default function Certification({ onPrev, onNext }) {
     }
 
     setErrors([]);
+
+    // If user left the default empty certification, store as empty list instead
+    const hasAtLeastOneFilled = certifications.some(
+      (cert) =>
+        Boolean(cert.name && cert.name.trim()) ||
+        Boolean(cert.issueDate && cert.issueDate.trim()) ||
+        Boolean(cert.issuedOrganization && cert.issuedOrganization.trim()) ||
+        Boolean(cert.credentialId && cert.credentialId.trim())
+    );
+    if (!hasAtLeastOneFilled) {
+      updateProfile("certification", []);
+    }
     onNext();
   };
 
@@ -429,7 +444,6 @@ export default function Certification({ onPrev, onNext }) {
           <div style={styles.formGroup}>
             <label style={styles.label}>
               Credential ID/URL
-              <span style={styles.labelRequired}>*</span>
             </label>
             <div style={styles.inputWrapper}>
               <input
@@ -458,16 +472,7 @@ export default function Certification({ onPrev, onNext }) {
                   }
                 }}
               />
-              {errors[index]?.credentialId && (
-                <span style={styles.errorIcon}>!</span>
-              )}
             </div>
-            {errors[index]?.credentialId && (
-              <div style={styles.errorText}>
-                <span>⚠</span>
-                {errors[index].credentialId}
-              </div>
-            )}
           </div>
         </div>
       ))}

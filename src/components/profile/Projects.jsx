@@ -332,7 +332,7 @@ export default function Projects({ onPrev, onNext }) {
           </div>
 
           <div style={styles.formGroup}>
-            <label style={styles.label}>Project name *</label>
+            <label style={styles.label}>Project name</label>
             <input
               style={
                 errors[index]?.name ? styles.inputError : styles.input
@@ -348,7 +348,7 @@ export default function Projects({ onPrev, onNext }) {
           </div>
 
           <div style={styles.formGroup}>
-            <label style={styles.label}>Project description *</label>
+            <label style={styles.label}>Project description</label>
             <textarea
               rows="4"
               style={
