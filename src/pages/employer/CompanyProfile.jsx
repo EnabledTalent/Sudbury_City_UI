@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { fetchOrganizationProfile, updateOrganizationProfile } from "../../services/employerService";
 import { logoutUser } from "../../services/authService";
 import Toast from "../../components/Toast";
+import YearPicker from "../../components/YearPicker";
 
 export default function CompanyProfile() {
   const navigate = useNavigate();
@@ -94,6 +96,10 @@ export default function CompanyProfile() {
   };
 
   const handleEdit = () => {
+    // Ensure company name is prefilled even if user opens edit quickly
+    if (!formData.organizationName && companyData.name) {
+      setFormData((prev) => ({ ...prev, organizationName: companyData.name }));
+    }
     setIsEditMode(true);
   };
 
@@ -293,12 +299,18 @@ export default function CompanyProfile() {
       color: "#6b7280",
     },
     editIcon: {
-      fontSize: "24px",
-      color: "#6b7280",
+      width: "40px",
+      height: "40px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "#ffffff",
+      color: "#111827",
+      border: "1px solid #e5e7eb",
       cursor: "pointer",
-      padding: "8px",
-      borderRadius: "8px",
-      transition: "background 0.2s",
+      borderRadius: "12px",
+      transition: "all 0.2s ease",
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
     },
     contentGrid: {
       display: "grid",
@@ -617,13 +629,15 @@ export default function CompanyProfile() {
                 style={styles.editIcon}
                 onClick={handleEdit}
                 onMouseEnter={(e) => {
-                  e.target.style.background = "#f3f4f6";
+                  e.target.style.background = "#f9fafb";
+                  e.target.style.transform = "translateY(-1px)";
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.background = "transparent";
+                  e.target.style.background = "#ffffff";
+                  e.target.style.transform = "translateY(0)";
                 }}
               >
-                ✏️
+                <Pencil size={18} strokeWidth={2.5} />
               </span>
             </div>
 
@@ -641,7 +655,7 @@ export default function CompanyProfile() {
                       name="organizationName"
                       value={formData.organizationName}
                       onChange={handleInputChange}
-                      placeholder="Search Organization"
+                      placeholder="Organization name"
                       style={styles.input}
                       onFocus={(e) => {
                         e.target.style.borderColor = "#16a34a";
@@ -650,7 +664,6 @@ export default function CompanyProfile() {
                         e.target.style.borderColor = "#e5e7eb";
                       }}
                     />
-                    <span style={styles.searchIcon}>🔍</span>
                   </div>
                 </div>
 
@@ -693,23 +706,15 @@ export default function CompanyProfile() {
                 {/* Founded Year */}
                 <div style={styles.formGroup}>
                   <label style={styles.label}>Founded year</label>
-                  <div style={styles.inputWrapper}>
-                    <input
-                      type="text"
-                      name="foundedYear"
-                      value={formData.foundedYear}
-                      onChange={handleInputChange}
-                      placeholder="Select year"
-                      style={styles.input}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = "#16a34a";
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = "#e5e7eb";
-                      }}
-                    />
-                    <span style={styles.searchIcon}>📅</span>
-                  </div>
+                  <YearPicker
+                    value={formData.foundedYear}
+                    onChange={(year) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        foundedYear: year,
+                      }))
+                    }
+                  />
                 </div>
 
                 {/* Website */}

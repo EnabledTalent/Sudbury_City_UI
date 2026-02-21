@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { saveOrganizationProfile } from "../../services/employerService";
+import { fetchOrganizationProfile, saveOrganizationProfile } from "../../services/employerService";
 import { logoutUser } from "../../services/authService";
 import Toast from "../../components/Toast";
+import YearPicker from "../../components/YearPicker";
 
 export default function EmployerHome() {
   const navigate = useNavigate();
@@ -22,6 +23,10 @@ export default function EmployerHome() {
       ...prev,
       [name]: value,
     }));
+
+    if (name === "organizationName") {
+      localStorage.setItem("employer:orgName:draft", value);
+    }
   };
 
   const handleCompanySizeChange = (size) => {
@@ -45,6 +50,40 @@ export default function EmployerHome() {
   };
 
   const [toast, setToast] = useState({ message: "", type: "error" });
+
+  useEffect(() => {
+    const draftName = localStorage.getItem("employer:orgName:draft");
+    if (draftName) {
+      setFormData((prev) => ({
+        ...prev,
+        organizationName: prev.organizationName || draftName,
+      }));
+    }
+
+    const loadExistingOrg = async () => {
+      try {
+        const existing = await fetchOrganizationProfile();
+        if (existing && (existing.organizationName || existing.aboutOrganization)) {
+          setFormData((prev) => ({
+            ...prev,
+            organizationName: prev.organizationName || existing.organizationName || "",
+            aboutOrganization: prev.aboutOrganization || existing.aboutOrganization || "",
+            location: prev.location || existing.location || "",
+            foundedYear:
+              prev.foundedYear || (existing.foundedYear ? String(existing.foundedYear) : ""),
+            website: prev.website || existing.website || "",
+            companySize: prev.companySize || existing.companySize || prev.companySize,
+            industry: prev.industry || existing.industry || prev.industry,
+          }));
+        }
+      } catch {
+        // ignore prefill errors; user can still enter manually
+      }
+    };
+
+    loadExistingOrg();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSaveAndNext = async () => {
     try {
@@ -443,7 +482,7 @@ export default function EmployerHome() {
                   name="organizationName"
                   value={formData.organizationName}
                   onChange={handleInputChange}
-                  placeholder="Search Organization"
+                  placeholder="Organization name"
                   style={styles.input}
                   onFocus={(e) => {
                     e.target.style.borderColor = "#16a34a";
@@ -452,7 +491,6 @@ export default function EmployerHome() {
                     e.target.style.borderColor = "#e5e7eb";
                   }}
                 />
-                <span style={styles.searchIcon}>🔍</span>
               </div>
             </div>
 
@@ -495,23 +533,15 @@ export default function EmployerHome() {
             {/* Founded Year */}
             <div style={styles.formGroup}>
               <label style={styles.label}>Founded year</label>
-              <div style={styles.inputWrapper}>
-                <input
-                  type="text"
-                  name="foundedYear"
-                  value={formData.foundedYear}
-                  onChange={handleInputChange}
-                  placeholder="Select year"
-                  style={styles.input}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = "#16a34a";
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = "#e5e7eb";
-                  }}
-                />
-                <span style={styles.searchIcon}>📅</span>
-              </div>
+              <YearPicker
+                value={formData.foundedYear}
+                onChange={(year) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    foundedYear: year,
+                  }))
+                }
+              />
             </div>
 
             {/* Website */}

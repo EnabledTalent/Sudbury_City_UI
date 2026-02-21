@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { postJob } from "../../services/jobService";
+import { fetchOrganizationProfile } from "../../services/employerService";
 import Toast from "../../components/Toast";
 
 export default function PostJob() {
@@ -22,12 +23,43 @@ export default function PostJob() {
     url: "", // For apply-link type
   });
 
+  useEffect(() => {
+    const draftName = localStorage.getItem("employer:orgName:draft");
+    if (draftName) {
+      setFormData((prev) => ({
+        ...prev,
+        companyName: prev.companyName || draftName,
+      }));
+    }
+
+    const loadOrgName = async () => {
+      try {
+        const org = await fetchOrganizationProfile();
+        const orgName = org?.organizationName || "";
+        if (!orgName) return;
+
+        setFormData((prev) => ({
+          ...prev,
+          companyName: prev.companyName || orgName,
+        }));
+      } catch {
+        // Ignore prefill errors; user can still type company name
+      }
+    };
+
+    loadOrgName();
+  }, []);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
+
+    if (name === "companyName") {
+      localStorage.setItem("employer:orgName:draft", value);
+    }
   };
 
   const handleRadioChange = (name, value) => {
