@@ -4,6 +4,7 @@ import { fetchEmployerJobs, fetchEmployerJobStats, fetchJobApplications, updateA
 import { logoutUser } from "../../services/authService";
 import Toast from "../../components/Toast";
 import { fetchProfile } from "../../services/profileService";
+import { Pencil } from "lucide-react";
 
 export default function ListedJobs() {
   const navigate = useNavigate();
@@ -1137,28 +1138,31 @@ export default function ListedJobs() {
                 <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                   <span
                     style={{
-                      fontSize: "18px",
+                      width: "34px",
+                      height: "34px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                       color: "#6b7280",
                       cursor: "pointer",
-                      padding: "4px 8px",
-                      borderRadius: "6px",
-                      transition: "all 0.2s",
+                      borderRadius: "10px",
+                      transition: "all 0.2s ease",
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleEditClick(job);
                     }}
                     onMouseEnter={(e) => {
-                      e.target.style.background = "#f3f4f6";
-                      e.target.style.color = "#16a34a";
+                      e.currentTarget.style.background = "#f3f4f6";
+                      e.currentTarget.style.color = "#16a34a";
                     }}
                     onMouseLeave={(e) => {
-                      e.target.style.background = "transparent";
-                      e.target.style.color = "#6b7280";
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = "#6b7280";
                     }}
                     title="Edit Job"
                   >
-                    ✏️
+                    <Pencil size={16} strokeWidth={2.5} />
                   </span>
                   <span
                     style={{
@@ -1248,14 +1252,30 @@ export default function ListedJobs() {
                 </div>
                 <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
                   <span 
-                    style={{...styles.editIcon, cursor: "pointer"}}
+                    style={{
+                      ...styles.editIcon,
+                      width: "36px",
+                      height: "36px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                    }}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleEditClick(selectedJob);
                     }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "#f3f4f6";
+                      e.currentTarget.style.color = "#16a34a";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = "#6b7280";
+                    }}
                     title="Edit Job"
                   >
-                    ✏️
+                    <Pencil size={16} strokeWidth={2.5} />
                   </span>
                   <span 
                     style={{
