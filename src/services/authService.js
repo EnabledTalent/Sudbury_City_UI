@@ -104,17 +104,39 @@ export const registerUser = async (payload) => {
 
 
 export const loginUser = async (username, password) => {
-  const response = await fetch(
-    `${BASE_URL}/signin?username=${encodeURIComponent(
-      username
-    )}&password=${encodeURIComponent(password)}`,
-    {
-      method: "POST",
-      headers: {
-        accept: "*/*",
-      },
-    }
-  );
+  // Emergency rollback flag:
+  // REACT_APP_LOGIN_USE_QUERY_PARAMS=true forces legacy query-string login.
+  const useLegacyQueryParams =
+    String(process.env.REACT_APP_LOGIN_USE_QUERY_PARAMS || "").toLowerCase() === "true";
+
+  const endpoint = useLegacyQueryParams
+    ? `${BASE_URL}/signin?username=${encodeURIComponent(
+        username || ""
+      )}&password=${encodeURIComponent(password || "")}`
+    : `${BASE_URL}/signin`;
+
+  const requestOptions = useLegacyQueryParams
+    ? {
+        method: "POST",
+        headers: {
+          accept: "*/*",
+        },
+        cache: "no-store",
+      }
+    : {
+        method: "POST",
+        headers: {
+          accept: "*/*",
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          username: username || "",
+          password: password || "",
+        }).toString(),
+        cache: "no-store",
+      };
+
+  const response = await fetch(endpoint, requestOptions);
 
   // ⛔ must be 200
   if (!response.ok) {
