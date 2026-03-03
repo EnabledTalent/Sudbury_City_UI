@@ -13,25 +13,36 @@ import ListedJobs from "./pages/employer/ListedJobs";
 import CompanyProfile from "./pages/employer/CompanyProfile";
 import PostJob from "./pages/employer/PostJob";
 import { ProfileProvider } from "./context/ProfileContext";
+import { PublicOnlyRoute, RequireAuth, RequireRole } from "./routes/RouteGuards";
 
 export default function App() {
   return (
     <ProfileProvider>
-    <Routes>
-      <Route path="/" element={<Login />} />
-      <Route path="/student" element={<StudentHome />} />
-       <Route path="/student/success" element={<ProfileSuccess />} />
-      <Route path="/student/profile" element={<ProfileBuilder />} />
-      <Route path="/student/view-profile" element={<ViewProfile />} />
-      <Route path="/student/my-jobs" element={<MyJobs />} />
-      <Route path="/student/dashboard" element={<Dashboard />} />
-      <Route path="/employer/home" element={<EmployerHome />} />
-      <Route path="/employer/dashboard" element={<EmployerDashboard />} />
-      <Route path="/employer/candidates" element={<Candidates />} />
-      <Route path="/employer/listed-jobs" element={<ListedJobs />} />
-      <Route path="/employer/company-profile" element={<CompanyProfile />} />
-      <Route path="/employer/post-job" element={<PostJob />} />
-    </Routes>
+      <Routes>
+        <Route element={<PublicOnlyRoute />}>
+          <Route path="/" element={<Login />} />
+        </Route>
+
+        <Route element={<RequireAuth />}>
+          <Route element={<RequireRole allowedRoles={["STUDENT"]} />}>
+            <Route path="/student" element={<StudentHome />} />
+            <Route path="/student/success" element={<ProfileSuccess />} />
+            <Route path="/student/profile" element={<ProfileBuilder />} />
+            <Route path="/student/view-profile" element={<ViewProfile />} />
+            <Route path="/student/my-jobs" element={<MyJobs />} />
+            <Route path="/student/dashboard" element={<Dashboard />} />
+          </Route>
+
+          <Route element={<RequireRole allowedRoles={["EMPLOYER"]} />}>
+            <Route path="/employer/home" element={<EmployerHome />} />
+            <Route path="/employer/dashboard" element={<EmployerDashboard />} />
+            <Route path="/employer/candidates" element={<Candidates />} />
+            <Route path="/employer/listed-jobs" element={<ListedJobs />} />
+            <Route path="/employer/company-profile" element={<CompanyProfile />} />
+            <Route path="/employer/post-job" element={<PostJob />} />
+          </Route>
+        </Route>
+      </Routes>
     </ProfileProvider>
   );
 }

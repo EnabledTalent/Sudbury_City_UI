@@ -192,6 +192,9 @@ export default function ViewProfile() {
       display: "flex",
       gap: "32px",
       alignItems: "center",
+      listStyle: "none",
+      margin: 0,
+      padding: 0,
     },
     navLink: {
       fontSize: "14px",
@@ -199,6 +202,9 @@ export default function ViewProfile() {
       cursor: "pointer",
       textDecoration: "none",
       paddingBottom: "4px",
+      background: "transparent",
+      border: "none",
+      fontFamily: "inherit",
     },
     navLinkActive: {
       fontSize: "14px",
@@ -208,6 +214,11 @@ export default function ViewProfile() {
       paddingBottom: "4px",
       borderBottom: "2px solid #16a34a",
       fontWeight: 500,
+      background: "transparent",
+      borderTop: "none",
+      borderLeft: "none",
+      borderRight: "none",
+      fontFamily: "inherit",
     },
     searchBar: {
       display: "flex",
@@ -423,11 +434,13 @@ export default function ViewProfile() {
       fontSize: "16px",
       fontWeight: 600,
       color: "#111827",
+      margin: 0,
       marginBottom: "4px",
     },
     profileTitle: {
       fontSize: "14px",
       color: "#6b7280",
+      margin: 0,
     },
     sectionCard: {
       background: "#ffffff",
@@ -442,7 +455,6 @@ export default function ViewProfile() {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      cursor: "pointer",
     },
     sectionTitle: {
       fontSize: "16px",
@@ -488,7 +500,7 @@ export default function ViewProfile() {
       color: "#374151",
       lineHeight: "1.6",
       whiteSpace: "pre-wrap",
-      marginBottom: "12px",
+      margin: "0 0 12px 0",
     },
     aboutTextarea: {
       width: "100%",
@@ -586,12 +598,13 @@ export default function ViewProfile() {
     notificationText: {
       fontSize: "14px",
       color: "#374151",
-      marginBottom: "8px",
+      margin: "0 0 8px 0",
     },
     notificationTime: {
       fontSize: "12px",
       color: "#9ca3af",
-      marginBottom: "12px",
+      margin: "0 0 12px 0",
+      display: "block",
     },
     notificationButtons: {
       display: "flex",
@@ -722,27 +735,45 @@ export default function ViewProfile() {
   return (
     <div style={styles.page}>
       {/* Top Navigation */}
-      <nav style={styles.topNav}>
+      <header style={styles.topNav}>
         <div style={styles.logo}>
           <span>Sudburry</span>
         </div>
-        <div style={styles.navLinks}>
-          <span style={styles.navLinkActive} data-tour="student-nav-home">Home</span>
-          <span 
-            style={styles.navLink}
-            onClick={() => navigate("/student/my-jobs")}
-            data-tour="student-nav-myjobs"
-          >
-            My Jobs
-          </span>
-          <span 
-            style={styles.navLink}
-            onClick={() => navigate("/student/dashboard")}
-            data-tour="student-nav-dashboard"
-          >
-            Dashboard
-          </span>
-        </div>
+        <nav aria-label="Student Navigation">
+          <ul style={styles.navLinks}>
+            <li>
+              <button
+                type="button"
+                style={styles.navLinkActive}
+                onClick={() => navigate("/student/view-profile")}
+                data-tour="student-nav-home"
+                aria-current="page"
+              >
+                Home
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                style={styles.navLink}
+                onClick={() => navigate("/student/my-jobs")}
+                data-tour="student-nav-myjobs"
+              >
+                My Jobs
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                style={styles.navLink}
+                onClick={() => navigate("/student/dashboard")}
+                data-tour="student-nav-dashboard"
+              >
+                Dashboard
+              </button>
+            </li>
+          </ul>
+        </nav>
         <div style={styles.userActions}>
           <button 
             style={styles.logoutBtn}
@@ -780,11 +811,11 @@ export default function ViewProfile() {
             AI Career Coach
           </button>
         </div>
-      </nav>
+      </header>
 
-      <div style={styles.container}>
+      <main style={styles.container}>
         {/* Orange Banner */}
-        <div style={styles.banner}>
+        <section style={styles.banner} aria-label="Profile Completion Banner">
           <div style={styles.bannerLeft}>
             <div style={styles.bannerSmallText}>Make your profile</div>
             <h2 style={styles.bannerTitle}>Standout from 1000s of candidates</h2>
@@ -825,35 +856,38 @@ export default function ViewProfile() {
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
         <div style={styles.content}>
           {/* Left Column */}
-          <div style={styles.leftColumn}>
+          <section style={styles.leftColumn} aria-label="Profile Details">
             {/* Profile Summary Card */}
-            <div style={styles.profileCard}>
+            <article style={styles.profileCard}>
               <div style={styles.profilePicture}>{initials}</div>
               <div style={styles.profileInfo}>
-                <div style={styles.profileName}>{name}</div>
-                <div style={styles.profileTitle}>{jobTitle}</div>
+                <h1 style={styles.profileName}>{name}</h1>
+                <p style={styles.profileTitle}>{jobTitle}</p>
               </div>
-            </div>
+            </article>
 
             {/* About Section */}
-            <div style={styles.sectionCard}>
-              <div
-                style={styles.sectionHeader}
-                onClick={() => toggleSection("about")}
-              >
-                <h3 style={styles.sectionTitle}>
+            <section style={styles.sectionCard} aria-labelledby="section-heading-about">
+              <header style={styles.sectionHeader}>
+                <h3 id="section-heading-about" style={styles.sectionTitle}>
                   About
                 </h3>
-                <button style={styles.chevronButton}>
+                <button
+                  type="button"
+                  style={styles.chevronButton}
+                  onClick={() => toggleSection("about")}
+                  aria-expanded={expandedSections.about}
+                  aria-controls="profile-section-about"
+                >
                   <span style={styles.getChevronIcon(expandedSections.about)}>▼</span>
                 </button>
-              </div>
+              </header>
               {expandedSections.about && (
-                <div style={styles.sectionContent}>
+                <div id="profile-section-about" style={styles.sectionContent}>
                   {isEditingAbout ? (
                     <div>
                       <textarea
@@ -921,9 +955,9 @@ export default function ViewProfile() {
                     </div>
                   ) : (
                     <div>
-                      <div style={styles.aboutText}>
+                      <p style={styles.aboutText}>
                         {aboutText || "No about information available. Click Edit to add information about yourself."}
-                      </div>
+                      </p>
                       <button
                         style={styles.aboutEditBtn}
                         onClick={() => setIsEditingAbout(true)}
@@ -934,33 +968,33 @@ export default function ViewProfile() {
                   )}
                 </div>
               )}
-            </div>
+            </section>
 
             {/* Cultural Interest */}
-            <div style={styles.sectionCard}>
-              <div
-                style={styles.sectionHeader}
-                onClick={() => toggleSection("culturalInterest")}
-              >
-                <h3 style={styles.sectionTitle}>Cultural Interest</h3>
-                <button style={styles.chevronButton}>
+            <section style={styles.sectionCard} aria-labelledby="section-heading-cultural-interest">
+              <header style={styles.sectionHeader}>
+                <h3 id="section-heading-cultural-interest" style={styles.sectionTitle}>Cultural Interest</h3>
+                <button
+                  type="button"
+                  style={styles.chevronButton}
+                  onClick={() => toggleSection("culturalInterest")}
+                  aria-expanded={expandedSections.culturalInterest}
+                  aria-controls="profile-section-cultural-interest"
+                >
                   <span style={styles.getChevronIcon(expandedSections.culturalInterest)}>▼</span>
                 </button>
-              </div>
+              </header>
               {expandedSections.culturalInterest && (
-                <div style={styles.sectionContent}>
+                <div id="profile-section-cultural-interest" style={styles.sectionContent}>
                   <div style={styles.emptyState}>No cultural interests added</div>
                 </div>
               )}
-            </div>
+            </section>
 
             {/* Education */}
-            <div style={styles.sectionCard}>
-              <div
-                style={styles.sectionHeader}
-                onClick={() => toggleSection("education")}
-              >
-                <h3 style={styles.sectionTitle}>
+            <section style={styles.sectionCard} aria-labelledby="section-heading-education">
+              <header style={styles.sectionHeader}>
+                <h3 id="section-heading-education" style={styles.sectionTitle}>
                   Education
                   {getCount(profile?.education) > 0 && (
                     <span style={styles.sectionCount}>
@@ -968,15 +1002,21 @@ export default function ViewProfile() {
                     </span>
                   )}
                 </h3>
-                <button style={styles.chevronButton}>
+                <button
+                  type="button"
+                  style={styles.chevronButton}
+                  onClick={() => toggleSection("education")}
+                  aria-expanded={expandedSections.education}
+                  aria-controls="profile-section-education"
+                >
                   <span style={styles.getChevronIcon(expandedSections.education)}>▼</span>
                 </button>
-              </div>
+              </header>
               {expandedSections.education && (
-                <div style={styles.sectionContent}>
+                <div id="profile-section-education" style={styles.sectionContent}>
                   {profile?.education && profile.education.length > 0 ? (
                     profile.education.map((edu, index) => (
-                      <div key={index} style={styles.itemCard}>
+                      <article key={index} style={styles.itemCard}>
                         <div style={styles.itemTitle}>{edu.degree || "Degree"}</div>
                         {edu.institution && (
                           <div style={styles.itemDetail}>
@@ -993,22 +1033,19 @@ export default function ViewProfile() {
                             <strong>Duration:</strong> {edu.startDate || ""} - {edu.endDate || "Present"}
                           </div>
                         )}
-                      </div>
+                      </article>
                     ))
                   ) : (
                     <div style={styles.emptyState}>No education entries</div>
                   )}
                 </div>
               )}
-            </div>
+            </section>
 
             {/* Work Experience */}
-            <div style={styles.sectionCard}>
-              <div
-                style={styles.sectionHeader}
-                onClick={() => toggleSection("workExperience")}
-              >
-                <h3 style={styles.sectionTitle}>
+            <section style={styles.sectionCard} aria-labelledby="section-heading-work-experience">
+              <header style={styles.sectionHeader}>
+                <h3 id="section-heading-work-experience" style={styles.sectionTitle}>
                   Work Experience
                   {getCount(profile?.workExperience) > 0 && (
                     <span style={styles.sectionCount}>
@@ -1016,15 +1053,21 @@ export default function ViewProfile() {
                     </span>
                   )}
                 </h3>
-                <button style={styles.chevronButton}>
+                <button
+                  type="button"
+                  style={styles.chevronButton}
+                  onClick={() => toggleSection("workExperience")}
+                  aria-expanded={expandedSections.workExperience}
+                  aria-controls="profile-section-work-experience"
+                >
                   <span style={styles.getChevronIcon(expandedSections.workExperience)}>▼</span>
                 </button>
-              </div>
+              </header>
               {expandedSections.workExperience && (
-                <div style={styles.sectionContent}>
+                <div id="profile-section-work-experience" style={styles.sectionContent}>
                   {profile?.workExperience && profile.workExperience.length > 0 ? (
                     profile.workExperience.map((exp, index) => (
-                      <div key={index} style={styles.itemCard}>
+                      <article key={index} style={styles.itemCard}>
                         <div style={styles.itemTitle}>
                           {exp.jobTitle || "Job Title"} at {exp.company || "Company"}
                         </div>
@@ -1041,22 +1084,19 @@ export default function ViewProfile() {
                         {exp.description && (
                           <div style={styles.itemDetail}>{exp.description}</div>
                         )}
-                      </div>
+                      </article>
                     ))
                   ) : (
                     <div style={styles.emptyState}>No work experience entries</div>
                   )}
                 </div>
               )}
-            </div>
+            </section>
 
             {/* Skills */}
-            <div style={styles.sectionCard}>
-              <div
-                style={styles.sectionHeader}
-                onClick={() => toggleSection("skills")}
-              >
-                <h3 style={styles.sectionTitle}>
+            <section style={styles.sectionCard} aria-labelledby="section-heading-skills">
+              <header style={styles.sectionHeader}>
+                <h3 id="section-heading-skills" style={styles.sectionTitle}>
                   Skills
                   {(getCount(profile?.skills) + getCount(profile?.primarySkills) + getCount(profile?.basicSkills)) > 0 && (
                     <span style={styles.sectionCount}>
@@ -1064,12 +1104,18 @@ export default function ViewProfile() {
                     </span>
                   )}
                 </h3>
-                <button style={styles.chevronButton}>
+                <button
+                  type="button"
+                  style={styles.chevronButton}
+                  onClick={() => toggleSection("skills")}
+                  aria-expanded={expandedSections.skills}
+                  aria-controls="profile-section-skills"
+                >
                   <span style={styles.getChevronIcon(expandedSections.skills)}>▼</span>
                 </button>
-              </div>
+              </header>
               {expandedSections.skills && (
-                <div style={styles.sectionContent}>
+                <div id="profile-section-skills" style={styles.sectionContent}>
                   {profile?.primarySkills && profile.primarySkills.length > 0 && (
                     <div style={{ marginBottom: "16px" }}>
                       <div style={{ ...styles.itemDetail, fontWeight: 600, marginBottom: "8px" }}>
@@ -1113,15 +1159,12 @@ export default function ViewProfile() {
                     )}
                 </div>
               )}
-            </div>
+            </section>
 
             {/* Projects */}
-            <div style={styles.sectionCard}>
-              <div
-                style={styles.sectionHeader}
-                onClick={() => toggleSection("projects")}
-              >
-                <h3 style={styles.sectionTitle}>
+            <section style={styles.sectionCard} aria-labelledby="section-heading-projects">
+              <header style={styles.sectionHeader}>
+                <h3 id="section-heading-projects" style={styles.sectionTitle}>
                   Projects
                   {getCount(profile?.projects) > 0 && (
                     <span style={styles.sectionCount}>
@@ -1129,22 +1172,28 @@ export default function ViewProfile() {
                     </span>
                   )}
                 </h3>
-                <button style={styles.chevronButton}>
+                <button
+                  type="button"
+                  style={styles.chevronButton}
+                  onClick={() => toggleSection("projects")}
+                  aria-expanded={expandedSections.projects}
+                  aria-controls="profile-section-projects"
+                >
                   <span style={styles.getChevronIcon(expandedSections.projects)}>▼</span>
                 </button>
-              </div>
+              </header>
               {expandedSections.projects && (
-                <div style={styles.sectionContent}>
+                <div id="profile-section-projects" style={styles.sectionContent}>
                   {profile?.projects && profile.projects.length > 0 ? (
                     profile.projects.map((proj, index) => {
                       const project = typeof proj === "string" ? { name: proj } : proj;
                       return (
-                        <div key={index} style={styles.itemCard}>
+                        <article key={index} style={styles.itemCard}>
                           <div style={styles.itemTitle}>{project.name || "Project"}</div>
                           {project.description && (
                             <div style={styles.itemDetail}>{project.description}</div>
                           )}
-                        </div>
+                        </article>
                       );
                     })
                   ) : (
@@ -1152,15 +1201,12 @@ export default function ViewProfile() {
                   )}
                 </div>
               )}
-            </div>
+            </section>
 
             {/* Achievements */}
-            <div style={styles.sectionCard}>
-              <div
-                style={styles.sectionHeader}
-                onClick={() => toggleSection("achievements")}
-              >
-                <h3 style={styles.sectionTitle}>
+            <section style={styles.sectionCard} aria-labelledby="section-heading-achievements">
+              <header style={styles.sectionHeader}>
+                <h3 id="section-heading-achievements" style={styles.sectionTitle}>
                   Achievements
                   {getCount(profile?.achievements) > 0 && (
                     <span style={styles.sectionCount}>
@@ -1168,22 +1214,28 @@ export default function ViewProfile() {
                     </span>
                   )}
                 </h3>
-                <button style={styles.chevronButton}>
+                <button
+                  type="button"
+                  style={styles.chevronButton}
+                  onClick={() => toggleSection("achievements")}
+                  aria-expanded={expandedSections.achievements}
+                  aria-controls="profile-section-achievements"
+                >
                   <span style={styles.getChevronIcon(expandedSections.achievements)}>▼</span>
                 </button>
-              </div>
+              </header>
               {expandedSections.achievements && (
-                <div style={styles.sectionContent}>
+                <div id="profile-section-achievements" style={styles.sectionContent}>
                   {profile?.achievements && profile.achievements.length > 0 ? (
                     profile.achievements.map((ach, index) => {
                       const achievement = typeof ach === "string" ? { title: ach } : ach;
                       return (
-                        <div key={index} style={styles.itemCard}>
+                        <article key={index} style={styles.itemCard}>
                           <div style={styles.itemTitle}>{achievement.title || "Achievement"}</div>
                           {achievement.description && (
                             <div style={styles.itemDetail}>{achievement.description}</div>
                           )}
-                        </div>
+                        </article>
                       );
                     })
                   ) : (
@@ -1191,15 +1243,12 @@ export default function ViewProfile() {
                   )}
                 </div>
               )}
-            </div>
+            </section>
 
             {/* Certifications */}
-            <div style={styles.sectionCard}>
-              <div
-                style={styles.sectionHeader}
-                onClick={() => toggleSection("certification")}
-              >
-                <h3 style={styles.sectionTitle}>
+            <section style={styles.sectionCard} aria-labelledby="section-heading-certifications">
+              <header style={styles.sectionHeader}>
+                <h3 id="section-heading-certifications" style={styles.sectionTitle}>
                   Certifications
                   {getCount(profile?.certification) > 0 && (
                     <span style={styles.sectionCount}>
@@ -1207,24 +1256,30 @@ export default function ViewProfile() {
                     </span>
                   )}
                 </h3>
-                <button style={styles.chevronButton}>
+                <button
+                  type="button"
+                  style={styles.chevronButton}
+                  onClick={() => toggleSection("certification")}
+                  aria-expanded={expandedSections.certification}
+                  aria-controls="profile-section-certifications"
+                >
                   <span style={styles.getChevronIcon(expandedSections.certification)}>▼</span>
                 </button>
-              </div>
+              </header>
               {expandedSections.certification && (
-                <div style={styles.sectionContent}>
+                <div id="profile-section-certifications" style={styles.sectionContent}>
                   {profile?.certification && profile.certification.length > 0 ? (
                     profile.certification.map((cert, index) => {
                       const certification = typeof cert === "string" ? { name: cert } : cert;
                       return (
-                        <div key={index} style={styles.itemCard}>
+                        <article key={index} style={styles.itemCard}>
                           <div style={styles.itemTitle}>{certification.name || "Certification"}</div>
                           {certification.issuedOrganization && (
                             <div style={styles.itemDetail}>
                               <strong>Organization:</strong> {certification.issuedOrganization}
                             </div>
                           )}
-                        </div>
+                        </article>
                       );
                     })
                   ) : (
@@ -1232,23 +1287,26 @@ export default function ViewProfile() {
                   )}
                 </div>
               )}
-            </div>
+            </section>
 
             {/* Preference */}
             {profile?.preference && (
-              <div style={styles.sectionCard}>
-                <div
-                  style={styles.sectionHeader}
-                  onClick={() => toggleSection("preference")}
-                >
-                  <h3 style={styles.sectionTitle}>Preference</h3>
-                  <button style={styles.chevronButton}>
+              <section style={styles.sectionCard} aria-labelledby="section-heading-preference">
+                <header style={styles.sectionHeader}>
+                  <h3 id="section-heading-preference" style={styles.sectionTitle}>Preference</h3>
+                  <button
+                    type="button"
+                    style={styles.chevronButton}
+                    onClick={() => toggleSection("preference")}
+                    aria-expanded={expandedSections.preference}
+                    aria-controls="profile-section-preference"
+                  >
                     <span style={styles.getChevronIcon(expandedSections.preference)}>▼</span>
                   </button>
-                </div>
+                </header>
                 {expandedSections.preference && (
-                  <div style={styles.sectionContent}>
-                    <div style={styles.itemCard}>
+                  <div id="profile-section-preference" style={styles.sectionContent}>
+                    <article style={styles.itemCard}>
                       {profile.preference.companySize && (
                         <div style={styles.itemDetail}>
                           <strong>Company Size:</strong> {profile.preference.companySize}
@@ -1259,27 +1317,30 @@ export default function ViewProfile() {
                           <strong>Job Type:</strong> {profile.preference.jobType}
                         </div>
                       )}
-                    </div>
+                    </article>
                   </div>
                 )}
-              </div>
+              </section>
             )}
 
             {/* Other Details */}
             {profile?.otherDetails && (
-              <div style={styles.sectionCard}>
-                <div
-                  style={styles.sectionHeader}
-                  onClick={() => toggleSection("otherDetails")}
-                >
-                  <h3 style={styles.sectionTitle}>Other details</h3>
-                  <button style={styles.chevronButton}>
+              <section style={styles.sectionCard} aria-labelledby="section-heading-other-details">
+                <header style={styles.sectionHeader}>
+                  <h3 id="section-heading-other-details" style={styles.sectionTitle}>Other details</h3>
+                  <button
+                    type="button"
+                    style={styles.chevronButton}
+                    onClick={() => toggleSection("otherDetails")}
+                    aria-expanded={expandedSections.otherDetails}
+                    aria-controls="profile-section-other-details"
+                  >
                     <span style={styles.getChevronIcon(expandedSections.otherDetails)}>▼</span>
                   </button>
-                </div>
+                </header>
                 {expandedSections.otherDetails && (
-                  <div style={styles.sectionContent}>
-                    <div style={styles.itemCard}>
+                  <div id="profile-section-other-details" style={styles.sectionContent}>
+                    <article style={styles.itemCard}>
                       {profile.otherDetails.careerStage && (
                         <div style={styles.itemDetail}>
                           <strong>Career Stage:</strong> {profile.otherDetails.careerStage}
@@ -1290,15 +1351,15 @@ export default function ViewProfile() {
                           <strong>Desired Salary:</strong> {profile.otherDetails.desiredSalary}
                         </div>
                       )}
-                    </div>
+                    </article>
                   </div>
                 )}
-              </div>
+              </section>
             )}
-          </div>
+          </section>
 
           {/* Right Column - Notifications */}
-          <div style={styles.rightColumn}>
+          <aside style={styles.rightColumn} aria-label="Notifications">
             <h3 style={styles.notificationsHeader}>
               Notifications {notifications.length > 0 ? `(${notifications.filter(n => !n.read).length} Unread)` : ""}
             </h3>
@@ -1317,14 +1378,14 @@ export default function ViewProfile() {
                 const isJobInvitation = notification.type === "JOB_INVITATION" || jobId;
                 
                 return (
-                  <div key={notification.id || index} style={styles.notificationCard}>
-                    <div style={styles.notificationText}>
+                  <article key={notification.id || index} style={styles.notificationCard}>
+                    <p style={styles.notificationText}>
                       {notification.message || notification.text || "New notification"}
-                    </div>
+                    </p>
                     {notification.createdAt && (
-                      <div style={styles.notificationTime}>
+                      <time dateTime={notification.createdAt} style={styles.notificationTime}>
                         {new Date(notification.createdAt).toLocaleString()}
-                      </div>
+                      </time>
                     )}
                     {isJobInvitation && (
                       <div style={styles.notificationButtons}>
@@ -1342,13 +1403,13 @@ export default function ViewProfile() {
                         </button>
                       </div>
                     )}
-                  </div>
+                  </article>
                 );
               })
             )}
-          </div>
+          </aside>
         </div>
-      </div>
+      </main>
 
       {/* Chat Widget */}
       {showChatWidget && <ChatWidget onClose={() => setShowChatWidget(false)} />}
