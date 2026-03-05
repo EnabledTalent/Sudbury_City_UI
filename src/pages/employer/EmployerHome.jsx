@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   fetchOrganizationProfile,
   saveOrganizationProfile,
 } from "../../services/employerService";
-import { logoutUser } from "../../services/authService";
+import EmployerHeader from "../../components/employer/EmployerHeader";
 import Toast from "../../components/Toast";
 import YearPicker from "../../components/YearPicker";
 import "./EmployerHome.css";
@@ -161,19 +160,6 @@ export default function EmployerHome() {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await logoutUser();
-    } catch {
-      // Continue local logout flow even if API call fails.
-    }
-
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("profileData");
-    navigate("/");
-  };
-
   const getUserName = () => {
     const profileData = localStorage.getItem("profileData");
 
@@ -200,51 +186,7 @@ export default function EmployerHome() {
         Skip to organization info form
       </a>
 
-      <header className="employer-home__header">
-        <nav className="employer-home__top-nav" aria-label="Employer navigation">
-          <div className="employer-home__logo" aria-label="Sudburry">
-            <span className="employer-home__logo-icon" aria-hidden="true">
-              S
-            </span>
-            <span>Sudburry</span>
-          </div>
-
-          <div className="employer-home__nav-actions">
-            <button
-              type="button"
-              className="employer-home__profile-link"
-              onClick={() => navigate("/employer/company-profile")}
-            >
-              Profile
-            </button>
-
-            <button
-              type="button"
-              className="employer-home__logout-btn"
-              onClick={handleLogout}
-            >
-              Log Out
-            </button>
-
-            <button
-              type="button"
-              className="employer-home__notification-btn"
-              aria-label="Open notifications"
-              title="Notifications"
-            >
-              <Bell size={18} aria-hidden="true" />
-            </button>
-
-            <button
-              type="button"
-              className="employer-home__post-job-btn"
-              onClick={() => navigate("/employer/post-job")}
-            >
-              Post a Job
-            </button>
-          </div>
-        </nav>
-      </header>
+      <EmployerHeader activePage="home" showMainNav={false} showProfileShortcut />
 
       <main className="employer-home__main" id="main-content">
         <aside className="employer-home__left-panel" aria-label="User overview">

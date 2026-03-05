@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { fetchEmployerJobs, fetchEmployerJobStats, fetchAcceptedCandidates, fetchEmployerMetrics } from "../../services/jobService";
-import { logoutUser } from "../../services/authService";
+import EmployerHeader from "../../components/employer/EmployerHeader";
 import Toast from "../../components/Toast";
 import TourOverlay from "../../components/TourOverlay";
 
 export default function EmployerDashboard() {
-  const navigate = useNavigate();
   const [timeFilter, setTimeFilter] = useState("1Y");
   const [loading, setLoading] = useState(true);
   const [recentJobs, setRecentJobs] = useState([]);
@@ -634,92 +632,18 @@ export default function EmployerDashboard() {
 
   return (
     <div style={styles.page}>
-      {/* Top Navigation */}
-      <nav style={styles.topNav}>
-        <div style={styles.logo}>
-          <div style={styles.logoIcon}>S</div>
-          <span>Sudburry</span>
-        </div>
-        <div style={styles.navLinks}>
-          <span style={styles.navLinkActive} data-tour="employer-nav-dashboard">Dashboard</span>
-          <span
-            style={styles.navLink}
-            onClick={() => navigate("/employer/candidates")}
-            data-tour="employer-nav-candidates"
-          >
-            Candidates
-          </span>
-          <span
-            style={styles.navLink}
-            onClick={() => navigate("/employer/listed-jobs")}
-            data-tour="employer-nav-listedjobs"
-          >
-            Listed Jobs
-          </span>
-          <span
-            style={styles.navLink}
-            onClick={() => navigate("/employer/company-profile")}
-            data-tour="employer-nav-companyprofile"
-          >
-            Company Profile
-          </span>
-        </div>
-        <div style={styles.searchBar}>
-          <span>🔍</span>
-          <input
-            type="text"
-            placeholder="Search by skills, company or job"
-            style={styles.searchInput}
-          />
-        </div>
-        <div style={styles.userActions}>
-          <span
-            style={styles.userActionLink}
-            onClick={() => navigate("/employer/company-profile")}
-          >
-            <span>👤</span>
-            Profile
-          </span>
-          <button
-            style={styles.logoutBtn}
-            onClick={async () => {
-              // Call logout API
-              await logoutUser();
-              localStorage.removeItem("token");
-              localStorage.removeItem("role");
-              localStorage.removeItem("profileData");
-              navigate("/");
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)";
-              e.target.style.transform = "translateY(-2px)";
-              e.target.style.boxShadow = "0 6px 16px rgba(239, 68, 68, 0.4)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)";
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = "0 4px 12px rgba(239, 68, 68, 0.3)";
-            }}
-          >
-            <span>🚪</span>
-            Log Out
-          </button>
+      <EmployerHeader
+        activePage="dashboard"
+        extraActions={
           <button
             type="button"
-            style={styles.launchTourBtn}
+            className="employer-header__tour-btn"
             onClick={() => setShowTour(true)}
           >
             Launch Tour
           </button>
-          <button
-            style={styles.postJobBtn}
-            onClick={() => navigate("/employer/post-job")}
-            data-tour="employer-postjob"
-          >
-            Post a Job +
-          </button>
-        </div>
-      </nav>
+        }
+      />
 
       {/* Main Content */}
       <div style={styles.container}>
@@ -1000,3 +924,4 @@ export default function EmployerDashboard() {
     </div>
   );
 }
+

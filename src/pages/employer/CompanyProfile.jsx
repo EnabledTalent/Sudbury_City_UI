@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bell, Pencil } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Pencil } from "lucide-react";
 import {
   fetchOrganizationProfile,
   updateOrganizationProfile,
 } from "../../services/employerService";
-import { logoutUser } from "../../services/authService";
+import EmployerHeader from "../../components/employer/EmployerHeader";
 import Toast from "../../components/Toast";
 import YearPicker from "../../components/YearPicker";
 import "./CompanyProfile.css";
@@ -54,7 +53,6 @@ const toExternalWebsiteHref = (website) => {
 };
 
 export default function CompanyProfile() {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
@@ -203,66 +201,13 @@ export default function CompanyProfile() {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await logoutUser();
-    } catch {
-      // Continue local logout even if API call fails.
-    }
-
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("profileData");
-    navigate("/");
-  };
-
   return (
     <div className="company-profile">
       <a className="skip-link" href={isEditMode ? "#company-profile-edit-form" : "#company-profile-main"}>
         Skip to company profile content
       </a>
 
-      <header className="company-profile__header">
-        <nav className="company-profile__top-nav" aria-label="Employer navigation">
-          <div className="company-profile__logo" aria-label="Sudburry">
-            <span className="company-profile__logo-icon" aria-hidden="true">
-              S
-            </span>
-            <span>Sudburry</span>
-          </div>
-
-          <div className="company-profile__nav-links">
-            <button type="button" className="company-profile__nav-link" onClick={() => navigate("/employer/dashboard")}>
-              Dashboard
-            </button>
-            <button type="button" className="company-profile__nav-link" onClick={() => navigate("/employer/candidates")}>
-              Candidates
-            </button>
-            <button
-              type="button"
-              className="company-profile__nav-link"
-              onClick={() => navigate("/employer/listed-jobs")}
-            >
-              Listed Jobs
-            </button>
-            <button type="button" className="company-profile__nav-link company-profile__nav-link--active" aria-current="page">
-              Company Profile
-            </button>
-          </div>
-
-          <div className="company-profile__user-actions">
-            <button type="button" className="company-profile__icon-btn" aria-label="Open notifications" title="Notifications">
-              <Bell size={18} aria-hidden="true" />
-            </button>
-            <button type="button" className="company-profile__action-btn" onClick={() => navigate("/employer/post-job")}>
-              Post a Job
-            </button>
-            <button type="button" className="company-profile__logout-btn" onClick={handleLogout}>
-              Log Out
-            </button>
-          </div>
-        </nav>
-      </header>
+      <EmployerHeader activePage="companyProfile" />
 
       <main className="company-profile__main">
         {loading ? (

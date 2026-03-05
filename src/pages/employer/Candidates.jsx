@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { fetchAllJobseekerProfiles } from "../../services/profileService";
-import { logoutUser } from "../../services/authService";
 import { fetchEmployerJobs, inviteToApply } from "../../services/jobService";
+import EmployerHeader from "../../components/employer/EmployerHeader";
 import Toast from "../../components/Toast";
 
 export default function Candidates() {
-  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [expandedSections, setExpandedSections] = useState({
@@ -600,73 +598,7 @@ export default function Candidates() {
 
   return (
     <div style={styles.page}>
-      {/* Top Navigation */}
-      <nav style={styles.topNav}>
-        <div style={styles.logo}>
-          <div style={styles.logoIcon}>S</div>
-          <span>Sudburry</span>
-        </div>
-        <div style={styles.navLinks}>
-          <span
-            style={styles.navLink}
-            onClick={() => navigate("/employer/dashboard")}
-          >
-            Dashboard
-          </span>
-          <span style={styles.navLinkActive}>Candidates</span>
-          <span
-            style={styles.navLink}
-            onClick={() => navigate("/employer/listed-jobs")}
-          >
-            Listed Jobs
-          </span>
-          <span
-            style={styles.navLink}
-            onClick={() => navigate("/employer/company-profile")}
-          >
-            Company Profile
-          </span>
-        </div>
-        <div style={styles.userActions}>
-          <span
-            style={styles.userActionLink}
-            onClick={() => navigate("/employer/company-profile")}
-          >
-            <span>👤</span>
-            Profile
-          </span>
-          <button
-            style={styles.logoutBtn}
-            onClick={async () => {
-              // Call logout API
-              await logoutUser();
-              localStorage.removeItem("token");
-              localStorage.removeItem("role");
-              localStorage.removeItem("profileData");
-              navigate("/");
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)";
-              e.target.style.transform = "translateY(-2px)";
-              e.target.style.boxShadow = "0 6px 16px rgba(239, 68, 68, 0.4)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)";
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = "0 4px 12px rgba(239, 68, 68, 0.3)";
-            }}
-          >
-            <span>🚪</span>
-            Log Out
-          </button>
-          <button
-            style={styles.postJobBtn}
-            onClick={() => navigate("/employer/post-job")}
-          >
-            Post a Job +
-          </button>
-        </div>
-      </nav>
+      <EmployerHeader activePage="candidates" />
 
       {/* Main Content */}
       <div style={styles.container}>
@@ -1055,3 +987,4 @@ export default function Candidates() {
     </div>
   );
 }
+
