@@ -14,6 +14,9 @@ export default function Login() {
   const [toast, setToast] = useState({ message: "", type: "error" });
 
   const navigate = useNavigate();
+  const modePrefix = mode === "signup" ? "signup" : "login";
+  const authErrorId = "auth-error";
+  const authSubtitleId = "auth-subtitle";
 
   const [form, setForm] = useState({
     name: "",
@@ -28,17 +31,16 @@ export default function Login() {
     setError("");
     setShowPassword(false);
 
-    // Never carry password across screens/modes
+    // Never carry password across screens/modes.
     setForm((prev) => {
       if (nextMode === "login") {
         return {
           ...prev,
-          username: prev.username || prev.email, // convenient, but safe
+          username: prev.username || prev.email,
           password: "",
         };
       }
 
-      // signup
       return {
         ...prev,
         password: "",
@@ -54,41 +56,31 @@ export default function Login() {
 
     try {
       if (mode === "login") {
-        // ⏳ WAIT FOR RESPONSE
         const data = await loginUser(form.username, form.password);
-        // ✅ CONFIRM TOKEN IS STORED
         const token = localStorage.getItem("token");
         const role = localStorage.getItem("role");
 
         if (token) {
-          // Route based on role
           if (role === "EMPLOYER") {
-            // Check if organization profile exists
             try {
               const orgProfile = await fetchOrganizationProfile();
               if (orgProfile) {
-                // Organization profile exists, navigate to dashboard
                 navigate("/employer/dashboard");
               } else {
-                // No organization profile, navigate to home to fill it
                 navigate("/employer/home");
               }
             } catch (err) {
               console.error("Error checking organization profile:", err);
-              // If error, still navigate to home to fill organization info
               navigate("/employer/home");
             }
           } else {
-            // Student login - check if profile exists
             try {
               const email = data.sub || data.email || data.username;
               if (email) {
                 const profile = await fetchProfile(email);
                 if (profile && Object.keys(profile).length > 0) {
-                  // Profile exists, navigate to view profile
                   navigate("/student/view-profile");
                 } else {
-                  // No profile, navigate to upload resume
                   navigate("/student");
                 }
               } else {
@@ -113,14 +105,15 @@ export default function Login() {
           message: "Signup successful! Please verify your email, then log in.",
           type: "success",
         });
-        // Switch to login mode after successful signup
+
         setTimeout(() => {
           switchAuthMode("login");
           setToast({ message: "", type: "error" });
         }, 2000);
       }
     } catch (err) {
-      const message = err?.message || (mode === "signup" ? "Signup failed" : "Login failed");
+      const message =
+        err?.message || (mode === "signup" ? "Signup failed" : "Login failed");
       if (mode === "signup") {
         setError("");
         setToast({ message, type: "error" });
@@ -132,65 +125,72 @@ export default function Login() {
     }
   };
 
-
   return (
-    <div className="auth-page">
+    <main className="auth-page" id="main-content">
+      <a className="skip-link" href="#auth-form">
+        Skip to authentication form
+      </a>
       <div className="auth-wrapper">
         <div className="auth-container">
-
-          {/* LEFT PANEL */}
-          <div className="auth-left">
+          <aside className="auth-left" aria-label="Platform welcome">
             <div className="logo-circle">S</div>
-            <h1>
+            <h2>
               Welcome To <b>Sudburry</b>
-            </h1>
+            </h2>
             <p>Because every talent deserves the right chance</p>
-          </div>
+          </aside>
 
-          {/* RIGHT CARD */}
-          <div className="auth-right">
-            <h2>{mode === "signup" ? "Sign Up" : "Login"}</h2>
+          <section className="auth-right" aria-labelledby="auth-title">
+            <h1 id="auth-title">{mode === "signup" ? "Sign Up" : "Login"}</h1>
 
-            <p className="auth-subtitle">
+            <p className="auth-subtitle" id={authSubtitleId}>
               {mode === "signup"
                 ? "Create a Talent account to start applying"
                 : "Login to your account"}
             </p>
 
-            <form onSubmit={handleSubmit}>
-
-              {/* SIGNUP */}
+            <form
+              id="auth-form"
+              className="auth-form"
+              onSubmit={handleSubmit}
+              aria-describedby={error && mode === "login" ? authErrorId : authSubtitleId}
+            >
               {mode === "signup" && (
                 <>
                   <div className="form-group">
-                    <label>Full name</label>
+                    <label htmlFor="signup-name">Full name</label>
                     <input
+                      id="signup-name"
+                      name="fullName"
                       type="text"
+                      autoComplete="name"
+                      required
                       value={form.name}
-                      onChange={(e) =>
-                        setForm({ ...form, name: e.target.value })
-                      }
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
                     />
                   </div>
 
                   <div className="form-group">
-                    <label>Email</label>
+                    <label htmlFor="signup-email">Email</label>
                     <input
+                      id="signup-email"
+                      name="email"
                       type="email"
+                      autoComplete="email"
+                      required
                       value={form.email}
-                      onChange={(e) =>
-                        setForm({ ...form, email: e.target.value })
-                      }
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
                     />
                   </div>
 
                   <div className="form-group">
-                    <label>Sign up as</label>
+                    <label htmlFor="signup-role">Sign up as</label>
                     <select
+                      id="signup-role"
+                      name="role"
+                      required
                       value={form.role}
-                      onChange={(e) =>
-                        setForm({ ...form, role: e.target.value })
-                      }
+                      onChange={(e) => setForm({ ...form, role: e.target.value })}
                     >
                       <option value="student">Talent</option>
                       <option value="employer">Employer</option>
@@ -199,52 +199,57 @@ export default function Login() {
                 </>
               )}
 
-              {/* LOGIN */}
               {mode === "login" && (
                 <div className="form-group">
-                  <label>Username</label>
+                  <label htmlFor="login-username">Username</label>
                   <input
+                    id="login-username"
+                    name="username"
                     type="text"
+                    autoComplete="username"
+                    required
                     value={form.username}
-                    onChange={(e) =>
-                      setForm({ ...form, username: e.target.value })
-                    }
+                    onChange={(e) => setForm({ ...form, username: e.target.value })}
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={error ? authErrorId : undefined}
                   />
                 </div>
               )}
 
-              {/* PASSWORD */}
               <div className="form-group">
-                <label>Password</label>
+                <label htmlFor={`${modePrefix}-password`}>Password</label>
                 <div className="password-wrapper">
                   <input
+                    id={`${modePrefix}-password`}
+                    name="password"
                     type={showPassword ? "text" : "password"}
+                    autoComplete={mode === "login" ? "current-password" : "new-password"}
+                    required
                     value={form.password}
-                    onChange={(e) =>
-                      setForm({ ...form, password: e.target.value })
-                    }
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    aria-invalid={mode === "login" && Boolean(error)}
+                    aria-describedby={mode === "login" && error ? authErrorId : undefined}
                   />
-                  <span
+                  <button
+                    type="button"
                     className="password-toggle"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </span>
+                  </button>
                 </div>
               </div>
 
-              {error && <p className="error-text">{error}</p>}
+              {error && mode === "login" && (
+                <p id={authErrorId} className="error-text" role="alert" aria-live="assertive">
+                  {error}
+                </p>
+              )}
 
-              <button
-                className="submit-btn"
-                disabled={loading}
-                type="submit"
-              >
-                {loading
-                  ? "Please wait..."
-                  : mode === "signup"
-                  ? "Create account"
-                  : "Login"}
+              <button className="submit-btn" disabled={loading} type="submit">
+                {loading ? "Please wait..." : mode === "signup" ? "Create account" : "Login"}
               </button>
             </form>
 
@@ -253,22 +258,27 @@ export default function Login() {
             <p className="switch-text">
               {mode === "signup"
                 ? "Already have an account?"
-                : "Don’t have an account?"}{" "}
-              <span
-                onClick={() =>
-                  switchAuthMode(mode === "signup" ? "login" : "signup")
-                }
+                : "Don't have an account?"}{" "}
+              <button
+                type="button"
+                className="switch-btn"
+                onClick={() => switchAuthMode(mode === "signup" ? "login" : "signup")}
               >
                 {mode === "signup" ? "Login" : "Sign Up"}
-              </span>
+              </button>
             </p>
 
             <p className="terms-text">
-              By clicking login, you agree to our{" "}
-              <u>Terms of Service</u> and <u>Privacy Policy</u>
+              By continuing, you agree to our{" "}
+              <a className="terms-link" href="/terms-of-service">
+                Terms of Service
+              </a>{" "}
+              and{" "}
+              <a className="terms-link" href="/privacy-policy">
+                Privacy Policy
+              </a>
             </p>
-          </div>
-
+          </section>
         </div>
       </div>
       <Toast
@@ -276,6 +286,6 @@ export default function Login() {
         type={toast.type}
         onClose={() => setToast({ message: "", type: "error" })}
       />
-    </div>
+    </main>
   );
 }
