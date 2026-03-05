@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { fetchEmployerJobs, fetchEmployerJobStats, fetchJobApplications, updateApplicationStatus, sendInterviewInvitation, sendJobOffer, rejectApplication, updateJob, deleteJob } from "../../services/jobService";
 import EmployerHeader from "../../components/employer/EmployerHeader";
 import Toast from "../../components/Toast";

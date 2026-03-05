@@ -474,7 +474,7 @@ export default function Candidates() {
                 {searchQuery ? "No candidates found matching your search." : "No candidates available."}
               </p>
             ) : (
-              <ul className="candidates__items" role="list">
+              <ul className="candidates__items">
                 {filteredCandidates.map((candidate) => {
                   const isActive = selectedCandidate?.id === candidate.id;
                   return (
@@ -537,7 +537,6 @@ export default function Candidates() {
                               type="button"
                               className="candidates__job-option"
                               onClick={() => handleSendInvite(job.id)}
-                              role="option"
                             >
                               <span className="candidates__job-title">
                                 {job.role || job.jobTitle || "Untitled job"}
