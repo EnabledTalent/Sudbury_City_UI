@@ -1,0 +1,387 @@
+.employer-home {
+  background: #f2f7fd;
+  min-height: 100vh;
+}
+
+.employer-home__header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.employer-home__top-nav {
+  background: #ffffff;
+  padding: 20px 40px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  backdrop-filter: blur(10px);
+}
+
+.employer-home__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 20px;
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
+}
+
+.employer-home__logo-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.employer-home__nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.employer-home__profile-link,
+.employer-home__notification-btn,
+.employer-home__logout-btn,
+.employer-home__post-job-btn {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  min-height: 44px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.employer-home__profile-link {
+  background: transparent;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.employer-home__profile-link:hover {
+  background: #f9fafb;
+}
+
+.employer-home__notification-btn {
+  background: #ffffff;
+  color: #374151;
+  border-color: #d1d5db;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+}
+
+.employer-home__notification-btn:hover {
+  background: #f9fafb;
+}
+
+.employer-home__logout-btn {
+  color: #ffffff;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.employer-home__logout-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+.employer-home__post-job-btn {
+  color: #ffffff;
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.employer-home__post-job-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(22, 163, 74, 0.35);
+}
+
+.employer-home__main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 40px;
+  display: flex;
+  gap: 24px;
+}
+
+.employer-home__left-panel {
+  flex: 0 0 320px;
+}
+
+.employer-home__user-card {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border-radius: 16px;
+  padding: 32px 24px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.employer-home__background-mark {
+  position: absolute;
+  right: -20px;
+  top: -20px;
+  font-size: 120px;
+  color: rgba(217, 119, 6, 0.1);
+  font-weight: 700;
+}
+
+.employer-home__profile-picture {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #16a34a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  border: 4px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.employer-home__welcome-text {
+  font-size: 14px;
+  color: #92400e;
+  margin: 0 0 4px;
+  font-weight: 500;
+}
+
+.employer-home__user-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: #78350f;
+  margin: 0;
+}
+
+.employer-home__right-panel {
+  flex: 1;
+}
+
+.employer-home__form-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.employer-home__form-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 24px;
+}
+
+.employer-home__form-group {
+  margin-bottom: 24px;
+}
+
+.employer-home__label,
+.employer-home__legend {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.employer-home__fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0 0 24px;
+}
+
+.employer-home__input,
+.employer-home__textarea,
+.employer-home__select {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  box-sizing: border-box;
+  color: #111827;
+  background: #ffffff;
+}
+
+.employer-home__input,
+.employer-home__select {
+  min-height: 44px;
+  padding: 10px 14px;
+}
+
+.employer-home__textarea {
+  min-height: 120px;
+  padding: 12px 14px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.employer-home__input:focus-visible,
+.employer-home__textarea:focus-visible,
+.employer-home__select:focus-visible,
+.employer-home__profile-link:focus-visible,
+.employer-home__notification-btn:focus-visible,
+.employer-home__logout-btn:focus-visible,
+.employer-home__post-job-btn:focus-visible,
+.employer-home__cancel-btn:focus-visible,
+.employer-home__save-btn:focus-visible,
+.employer-home__radio-input:focus-visible + .employer-home__radio-label {
+  outline: 3px solid rgba(21, 128, 61, 0.35);
+  outline-offset: 2px;
+}
+
+.employer-home__field-hint {
+  margin: 0 0 8px;
+  color: #4b5563;
+  font-size: 12px;
+}
+
+.employer-home__field-error {
+  margin: 8px 0 0;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.employer-home__select-wrapper {
+  position: relative;
+}
+
+.employer-home__select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  padding-right: 40px;
+}
+
+.employer-home__select-arrow {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #374151;
+  pointer-events: none;
+  font-size: 12px;
+}
+
+.employer-home__radio-group {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.employer-home__radio-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.employer-home__radio-input {
+  width: 18px;
+  height: 18px;
+  accent-color: #15803d;
+}
+
+.employer-home__radio-label {
+  font-size: 14px;
+  color: #1f2937;
+}
+
+.employer-home__actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.employer-home__cancel-btn,
+.employer-home__save-btn {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  min-height: 44px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.employer-home__cancel-btn {
+  background: #f3f4f6;
+  color: #1f2937;
+  border-color: #d1d5db;
+}
+
+.employer-home__cancel-btn:hover {
+  background: #e5e7eb;
+}
+
+.employer-home__save-btn {
+  color: #ffffff;
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+}
+
+.employer-home__save-btn:hover {
+  box-shadow: 0 6px 16px rgba(22, 163, 74, 0.35);
+}
+
+@media (max-width: 1080px) {
+  .employer-home__top-nav {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .employer-home__nav-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .employer-home__main {
+    flex-direction: column;
+  }
+
+  .employer-home__left-panel {
+    flex: 1 1 auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .employer-home__top-nav,
+  .employer-home__main {
+    padding: 16px;
+  }
+
+  .employer-home__form-card {
+    padding: 20px;
+  }
+
+  .employer-home__actions {
+    flex-direction: column;
+  }
+}
