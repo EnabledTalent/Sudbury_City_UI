@@ -1,77 +1,98 @@
-import { useState, useEffect } from "react";
-import { Pencil } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Bell, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { fetchOrganizationProfile, updateOrganizationProfile } from "../../services/employerService";
+import {
+  fetchOrganizationProfile,
+  updateOrganizationProfile,
+} from "../../services/employerService";
 import { logoutUser } from "../../services/authService";
 import Toast from "../../components/Toast";
 import YearPicker from "../../components/YearPicker";
+import "./CompanyProfile.css";
+
+const DEFAULT_FORM_DATA = {
+  organizationName: "",
+  aboutOrganization: "",
+  location: "",
+  foundedYear: "",
+  website: "",
+  companySize: "10-100",
+  industry: "Information Technology",
+};
+
+const toCompanyData = (profile) => {
+  const orgName = profile?.organizationName || "";
+  return {
+    name: orgName,
+    subtitle: profile?.industry ? `${profile.industry} company` : "Software development company",
+    logo: orgName ? orgName.charAt(0).toUpperCase() : "O",
+    location: profile?.location || "",
+    foundedYear: profile?.foundedYear ? String(profile.foundedYear) : "N/A",
+    industry: profile?.industry || "",
+    employees: profile?.companySize || "",
+    website: profile?.website || "",
+    about: profile?.aboutOrganization || "",
+  };
+};
+
+const toFormData = (profile) => ({
+  organizationName: profile?.organizationName || "",
+  aboutOrganization: profile?.aboutOrganization || "",
+  location: profile?.location || "",
+  foundedYear: profile?.foundedYear ? String(profile.foundedYear) : "",
+  website: profile?.website || "",
+  companySize: profile?.companySize || "10-100",
+  industry: profile?.industry || "Information Technology",
+});
+
+const toExternalWebsiteHref = (website) => {
+  const value = String(website || "").trim();
+  if (!value) return "";
+  if (/^https?:\/\//i.test(value)) return value;
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(value)) return "";
+  return `https://${value}`;
+};
 
 export default function CompanyProfile() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ message: "", type: "error" });
   const [websiteError, setWebsiteError] = useState("");
-  const [companyData, setCompanyData] = useState({
-    name: "",
-    subtitle: "Software development company",
-    logo: "∞",
-    location: "",
-    foundedYear: "",
-    industry: "",
-    employees: "",
-    website: "",
-    about: "",
-  });
-  const [formData, setFormData] = useState({
-    organizationName: "",
-    aboutOrganization: "",
-    location: "",
-    foundedYear: "",
-    website: "",
-    companySize: "10-100",
-    industry: "Information Technology",
-  });
+  const [companyData, setCompanyData] = useState(toCompanyData(null));
+  const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
   const [rawProfile, setRawProfile] = useState(null);
+
+  const websiteHintId = "company-profile-website-hint";
+  const websiteErrorId = "company-profile-website-error";
+  const websiteDescribedBy = websiteError
+    ? `${websiteHintId} ${websiteErrorId}`
+    : websiteHintId;
+  const profileWebsiteHref = useMemo(
+    () => toExternalWebsiteHref(companyData.website),
+    [companyData.website]
+  );
 
   const loadOrganizationProfile = async () => {
     try {
       setLoading(true);
-      setError(null);
+      setError("");
+
       const profile = await fetchOrganizationProfile();
-      
-      if (profile) {
-        setRawProfile(profile);
-        const orgName = profile.organizationName || "";
-        setCompanyData({
-          name: orgName,
-          subtitle: profile.industry ? `${profile.industry} company` : "Software development company",
-          logo: orgName ? orgName.charAt(0).toUpperCase() : "∞",
-          location: profile.location || "",
-          foundedYear: profile.foundedYear ? profile.foundedYear.toString() : "N/A",
-          industry: profile.industry || "",
-          employees: profile.companySize || "",
-          website: profile.website || "",
-          about: profile.aboutOrganization || "",
-        });
-        // Pre-fill form data
-        setFormData({
-          organizationName: profile.organizationName || "",
-          aboutOrganization: profile.aboutOrganization || "",
-          location: profile.location || "",
-          foundedYear: profile.foundedYear ? profile.foundedYear.toString() : "",
-          website: profile.website || "",
-          companySize: profile.companySize || "10-100",
-          industry: profile.industry || "Information Technology",
-        });
-      } else {
-        setError("Organization profile not found");
+
+      if (!profile) {
+        setError("Organization profile not found.");
+        return;
       }
+
+      setRawProfile(profile);
+      setCompanyData(toCompanyData(profile));
+      setFormData(toFormData(profile));
     } catch (err) {
       console.error("Error fetching organization profile:", err);
-      setError(err.message || "Failed to load organization profile");
+      setError(err?.message || "Failed to load organization profile.");
     } finally {
       setLoading(false);
     }
@@ -81,12 +102,51 @@ export default function CompanyProfile() {
     loadOrganizationProfile();
   }, []);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  const normalizeHttpsUrl = (raw) => {
+    const value = String(raw || "").trim();
+
+    if (!value) return "";
+    if (value.startsWith("https://")) return value;
+    if (value.startsWith("http://")) return `https://${value.slice("http://".length)}`;
+    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(value)) return value;
+    return `https://${value}`;
+  };
+
+  const validateWebsite = (raw) => {
+    const value = String(raw || "").trim();
+
+    if (!value) return "Website is required";
+
+    const normalized = normalizeHttpsUrl(value);
+    if (!normalized.startsWith("https://")) return "Website must start with https://";
+
+    try {
+      // eslint-disable-next-line no-new
+      new URL(normalized);
+    } catch {
+      return "Please enter a valid website URL";
+    }
+
+    return "";
+  };
+
+  const handleWebsiteBlur = (event) => {
+    const normalized = normalizeHttpsUrl(event.target.value);
+
+    if (normalized !== event.target.value) {
+      setFormData((prev) => ({ ...prev, website: normalized }));
+    }
+
+    setWebsiteError(validateWebsite(normalized));
+  };
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
+
     if (name === "website") {
       setWebsiteError("");
     }
@@ -100,7 +160,6 @@ export default function CompanyProfile() {
   };
 
   const handleEdit = () => {
-    // Ensure company name is prefilled even if user opens edit quickly
     if (!formData.organizationName && companyData.name) {
       setFormData((prev) => ({ ...prev, organizationName: companyData.name }));
     }
@@ -110,41 +169,9 @@ export default function CompanyProfile() {
   const handleCancel = () => {
     setIsEditMode(false);
     setWebsiteError("");
-    // Reset form data to original values
     if (rawProfile) {
-      setFormData({
-        organizationName: rawProfile.organizationName || "",
-        aboutOrganization: rawProfile.aboutOrganization || "",
-        location: rawProfile.location || "",
-        foundedYear: rawProfile.foundedYear ? rawProfile.foundedYear.toString() : "",
-        website: rawProfile.website || "",
-        companySize: rawProfile.companySize || "10-100",
-        industry: rawProfile.industry || "Information Technology",
-      });
+      setFormData(toFormData(rawProfile));
     }
-  };
-
-  const normalizeHttpsUrl = (raw) => {
-    const v = String(raw || "").trim();
-    if (!v) return "";
-    if (v.startsWith("https://")) return v;
-    if (v.startsWith("http://")) return `https://${v.slice("http://".length)}`;
-    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(v)) return v;
-    return `https://${v}`;
-  };
-
-  const validateWebsite = (raw) => {
-    const v = String(raw || "").trim();
-    if (!v) return "Website is required";
-    const normalized = normalizeHttpsUrl(v);
-    if (!normalized.startsWith("https://")) return "Website must start with https://";
-    try {
-      // eslint-disable-next-line no-new
-      new URL(normalized);
-    } catch {
-      return "Please enter a valid website URL";
-    }
-    return "";
   };
 
   const handleSave = async () => {
@@ -156,779 +183,337 @@ export default function CompanyProfile() {
         return;
       }
 
-      const normalizedWebsite = normalizeHttpsUrl(formData.website);
-      const payload = { ...formData, website: normalizedWebsite };
-
       setSaving(true);
-      await updateOrganizationProfile(payload);
+      await updateOrganizationProfile({
+        ...formData,
+        website: normalizeHttpsUrl(formData.website),
+      });
+
       setToast({ message: "Organization profile updated successfully!", type: "success" });
-      // Reload profile data
       await loadOrganizationProfile();
       setIsEditMode(false);
-    } catch (error) {
-      console.error("Error updating organization profile:", error);
-      setToast({ message: `Failed to update organization profile: ${error.message}`, type: "error" });
+    } catch (saveError) {
+      console.error("Error updating organization profile:", saveError);
+      setToast({
+        message: `Failed to update organization profile: ${saveError.message}`,
+        type: "error",
+      });
     } finally {
       setSaving(false);
     }
   };
 
-  const styles = {
-    page: {
-      background: "#f2f7fd",
-      minHeight: "100vh",
-      display: "flex",
-      flexDirection: "column",
-    },
-    topNav: {
-      background: "#ffffff",
-      padding: "20px 40px",
-      borderBottom: "1px solid #e5e7eb",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
-      position: "sticky",
-      top: 0,
-      zIndex: 100,
-      backdropFilter: "blur(10px)",
-    },
-    logo: {
-      display: "flex",
-      alignItems: "center",
-      gap: "10px",
-      fontWeight: 700,
-      fontSize: "20px",
-      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
-      WebkitBackgroundClip: "text",
-      WebkitTextFillColor: "transparent",
-      backgroundClip: "text",
-      letterSpacing: "-0.02em",
-    },
-    logoIcon: {
-      width: "32px",
-      height: "32px",
-      borderRadius: "50%",
-      background: "linear-gradient(135deg, #16a34a, #15803d)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "#ffffff",
-      fontWeight: 700,
-      fontSize: "18px",
-      lineHeight: "1",
-    },
-    navLinks: {
-      display: "flex",
-      gap: "24px",
-      alignItems: "center",
-    },
-    navLink: {
-      fontSize: "14px",
-      color: "#6b7280",
-      cursor: "pointer",
-      textDecoration: "none",
-      paddingBottom: "4px",
-    },
-    navLinkActive: {
-      fontSize: "14px",
-      color: "#16a34a",
-      cursor: "pointer",
-      textDecoration: "none",
-      paddingBottom: "4px",
-      borderBottom: "2px solid #16a34a",
-      fontWeight: 500,
-    },
-    userActions: {
-      display: "flex",
-      gap: "20px",
-      alignItems: "center",
-    },
-    userActionLink: {
-      fontSize: "14px",
-      color: "#374151",
-      cursor: "pointer",
-      display: "flex",
-      alignItems: "center",
-      gap: "6px",
-    },
-    logoutBtn: {
-      background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-      color: "#ffffff",
-      border: "none",
-      padding: "10px 18px",
-      borderRadius: "10px",
-      cursor: "pointer",
-      fontSize: "13px",
-      fontWeight: 600,
-      display: "flex",
-      alignItems: "center",
-      gap: "6px",
-      boxShadow: "0 4px 12px rgba(239, 68, 68, 0.3)",
-      transition: "all 0.3s ease",
-    },
-    postJobBtn: {
-      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
-      color: "#ffffff",
-      border: "none",
-      padding: "12px 24px",
-      borderRadius: "12px",
-      cursor: "pointer",
-      fontSize: "14px",
-      fontWeight: 600,
-      display: "flex",
-      alignItems: "center",
-      gap: "8px",
-      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
-      transition: "all 0.3s ease",
-    },
-    container: {
-      maxWidth: "1400px",
-      margin: "0 auto",
-      padding: "32px 40px",
-      flex: 1,
-    },
-    companyBanner: {
-      background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)",
-      borderRadius: "20px",
-      padding: "48px",
-      marginBottom: "40px",
-      display: "flex",
-      alignItems: "center",
-      gap: "28px",
-      position: "relative",
-      boxShadow: "0 10px 30px rgba(251, 191, 36, 0.25), 0 4px 12px rgba(0, 0, 0, 0.1)",
-      border: "1px solid rgba(251, 191, 36, 0.2)",
-    },
-    companyLogoContainer: {
-      width: "120px",
-      height: "120px",
-      borderRadius: "50%",
-      background: "#ffffff",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-      flexShrink: 0,
-    },
-    companyLogo: {
-      width: "80px",
-      height: "80px",
-      borderRadius: "50%",
-      background: "#16a34a",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "#fff",
-      fontSize: "40px",
-      fontWeight: 700,
-    },
-    companyInfo: {
-      flex: 1,
-    },
-    companyName: {
-      fontSize: "36px",
-      fontWeight: 700,
-      color: "#111827",
-      marginBottom: "8px",
-    },
-    companySubtitle: {
-      fontSize: "18px",
-      color: "#6b7280",
-    },
-    editIcon: {
-      width: "40px",
-      height: "40px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      background: "#ffffff",
-      color: "#111827",
-      border: "1px solid #e5e7eb",
-      cursor: "pointer",
-      borderRadius: "12px",
-      transition: "all 0.2s ease",
-      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
-    },
-    contentGrid: {
-      display: "grid",
-      gridTemplateColumns: "2fr 1fr",
-      gap: "24px",
-      marginBottom: "40px",
-    },
-    aboutCard: {
-      background: "#ffffff",
-      borderRadius: "20px",
-      padding: "40px",
-      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
-      border: "1px solid rgba(0, 0, 0, 0.04)",
-    },
-    aboutTitle: {
-      fontSize: "24px",
-      fontWeight: 700,
-      color: "#111827",
-      marginBottom: "20px",
-    },
-    aboutText: {
-      fontSize: "14px",
-      color: "#374151",
-      lineHeight: "1.8",
-      whiteSpace: "pre-line",
-    },
-    detailsSidebar: {
-      display: "flex",
-      flexDirection: "column",
-      gap: "16px",
-    },
-    detailCard: {
-      background: "#ffffff",
-      borderRadius: "12px",
-      padding: "20px",
-      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-    },
-    detailLabel: {
-      fontSize: "12px",
-      color: "#6b7280",
-      marginBottom: "8px",
-      fontWeight: 500,
-    },
-    detailValue: {
-      fontSize: "16px",
-      color: "#111827",
-      fontWeight: 500,
-    },
-    websiteCard: {
-      background: "linear-gradient(90deg, #16a34a, #15803d)",
-      borderRadius: "12px",
-      padding: "20px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      cursor: "pointer",
-      boxShadow: "0 2px 4px rgba(251, 146, 60, 0.3)",
-    },
-    websiteText: {
-      fontSize: "16px",
-      color: "#ffffff",
-      fontWeight: 500,
-    },
-    websiteArrow: {
-      fontSize: "20px",
-      color: "#ffffff",
-    },
-    footer: {
-      background: "#ffffff",
-      padding: "24px 40px",
-      borderTop: "1px solid #e5e7eb",
-      textAlign: "center",
-      fontSize: "12px",
-      color: "#6b7280",
-      marginTop: "auto",
-    },
-    loadingContainer: {
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      minHeight: "400px",
-      fontSize: "16px",
-      color: "#6b7280",
-    },
-    errorContainer: {
-      background: "#fee2e2",
-      border: "1px solid #fca5a5",
-      borderRadius: "8px",
-      padding: "16px",
-      margin: "20px 0",
-      color: "#991b1b",
-    },
-    formCard: {
-      background: "#ffffff",
-      borderRadius: "16px",
-      padding: "32px",
-      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-    },
-    formTitle: {
-      fontSize: "24px",
-      fontWeight: 700,
-      color: "#111827",
-      marginBottom: "24px",
-    },
-    formGroup: {
-      marginBottom: "24px",
-    },
-    label: {
-      display: "block",
-      fontSize: "14px",
-      fontWeight: 500,
-      color: "#374151",
-      marginBottom: "8px",
-    },
-    inputWrapper: {
-      position: "relative",
-    },
-    input: {
-      width: "100%",
-      padding: "12px 16px",
-      borderRadius: "8px",
-      border: "1px solid #e5e7eb",
-      fontSize: "14px",
-      outline: "none",
-      boxSizing: "border-box",
-    },
-    textarea: {
-      width: "100%",
-      padding: "12px 16px",
-      borderRadius: "8px",
-      border: "1px solid #e5e7eb",
-      fontSize: "14px",
-      outline: "none",
-      minHeight: "120px",
-      resize: "vertical",
-      fontFamily: "inherit",
-      boxSizing: "border-box",
-    },
-    searchIcon: {
-      position: "absolute",
-      right: "12px",
-      top: "50%",
-      transform: "translateY(-50%)",
-      color: "#6b7280",
-      cursor: "pointer",
-    },
-    selectWrapper: {
-      position: "relative",
-    },
-    select: {
-      width: "100%",
-      padding: "12px 16px",
-      paddingRight: "40px",
-      borderRadius: "8px",
-      border: "1px solid #e5e7eb",
-      fontSize: "14px",
-      outline: "none",
-      background: "#ffffff",
-      cursor: "pointer",
-      appearance: "none",
-      boxSizing: "border-box",
-    },
-    selectArrow: {
-      position: "absolute",
-      right: "12px",
-      top: "50%",
-      transform: "translateY(-50%)",
-      color: "#6b7280",
-      pointerEvents: "none",
-    },
-    radioGroup: {
-      display: "flex",
-      gap: "16px",
-      flexWrap: "wrap",
-    },
-    radioOption: {
-      display: "flex",
-      alignItems: "center",
-      gap: "8px",
-      cursor: "pointer",
-    },
-    radioInput: {
-      width: "18px",
-      height: "18px",
-      cursor: "pointer",
-      accentColor: "#16a34a",
-    },
-    radioLabel: {
-      fontSize: "14px",
-      color: "#374151",
-      cursor: "pointer",
-    },
-    actions: {
-      display: "flex",
-      justifyContent: "space-between",
-      marginTop: "32px",
-      paddingTop: "24px",
-      borderTop: "1px solid #e5e7eb",
-    },
-    cancelBtn: {
-      background: "#f3f4f6",
-      color: "#374151",
-      border: "none",
-      padding: "12px 24px",
-      borderRadius: "8px",
-      cursor: "pointer",
-      fontSize: "14px",
-      fontWeight: 500,
-    },
-    saveBtn: {
-      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
-      color: "#ffffff",
-      border: "none",
-      padding: "14px 28px",
-      borderRadius: "12px",
-      cursor: "pointer",
-      fontSize: "15px",
-      fontWeight: 600,
-      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
-      transition: "all 0.3s ease",
-    },
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } catch {
+      // Continue local logout even if API call fails.
+    }
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("profileData");
+    navigate("/");
   };
 
   return (
-    <div style={styles.page}>
-      {/* Top Navigation */}
-      <nav style={styles.topNav}>
-        <div style={styles.logo}>
-          <div style={styles.logoIcon}>S</div>
-          <span>Sudburry</span>
-        </div>
-        <div style={styles.navLinks}>
-          <span
-            style={styles.navLink}
-            onClick={() => navigate("/employer/dashboard")}
-          >
-            Dashboard
-          </span>
-          <span
-            style={styles.navLink}
-            onClick={() => navigate("/employer/candidates")}
-          >
-            Candidates
-          </span>
-          <span
-            style={styles.navLink}
-            onClick={() => navigate("/employer/listed-jobs")}
-          >
-            Listed Jobs
-          </span>
-          <span style={styles.navLinkActive}>Company Profile</span>
-        </div>
-        <div style={styles.userActions}>
-          <span
-            style={styles.userActionLink}
-            onClick={() => navigate("/employer/company-profile")}
-          >
-            <span>👤</span>
-            Profile
-          </span>
-          <button
-            style={styles.logoutBtn}
-            onClick={async () => {
-              // Call logout API
-              await logoutUser();
-              localStorage.removeItem("token");
-              localStorage.removeItem("role");
-              localStorage.removeItem("profileData");
-              navigate("/");
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)";
-              e.target.style.transform = "translateY(-2px)";
-              e.target.style.boxShadow = "0 6px 16px rgba(239, 68, 68, 0.4)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)";
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = "0 4px 12px rgba(239, 68, 68, 0.3)";
-            }}
-          >
-            <span>🚪</span>
-            Log Out
-          </button>
-          <button
-            style={styles.postJobBtn}
-            onClick={() => navigate("/employer/post-job")}
-          >
-            Post a Job →
-          </button>
-        </div>
-      </nav>
+    <div className="company-profile">
+      <a className="skip-link" href={isEditMode ? "#company-profile-edit-form" : "#company-profile-main"}>
+        Skip to company profile content
+      </a>
 
-      {/* Main Content */}
-      <div style={styles.container}>
-        {loading ? (
-          <div style={styles.loadingContainer}>Loading organization profile...</div>
-        ) : error ? (
-          <div style={styles.errorContainer}>
-            <strong>Error:</strong> {error}
+      <header className="company-profile__header">
+        <nav className="company-profile__top-nav" aria-label="Employer navigation">
+          <div className="company-profile__logo" aria-label="Sudburry">
+            <span className="company-profile__logo-icon" aria-hidden="true">
+              S
+            </span>
+            <span>Sudburry</span>
           </div>
+
+          <div className="company-profile__nav-links">
+            <button type="button" className="company-profile__nav-link" onClick={() => navigate("/employer/dashboard")}>
+              Dashboard
+            </button>
+            <button type="button" className="company-profile__nav-link" onClick={() => navigate("/employer/candidates")}>
+              Candidates
+            </button>
+            <button
+              type="button"
+              className="company-profile__nav-link"
+              onClick={() => navigate("/employer/listed-jobs")}
+            >
+              Listed Jobs
+            </button>
+            <button type="button" className="company-profile__nav-link company-profile__nav-link--active" aria-current="page">
+              Company Profile
+            </button>
+          </div>
+
+          <div className="company-profile__user-actions">
+            <button type="button" className="company-profile__icon-btn" aria-label="Open notifications" title="Notifications">
+              <Bell size={18} aria-hidden="true" />
+            </button>
+            <button type="button" className="company-profile__action-btn" onClick={() => navigate("/employer/post-job")}>
+              Post a Job
+            </button>
+            <button type="button" className="company-profile__logout-btn" onClick={handleLogout}>
+              Log Out
+            </button>
+          </div>
+        </nav>
+      </header>
+
+      <main className="company-profile__main">
+        {loading ? (
+          <section className="company-profile__state company-profile__state--loading" role="status" aria-live="polite">
+            Loading organization profile...
+          </section>
+        ) : error ? (
+          <section className="company-profile__state company-profile__state--error" role="alert">
+            <p>{error}</p>
+            <button type="button" className="company-profile__retry-btn" onClick={loadOrganizationProfile}>
+              Retry
+            </button>
+          </section>
         ) : (
           <>
-            {/* Company Banner */}
-            <div style={styles.companyBanner}>
-              <div style={styles.companyLogoContainer}>
-                <div style={styles.companyLogo}>{companyData.logo}</div>
-              </div>
-              <div style={styles.companyInfo}>
-                <div style={styles.companyName}>
-                  {companyData.name || "Organization Name"}
+            <section className="company-profile__banner" aria-labelledby="company-profile-title">
+              <div className="company-profile__logo-container">
+                <div className="company-profile__company-logo" aria-hidden="true">
+                  {companyData.logo}
                 </div>
-                <div style={styles.companySubtitle}>{companyData.subtitle}</div>
               </div>
-              <span
-                style={styles.editIcon}
-                onClick={handleEdit}
-                onMouseEnter={(e) => {
-                  e.target.style.background = "#f9fafb";
-                  e.target.style.transform = "translateY(-1px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = "#ffffff";
-                  e.target.style.transform = "translateY(0)";
-                }}
-              >
-                <Pencil size={18} strokeWidth={2.5} />
-              </span>
-            </div>
 
-            {/* Content Grid or Edit Form */}
+              <div className="company-profile__company-info">
+                <h1 id="company-profile-title" className="company-profile__company-name">
+                  {companyData.name || "Organization Name"}
+                </h1>
+                <p className="company-profile__company-subtitle">{companyData.subtitle}</p>
+              </div>
+
+              {!isEditMode && (
+                <button type="button" className="company-profile__edit-btn" onClick={handleEdit} aria-label="Edit organization info">
+                  <Pencil size={18} strokeWidth={2.5} aria-hidden="true" />
+                </button>
+              )}
+            </section>
+
             {isEditMode ? (
-              <div style={styles.formCard}>
-                <h2 style={styles.formTitle}>Edit Organization Info</h2>
+              <section className="company-profile__edit-section" aria-labelledby="edit-organization-info-title">
+                <form
+                  id="company-profile-edit-form"
+                  className="company-profile__form-card"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    handleSave();
+                  }}
+                  noValidate
+                >
+                  <h2 id="edit-organization-info-title" className="company-profile__form-title">
+                    Edit Organization Info
+                  </h2>
 
-                {/* Organization Name */}
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Organization name</label>
-                  <div style={styles.inputWrapper}>
+                  <div className="company-profile__form-group">
+                    <label className="company-profile__label" htmlFor="cp-organization-name">
+                      Organization name
+                    </label>
                     <input
+                      id="cp-organization-name"
                       type="text"
                       name="organizationName"
                       value={formData.organizationName}
                       onChange={handleInputChange}
-                      placeholder="Organization name"
-                      style={styles.input}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = "#16a34a";
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = "#e5e7eb";
-                      }}
+                      className="company-profile__input"
+                      autoComplete="organization"
                     />
                   </div>
-                </div>
 
-                {/* About Organization */}
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>About Organization</label>
-                  <textarea
-                    name="aboutOrganization"
-                    value={formData.aboutOrganization}
-                    onChange={handleInputChange}
-                    placeholder="Enter description about company"
-                    style={styles.textarea}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = "#16a34a";
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = "#e5e7eb";
-                    }}
-                  />
-                </div>
-
-                {/* Location */}
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Location</label>
-                  <input
-                    type="text"
-                    name="location"
-                    value={formData.location}
-                    onChange={handleInputChange}
-                    style={styles.input}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = "#16a34a";
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = "#e5e7eb";
-                    }}
-                  />
-                </div>
-
-                {/* Founded Year */}
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Founded year</label>
-                  <YearPicker
-                    value={formData.foundedYear}
-                    onChange={(year) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        foundedYear: year,
-                      }))
-                    }
-                  />
-                </div>
-
-                {/* Website */}
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Website *</label>
-                  <input
-                    type="url"
-                    name="website"
-                    value={formData.website}
-                    onChange={handleInputChange}
-                    placeholder="https://example.com"
-                    style={styles.input}
-                    required
-                    pattern="https://.*"
-                    title="Website must start with https://"
-                    onFocus={(e) => {
-                      e.target.style.borderColor = "#16a34a";
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = "#e5e7eb";
-                      const normalized = normalizeHttpsUrl(e.target.value);
-                      if (normalized !== e.target.value) {
-                        setFormData((prev) => ({ ...prev, website: normalized }));
-                      }
-                      setWebsiteError(validateWebsite(normalized));
-                    }}
-                  />
-                  {websiteError && (
-                    <div style={{ fontSize: "12px", color: "#ef4444", marginTop: "6px" }}>
-                      {websiteError}
-                    </div>
-                  )}
-                </div>
-
-                {/* Company Size */}
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Company Size</label>
-                  <div style={styles.radioGroup}>
-                    {["1-10", "10-100", "100-1000", "1000-10000"].map((size) => (
-                      <div
-                        key={size}
-                        style={styles.radioOption}
-                        onClick={() => handleCompanySizeChange(size)}
-                      >
-                        <input
-                          type="radio"
-                          name="companySize"
-                          value={size}
-                          checked={formData.companySize === size}
-                          onChange={() => handleCompanySizeChange(size)}
-                          style={styles.radioInput}
-                        />
-                        <label style={styles.radioLabel}>{size}</label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Industry */}
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Industry</label>
-                  <div style={styles.selectWrapper}>
-                    <select
-                      name="industry"
-                      value={formData.industry}
+                  <div className="company-profile__form-group">
+                    <label className="company-profile__label" htmlFor="cp-about-organization">
+                      About organization
+                    </label>
+                    <textarea
+                      id="cp-about-organization"
+                      name="aboutOrganization"
+                      value={formData.aboutOrganization}
                       onChange={handleInputChange}
-                      style={styles.select}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = "#16a34a";
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = "#e5e7eb";
-                      }}
-                    >
-                      <option value="Information Technology">
-                        Information Technology
-                      </option>
-                      <option value="Healthcare">Healthcare</option>
-                      <option value="Finance">Finance</option>
-                      <option value="Education">Education</option>
-                      <option value="Manufacturing">Manufacturing</option>
-                      <option value="Retail">Retail</option>
-                      <option value="Other">Other</option>
-                    </select>
-                    <span style={styles.selectArrow}>▼</span>
+                      className="company-profile__textarea"
+                    />
                   </div>
-                </div>
 
-                {/* Action Buttons */}
-                <div style={styles.actions}>
-                  <button
-                    style={styles.cancelBtn}
-                    onClick={handleCancel}
-                    disabled={saving}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    style={styles.saveBtn}
-                    onClick={handleSave}
-                    disabled={saving}
-                  >
-                    {saving ? "Saving..." : "Save"}
-                  </button>
-                </div>
-              </div>
+                  <div className="company-profile__form-group">
+                    <label className="company-profile__label" htmlFor="cp-location">
+                      Location
+                    </label>
+                    <input
+                      id="cp-location"
+                      type="text"
+                      name="location"
+                      value={formData.location}
+                      onChange={handleInputChange}
+                      className="company-profile__input"
+                    />
+                  </div>
+
+                  <div className="company-profile__form-group">
+                    <label className="company-profile__label" htmlFor="cp-founded-year">
+                      Founded year
+                    </label>
+                    <YearPicker
+                      id="cp-founded-year"
+                      name="foundedYear"
+                      value={formData.foundedYear}
+                      onChange={(year) => setFormData((prev) => ({ ...prev, foundedYear: year }))}
+                    />
+                  </div>
+
+                  <div className="company-profile__form-group">
+                    <label className="company-profile__label" htmlFor="cp-website">
+                      Website <span aria-hidden="true">*</span>
+                    </label>
+                    <p id={websiteHintId} className="company-profile__field-hint">
+                      Enter a secure website URL starting with https://
+                    </p>
+                    <input
+                      id="cp-website"
+                      type="url"
+                      name="website"
+                      value={formData.website}
+                      onChange={handleInputChange}
+                      onBlur={handleWebsiteBlur}
+                      placeholder="https://example.com"
+                      className="company-profile__input"
+                      required
+                      pattern="https://.*"
+                      title="Website must start with https://"
+                      autoComplete="url"
+                      aria-required="true"
+                      aria-invalid={websiteError ? "true" : undefined}
+                      aria-describedby={websiteDescribedBy}
+                    />
+                    {websiteError && (
+                      <p id={websiteErrorId} className="company-profile__field-error" role="alert">
+                        {websiteError}
+                      </p>
+                    )}
+                  </div>
+
+                  <fieldset className="company-profile__form-group company-profile__fieldset">
+                    <legend className="company-profile__legend">Company size</legend>
+                    <div className="company-profile__radio-group">
+                      {["1-10", "10-100", "100-1000", "1000-10000"].map((size) => {
+                        const sizeId = `cp-company-size-${size.replace(/[^0-9]/g, "-")}`;
+                        return (
+                          <div key={size} className="company-profile__radio-option">
+                            <input
+                              id={sizeId}
+                              type="radio"
+                              name="companySize"
+                              value={size}
+                              checked={formData.companySize === size}
+                              onChange={() => handleCompanySizeChange(size)}
+                              className="company-profile__radio-input"
+                            />
+                            <label className="company-profile__radio-label" htmlFor={sizeId}>
+                              {size}
+                            </label>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </fieldset>
+
+                  <div className="company-profile__form-group">
+                    <label className="company-profile__label" htmlFor="cp-industry">
+                      Industry
+                    </label>
+                    <div className="company-profile__select-wrapper">
+                      <select
+                        id="cp-industry"
+                        name="industry"
+                        value={formData.industry}
+                        onChange={handleInputChange}
+                        className="company-profile__select"
+                      >
+                        <option value="Information Technology">Information Technology</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Education">Education</option>
+                        <option value="Manufacturing">Manufacturing</option>
+                        <option value="Retail">Retail</option>
+                        <option value="Other">Other</option>
+                      </select>
+                      <span className="company-profile__select-arrow" aria-hidden="true">
+                        v
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="company-profile__actions">
+                    <button type="button" className="company-profile__cancel-btn" onClick={handleCancel} disabled={saving}>
+                      Cancel
+                    </button>
+                    <button type="submit" className="company-profile__save-btn" disabled={saving}>
+                      {saving ? "Saving..." : "Save"}
+                    </button>
+                  </div>
+                </form>
+              </section>
             ) : (
-              <div style={styles.contentGrid}>
-              {/* About Section */}
-              <div style={styles.aboutCard}>
-                <h2 style={styles.aboutTitle}>About</h2>
-                <div style={styles.aboutText}>
-                  {companyData.about || "No description available."}
-                </div>
-              </div>
+              <section id="company-profile-main" className="company-profile__content-grid" aria-label="Company details">
+                <article className="company-profile__about-card">
+                  <h2 className="company-profile__section-title">About</h2>
+                  <p className="company-profile__about-text">{companyData.about || "No description available."}</p>
+                </article>
 
-              {/* Company Details Sidebar */}
-              <div style={styles.detailsSidebar}>
-                <div style={styles.detailCard}>
-                  <div style={styles.detailLabel}>Location:</div>
-                  <div style={styles.detailValue}>
-                    {companyData.location || "N/A"}
-                  </div>
-                </div>
-                <div style={styles.detailCard}>
-                  <div style={styles.detailLabel}>Founded in:</div>
-                  <div style={styles.detailValue}>
-                    {companyData.foundedYear || "N/A"}
-                  </div>
-                </div>
-                <div style={styles.detailCard}>
-                  <div style={styles.detailLabel}>Industry:</div>
-                  <div style={styles.detailValue}>
-                    {companyData.industry || "N/A"}
-                  </div>
-                </div>
-                <div style={styles.detailCard}>
-                  <div style={styles.detailLabel}>Employees:</div>
-                  <div style={styles.detailValue}>
-                    {companyData.employees || "N/A"}
-                  </div>
-                </div>
-                {companyData.website && (
-                  <div
-                    style={styles.websiteCard}
-                    onClick={() => {
-                      const url = companyData.website.startsWith("http")
-                        ? companyData.website
-                        : `https://${companyData.website}`;
-                      window.open(url, "_blank");
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "scale(1.02)";
-                      e.currentTarget.style.transition = "transform 0.2s";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = "scale(1)";
-                    }}
-                  >
-                    <div style={styles.websiteText}>{companyData.website}</div>
-                    <span style={styles.websiteArrow}>→</span>
-                  </div>
-                )}
-              </div>
-            </div>
+                <aside className="company-profile__details-sidebar" aria-label="Company summary">
+                  <dl className="company-profile__details-list">
+                    <div className="company-profile__detail-card">
+                      <dt className="company-profile__detail-label">Location</dt>
+                      <dd className="company-profile__detail-value">{companyData.location || "N/A"}</dd>
+                    </div>
+                    <div className="company-profile__detail-card">
+                      <dt className="company-profile__detail-label">Founded in</dt>
+                      <dd className="company-profile__detail-value">{companyData.foundedYear || "N/A"}</dd>
+                    </div>
+                    <div className="company-profile__detail-card">
+                      <dt className="company-profile__detail-label">Industry</dt>
+                      <dd className="company-profile__detail-value">{companyData.industry || "N/A"}</dd>
+                    </div>
+                    <div className="company-profile__detail-card">
+                      <dt className="company-profile__detail-label">Employees</dt>
+                      <dd className="company-profile__detail-value">{companyData.employees || "N/A"}</dd>
+                    </div>
+                  </dl>
+
+                  {profileWebsiteHref && (
+                    <a
+                      className="company-profile__website-link"
+                      href={profileWebsiteHref}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                    >
+                      <span className="company-profile__website-text">{companyData.website}</span>
+                      <span className="company-profile__website-arrow" aria-hidden="true">
+                        v
+                      </span>
+                    </a>
+                  )}
+                </aside>
+              </section>
             )}
           </>
         )}
-      </div>
+      </main>
 
-      {/* Footer */}
-      <footer style={styles.footer}>
-        ©2025 {companyData.name || "Organization"}. All rights reserved. You may print or download
-        extracts for personal, non-commercial use only, and must acknowledge the
-        website as the source.
+      <footer className="company-profile__footer">
+        <p>
+          Copyright {new Date().getFullYear()} {companyData.name || "Organization"}. Personal,
+          non-commercial use only.
+        </p>
       </footer>
+
       <Toast
         message={toast.message}
         type={toast.type}
