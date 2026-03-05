@@ -291,6 +291,16 @@ export default function EmployerDashboard() {
       boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
       transition: "all 0.3s ease",
     },
+    launchTourBtn: {
+      background: "#ffffff",
+      color: "#14532d",
+      border: "2px solid #16a34a",
+      padding: "10px 16px",
+      borderRadius: "10px",
+      cursor: "pointer",
+      fontSize: "13px",
+      fontWeight: 600,
+    },
     container: {
       maxWidth: "1400px",
       margin: "0 auto",
@@ -693,6 +703,13 @@ export default function EmployerDashboard() {
           >
             <span>🚪</span>
             Log Out
+          </button>
+          <button
+            type="button"
+            style={styles.launchTourBtn}
+            onClick={() => setShowTour(true)}
+          >
+            Launch Tour
           </button>
           <button
             style={styles.postJobBtn}
