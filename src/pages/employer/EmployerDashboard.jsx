@@ -14,6 +14,12 @@ export default function EmployerDashboard() {
   const [acceptanceRateData, setAcceptanceRateData] = useState(null);
   const [toast, setToast] = useState({ message: "", type: "error" });
   const [showTour, setShowTour] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth : 1280
+  );
+  const isTablet = viewportWidth <= 1080;
+  const isMobile = viewportWidth <= 768;
+  const isSmallMobile = viewportWidth <= 520;
 
   // Map time filter to windowDays
   const getWindowDays = (filter) => {
@@ -43,7 +49,7 @@ export default function EmployerDashboard() {
           const jobStats = stats.find((stat) => stat.jobId === job.id);
           return {
             id: job.id,
-            companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "∞",
+            companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "NA",
             jobTitle: job.role || "",
             companyName: job.companyName || "",
             location: job.location || job.address || "",
@@ -121,6 +127,12 @@ export default function EmployerDashboard() {
       setShowTour(true);
       localStorage.removeItem("tour:employer:mainNav:pending");
     }
+  }, []);
+
+  useEffect(() => {
+    const onResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   const getTimeAgo = (date) => {
@@ -302,20 +314,21 @@ export default function EmployerDashboard() {
     container: {
       maxWidth: "1400px",
       margin: "0 auto",
-      padding: "32px 40px",
+      padding: isMobile ? "16px" : isTablet ? "24px 20px" : "32px 40px",
       display: "flex",
       gap: "24px",
+      flexDirection: isTablet ? "column" : "row",
     },
     leftColumn: {
-      flex: "0 0 65%",
+      flex: isTablet ? "1 1 auto" : "0 0 65%",
     },
     rightColumn: {
-      flex: "0 0 35%",
+      flex: isTablet ? "1 1 auto" : "0 0 35%",
     },
     card: {
       background: "#ffffff",
       borderRadius: "16px",
-      padding: "28px",
+      padding: isMobile ? "20px" : "28px",
       marginBottom: "24px",
       boxShadow: "0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
       border: "1px solid rgba(0, 0, 0, 0.04)",
@@ -331,6 +344,7 @@ export default function EmployerDashboard() {
       display: "flex",
       gap: "8px",
       marginBottom: "20px",
+      flexWrap: "wrap",
     },
     timeFilterBtn: {
       padding: "8px 16px",
@@ -397,7 +411,7 @@ export default function EmployerDashboard() {
     jobCard: {
       background: "#ffffff",
       borderRadius: "16px",
-      padding: "24px",
+      padding: isMobile ? "16px" : "24px",
       marginBottom: "16px",
       border: "2px solid transparent",
       cursor: "pointer",
@@ -465,6 +479,7 @@ export default function EmployerDashboard() {
       gap: "16px",
       fontSize: "12px",
       color: "#6b7280",
+      flexWrap: isSmallMobile ? "wrap" : "nowrap",
     },
     metric: {
       display: "flex",
@@ -479,7 +494,7 @@ export default function EmployerDashboard() {
     summaryCard: {
       background: "#ffffff",
       borderRadius: "16px",
-      padding: "24px",
+      padding: isMobile ? "16px" : "24px",
       marginBottom: "20px",
       boxShadow: "0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
       border: "1px solid rgba(0, 0, 0, 0.04)",
@@ -504,6 +519,7 @@ export default function EmployerDashboard() {
       display: "flex",
       justifyContent: "space-between",
       gap: "16px",
+      flexDirection: isSmallMobile ? "column" : "row",
     },
     summaryMetric: {
       flex: 1,
@@ -586,6 +602,7 @@ export default function EmployerDashboard() {
       border: "1px solid #e5e7eb",
       display: "flex",
       gap: "12px",
+      flexDirection: isSmallMobile ? "column" : "row",
     },
     candidatePic: {
       width: "48px",
@@ -646,22 +663,40 @@ export default function EmployerDashboard() {
       />
 
       {/* Main Content */}
-      <div style={styles.container}>
+      <main style={styles.container} aria-label="Employer dashboard">
+        <h1
+          style={{
+            position: "absolute",
+            width: "1px",
+            height: "1px",
+            padding: 0,
+            margin: "-1px",
+            overflow: "hidden",
+            clip: "rect(0, 0, 0, 0)",
+            whiteSpace: "nowrap",
+            border: 0,
+          }}
+        >
+          Employer Dashboard
+        </h1>
+
         {/* Left Column */}
-        <div style={styles.leftColumn}>
+        <section style={styles.leftColumn} aria-label="Performance and recent jobs">
           {/* Candidate Acceptance Rate Card */}
-          <div style={styles.card}>
-            <h2 style={styles.cardTitle}>Candidate Acceptance Rate</h2>
-            <div style={styles.timeFilters}>
+          <section style={styles.card} aria-labelledby="acceptance-rate-heading">
+            <h2 id="acceptance-rate-heading" style={styles.cardTitle}>Candidate Acceptance Rate</h2>
+            <div style={styles.timeFilters} role="group" aria-label="Acceptance rate time filter">
               {["1W", "1M", "3M", "1Y"].map((filter) => (
                 <button
                   key={filter}
+                  type="button"
                   style={
                     timeFilter === filter
                       ? styles.timeFilterBtnActive
                       : styles.timeFilterBtn
                   }
                   onClick={() => setTimeFilter(filter)}
+                  aria-pressed={timeFilter === filter}
                 >
                   {filter}
                 </button>
@@ -676,7 +711,7 @@ export default function EmployerDashboard() {
                   height: "100%",
                   color: "#6b7280",
                   fontSize: "14px"
-                }}>
+                }} role="status">
                   Loading...
                 </div>
               ) : !acceptanceRateData ? (
@@ -687,7 +722,7 @@ export default function EmployerDashboard() {
                   height: "100%",
                   color: "#6b7280",
                   fontSize: "14px"
-                }}>
+                }} role="status">
                   No data
                 </div>
               ) : (
@@ -740,7 +775,7 @@ export default function EmployerDashboard() {
                     background: "#10b981",
                   }}
                 />
-                <span>Good: ≥ 80%</span>
+                <span>Good: &gt;= 80%</span>
               </div>
               <div style={styles.legendItem}>
                 <div
@@ -765,124 +800,132 @@ export default function EmployerDashboard() {
               Projected rate based on historical performance, role complexity,
               and market benchmarks
             </p>
-          </div>
+          </section>
 
           {/* Recent Jobs Section */}
-          <div>
-            <h2 style={styles.cardTitle}>Recent Jobs</h2>
+          <section aria-labelledby="recent-jobs-heading">
+            <h2 id="recent-jobs-heading" style={styles.cardTitle}>Recent Jobs</h2>
             {loading ? (
-              <div style={{ padding: "20px", textAlign: "center", color: "#6b7280" }}>
+              <div style={{ padding: "20px", textAlign: "center", color: "#6b7280" }} role="status">
                 Loading jobs...
               </div>
             ) : recentJobs.length === 0 ? (
-              <div style={{ padding: "20px", textAlign: "center", color: "#6b7280" }}>
+              <div style={{ padding: "20px", textAlign: "center", color: "#6b7280" }} role="status">
                 No jobs posted yet
               </div>
             ) : (
-              recentJobs.map((job) => (
-              <div key={job.id} style={styles.jobCard}>
-                <div style={styles.jobCardHeader}>
-                  <div style={styles.companyLogo}>{job.companyLogo}</div>
-                  <div style={styles.jobInfo}>
-                    <div style={styles.jobTitle}>{job.jobTitle}</div>
-                    <div style={styles.companyName}>{job.companyName}</div>
-                    <div style={styles.location}>{job.location}</div>
-                  </div>
-                </div>
-                <div style={styles.jobTags}>
-                  <span style={{ ...styles.tag, ...styles.tagGreen }}>
-                    {job.experience}
-                  </span>
-                  <span style={{ ...styles.tag, ...styles.tagLightGreen }}>
-                    {job.jobType}
-                  </span>
-                </div>
-                <div style={styles.jobMetrics}>
-                  <div style={styles.metric}>
-                    <span>Accepted: {job.accepted}</span>
-                  </div>
-                  <div style={styles.metric}>
-                    <span>Declined: {job.declined}</span>
-                  </div>
-                  <div style={styles.metric}>
-                    <span>Matching: {job.matching}</span>
-                  </div>
-                </div>
-                <div style={styles.postedTime}>Posted {job.postedTime}</div>
-              </div>
-              ))
+              <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+                {recentJobs.map((job) => (
+                <li key={job.id}>
+                  <article style={styles.jobCard} aria-label={`${job.jobTitle} at ${job.companyName}`}>
+                    <div style={styles.jobCardHeader}>
+                      <div style={styles.companyLogo}>{job.companyLogo}</div>
+                      <div style={styles.jobInfo}>
+                        <div style={styles.jobTitle}>{job.jobTitle}</div>
+                        <div style={styles.companyName}>{job.companyName}</div>
+                        <div style={styles.location}>{job.location}</div>
+                      </div>
+                    </div>
+                    <div style={styles.jobTags}>
+                      <span style={{ ...styles.tag, ...styles.tagGreen }}>
+                        {job.experience}
+                      </span>
+                      <span style={{ ...styles.tag, ...styles.tagLightGreen }}>
+                        {job.jobType}
+                      </span>
+                    </div>
+                    <div style={styles.jobMetrics}>
+                      <div style={styles.metric}>
+                        <span>Accepted: {job.accepted}</span>
+                      </div>
+                      <div style={styles.metric}>
+                        <span>Declined: {job.declined}</span>
+                      </div>
+                      <div style={styles.metric}>
+                        <span>Matching: {job.matching}</span>
+                      </div>
+                    </div>
+                    <div style={styles.postedTime}>Posted {job.postedTime}</div>
+                  </article>
+                </li>
+                ))}
+              </ul>
             )}
-          </div>
-        </div>
+          </section>
+        </section>
 
         {/* Right Column */}
-        <div style={styles.rightColumn}>
+        <aside style={styles.rightColumn} aria-label="Summary and accepted candidates">
           {/* Matching Applicants Card */}
-          <div style={styles.summaryCard}>
-            <div style={styles.summaryTitle}>Matching applicants</div>
+          <section style={styles.summaryCard} aria-labelledby="matching-applicants-heading">
+            <h2 id="matching-applicants-heading" style={styles.summaryTitle}>Matching applicants</h2>
             <div style={styles.summaryNumber}>{metrics.matchingApplicants}</div>
             <div style={styles.summarySubtitle}>
               {metrics.activeJobs > 0 
                 ? `Across ${metrics.activeJobs} job${metrics.activeJobs !== 1 ? 's' : ''} (avg. ${metrics.avgMatchingPerJob}/job)`
                 : "No jobs posted yet"}
             </div>
-          </div>
+          </section>
 
           {/* Summary Metrics Card */}
-          <div style={styles.summaryCard}>
+          <section style={styles.summaryCard} aria-label="Key metrics">
             <div style={styles.summaryMetrics}>
               <div style={styles.summaryMetric}>
                 <div style={styles.summaryMetricLabel}>Active Jobs</div>
                 <div style={styles.summaryMetricValue}>{metrics.activeJobs}</div>
                 <div style={styles.summaryMetricChange}>
-                  {metrics.hasData ? "—" : "No data"}
+                  {metrics.hasData ? "--" : "No data"}
                 </div>
               </div>
               <div style={styles.summaryMetric}>
                 <div style={styles.summaryMetricLabel}>Candidates accepted</div>
                 <div style={styles.summaryMetricValue}>{metrics.candidatesAccepted}</div>
                 <div style={styles.summaryMetricChange}>
-                  {metrics.hasData ? "—" : "No data"}
+                  {metrics.hasData ? "--" : "No data"}
                 </div>
               </div>
             </div>
-          </div>
+          </section>
 
           {/* Accepted Candidates Section */}
-          <div>
-            <h2 style={styles.cardTitle}>Accepted Candidates</h2>
+          <section aria-labelledby="accepted-candidates-heading">
+            <h2 id="accepted-candidates-heading" style={styles.cardTitle}>Accepted Candidates</h2>
             {loading ? (
-              <div style={{ padding: "20px", textAlign: "center", color: "#6b7280" }}>
+              <div style={{ padding: "20px", textAlign: "center", color: "#6b7280" }} role="status">
                 Loading accepted candidates...
               </div>
             ) : acceptedCandidates.length === 0 ? (
-              <div style={{ padding: "20px", textAlign: "center", color: "#6b7280" }}>
+              <div style={{ padding: "20px", textAlign: "center", color: "#6b7280" }} role="status">
                 No accepted candidates yet.
               </div>
             ) : (
-              acceptedCandidates.map((candidate) => (
-                <div key={candidate.id} style={styles.candidateCard}>
-                  <div style={styles.candidatePic}>{candidate.profilePic}</div>
-                  <div style={styles.candidateInfo}>
-                    <div style={styles.candidateName}>{candidate.name}</div>
-                    <div style={styles.candidateRole}>{candidate.role}</div>
-                    <div style={styles.candidateStatus}>{candidate.status}</div>
-                    <div style={styles.candidateDetails}>
-                      {candidate.location}
-                    </div>
-                    <div style={styles.candidateDetails}>
-                      {candidate.experience}
-                    </div>
-                    <div style={styles.candidateMatching}>
-                      {candidate.matching}% Matching
-                    </div>
-                  </div>
-                </div>
-              ))
+              <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+                {acceptedCandidates.map((candidate) => (
+                  <li key={candidate.id}>
+                    <article style={styles.candidateCard} aria-label={`${candidate.name}, ${candidate.role}`}>
+                      <div style={styles.candidatePic}>{candidate.profilePic}</div>
+                      <div style={styles.candidateInfo}>
+                        <div style={styles.candidateName}>{candidate.name}</div>
+                        <div style={styles.candidateRole}>{candidate.role}</div>
+                        <div style={styles.candidateStatus}>{candidate.status}</div>
+                        <div style={styles.candidateDetails}>
+                          {candidate.location}
+                        </div>
+                        <div style={styles.candidateDetails}>
+                          {candidate.experience}
+                        </div>
+                        <div style={styles.candidateMatching}>
+                          {candidate.matching}% Matching
+                        </div>
+                      </div>
+                    </article>
+                  </li>
+                ))}
+              </ul>
             )}
-          </div>
-        </div>
-      </div>
+          </section>
+        </aside>
+      </main>
       <Toast
         message={toast.message}
         type={toast.type}
@@ -904,7 +947,7 @@ export default function EmployerDashboard() {
           },
           {
             title: "Listed Jobs",
-            body: "See and manage all jobs you’ve posted.",
+            body: "See and manage all jobs you've posted.",
             target: '[data-tour="employer-nav-listedjobs"]',
           },
           {
@@ -924,4 +967,5 @@ export default function EmployerDashboard() {
     </div>
   );
 }
+
 
