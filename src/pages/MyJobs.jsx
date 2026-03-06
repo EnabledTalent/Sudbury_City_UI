@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { fetchJobs, fetchAllApplications, applyWithProfile } from "../services/jobService";
-import { logoutUser } from "../services/authService";
 import { useProfile } from "../context/ProfileContext";
 import Toast from "../components/Toast";
 import ChatWidget from "../components/ChatWidget";
+import StudentHeader from "../components/student/StudentHeader";
 
 export default function MyJobs() {
-  const navigate = useNavigate();
   const location = useLocation();
   const { profile } = useProfile();
   const [filter, setFilter] = useState("all"); // "all", "applied", "accepted", "rejected"
@@ -677,73 +676,15 @@ export default function MyJobs() {
 
   return (
     <div style={styles.page}>
-      {/* Top Navigation */}
-      <nav style={styles.topNav}>
-        <div style={styles.logo}>
-          <span>Sudburry</span>
-        </div>
-        <div style={styles.navLinks}>
-          <span 
-            style={styles.navLink}
-            onClick={() => navigate("/student/view-profile")}
-          >
-            Home
-          </span>
-          <span style={styles.navLinkActive}>My Jobs</span>
-          <span 
-            style={styles.navLink}
-            onClick={() => navigate("/student/dashboard")}
-          >
-            Dashboard
-          </span>
-        </div>
-        <div style={styles.searchBar}>
-          <span>🔍</span>
-          <input
-            type="text"
-            placeholder="Search by role or company"
-            style={styles.searchInput}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <div style={styles.userActions}>
-          <button 
-            style={styles.logoutBtn}
-            onClick={async () => {
-              // Call logout API
-              await logoutUser();
-              // Clear all stored data
-              localStorage.removeItem("token");
-              localStorage.removeItem("role");
-              localStorage.removeItem("profileData");
-              localStorage.removeItem("profileEditMode");
-              // Navigate to login page
-              navigate("/");
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)";
-              e.target.style.transform = "translateY(-2px)";
-              e.target.style.boxShadow = "0 6px 16px rgba(239, 68, 68, 0.4)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)";
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = "0 4px 12px rgba(239, 68, 68, 0.3)";
-            }}
-          >
-            <span>🚪</span>
-            Log Out
-          </button>
-          <button 
-            style={styles.aiCoachBtn}
-            onClick={() => setShowChatWidget(true)}
-          >
-            <span>Q</span>
-            AI Career Coach
-          </button>
-        </div>
-      </nav>
+      <StudentHeader
+        activePage="myJobs"
+        showSearch
+        searchValue={searchQuery}
+        searchPlaceholder="Search by role or company"
+        onSearchChange={setSearchQuery}
+        showAiCoach
+        onAiCoachClick={() => setShowChatWidget(true)}
+      />
 
       <div style={styles.container}>
         {/* Left Sidebar - Job Listings */}

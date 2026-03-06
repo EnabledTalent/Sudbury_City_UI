@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { logoutUser, getToken } from "../services/authService";
+import { getToken } from "../services/authService";
 import { fetchProfile, updateProfile } from "../services/profileService";
 import { fetchJobseekerNotifications } from "../services/jobService";
 import { calculateProfileCompletion } from "../utils/profileCompletion";
@@ -8,6 +8,7 @@ import ChatWidget from "../components/ChatWidget";
 import { useProfile } from "../context/ProfileContext";
 import Toast from "../components/Toast";
 import TourOverlay from "../components/TourOverlay";
+import StudentHeader from "../components/student/StudentHeader";
 
 export default function ViewProfile() {
   const navigate = useNavigate();
@@ -745,91 +746,20 @@ export default function ViewProfile() {
 
   return (
     <div style={styles.page}>
-      {/* Top Navigation */}
-      <header style={styles.topNav}>
-        <div style={styles.logo}>
-          <span>Sudburry</span>
-        </div>
-        <nav aria-label="Student Navigation">
-          <ul style={styles.navLinks}>
-            <li>
-              <button
-                type="button"
-                style={styles.navLinkActive}
-                onClick={() => navigate("/student/view-profile")}
-                data-tour="student-nav-home"
-                aria-current="page"
-              >
-                Home
-              </button>
-            </li>
-            <li>
-              <button
-                type="button"
-                style={styles.navLink}
-                onClick={() => navigate("/student/my-jobs")}
-                data-tour="student-nav-myjobs"
-              >
-                My Jobs
-              </button>
-            </li>
-            <li>
-              <button
-                type="button"
-                style={styles.navLink}
-                onClick={() => navigate("/student/dashboard")}
-                data-tour="student-nav-dashboard"
-              >
-                Dashboard
-              </button>
-            </li>
-          </ul>
-        </nav>
-        <div style={styles.userActions}>
-          <button 
-            style={styles.logoutBtn}
-            onClick={async () => {
-              // Call logout API
-              await logoutUser();
-              // Clear all stored data
-              localStorage.removeItem("token");
-              localStorage.removeItem("role");
-              localStorage.removeItem("profileData");
-              localStorage.removeItem("profileEditMode");
-              // Navigate to login page
-              navigate("/");
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)";
-              e.target.style.transform = "translateY(-2px)";
-              e.target.style.boxShadow = "0 6px 16px rgba(239, 68, 68, 0.4)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)";
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = "0 4px 12px rgba(239, 68, 68, 0.3)";
-            }}
-          >
-            <span>🚪</span>
-            Log Out
-          </button>
-          <button 
-            style={styles.aiCoachBtn}
-            onClick={() => setShowChatWidget(true)}
-            data-tour="student-ai-coach"
-          >
-            <span>Q</span>
-            AI Career Coach
-          </button>
+      <StudentHeader
+        activePage="home"
+        showAiCoach
+        onAiCoachClick={() => setShowChatWidget(true)}
+        extraActions={
           <button
             type="button"
-            style={styles.launchTourBtn}
+            className="student-header__launch-tour"
             onClick={() => setShowTour(true)}
           >
             Launch Tour
           </button>
-        </div>
-      </header>
+        }
+      />
 
       <main style={styles.container}>
         {/* Orange Banner */}

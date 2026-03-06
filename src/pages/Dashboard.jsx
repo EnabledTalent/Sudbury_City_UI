@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { fetchJobseekerMetrics } from "../services/jobService";
-import { logoutUser, getToken } from "../services/authService";
+import { getToken } from "../services/authService";
+import StudentHeader from "../components/student/StudentHeader";
 
 export default function Dashboard() {
-  const navigate = useNavigate();
   const [windowDays, setWindowDays] = useState(30);
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -299,54 +298,7 @@ export default function Dashboard() {
 
   return (
     <div style={styles.page}>
-      {/* Top Navigation */}
-      <nav style={styles.topNav}>
-        <div style={styles.logo}>
-          <span>Sudburry</span>
-        </div>
-        <div style={styles.navLinks}>
-          <span 
-            style={styles.navLink}
-            onClick={() => navigate("/student/view-profile")}
-          >
-            Home
-          </span>
-          <span 
-            style={styles.navLink}
-            onClick={() => navigate("/student/my-jobs")}
-          >
-            My Jobs
-          </span>
-          <span style={styles.navLinkActive}>Dashboard</span>
-        </div>
-        <div style={styles.userActions}>
-          <button 
-            style={styles.logoutBtn}
-            onClick={async () => {
-              // Call logout API
-              await logoutUser();
-              localStorage.removeItem("token");
-              localStorage.removeItem("role");
-              localStorage.removeItem("profileData");
-              localStorage.removeItem("profileEditMode");
-              navigate("/");
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)";
-              e.target.style.transform = "translateY(-2px)";
-              e.target.style.boxShadow = "0 6px 16px rgba(239, 68, 68, 0.4)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)";
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = "0 4px 12px rgba(239, 68, 68, 0.3)";
-            }}
-          >
-            <span>🚪</span>
-            Log Out
-          </button>
-        </div>
-      </nav>
+      <StudentHeader activePage="dashboard" />
 
       <div style={styles.container}>
         <div style={styles.header}>
