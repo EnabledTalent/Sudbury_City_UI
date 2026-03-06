@@ -8,6 +8,13 @@ export default function Dashboard() {
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [viewportWidth, setViewportWidth] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth : 1280
+  );
+
+  const isTablet = viewportWidth <= 1024;
+  const isMobile = viewportWidth <= 768;
+  const isSmallMobile = viewportWidth <= 520;
 
   // Get email from localStorage or token
   const getEmail = () => {
@@ -59,90 +66,16 @@ export default function Dashboard() {
     loadMetrics();
   }, [windowDays]);
 
+  useEffect(() => {
+    const onResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
   const styles = {
     page: {
       background: "#f9fafb",
       minHeight: "100vh",
-    },
-    topNav: {
-      background: "#ffffff",
-      padding: "16px 40px",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      borderBottom: "1px solid #e5e7eb",
-      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-    },
-    logo: {
-      fontSize: "22px",
-      fontWeight: 700,
-      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
-      WebkitBackgroundClip: "text",
-      WebkitTextFillColor: "transparent",
-      backgroundClip: "text",
-      letterSpacing: "-0.02em",
-    },
-    navLinks: {
-      display: "flex",
-      gap: "32px",
-      alignItems: "center",
-    },
-    navLink: {
-      fontSize: "14px",
-      color: "#6b7280",
-      cursor: "pointer",
-      textDecoration: "none",
-      paddingBottom: "4px",
-      fontWeight: 500,
-    },
-    navLinkActive: {
-      fontSize: "14px",
-      color: "#16a34a",
-      cursor: "pointer",
-      textDecoration: "none",
-      paddingBottom: "4px",
-      borderBottom: "2px solid #16a34a",
-      fontWeight: 500,
-    },
-    userActions: {
-      display: "flex",
-      gap: "20px",
-      alignItems: "center",
-    },
-    userActionLink: {
-      fontSize: "14px",
-      color: "#374151",
-      cursor: "pointer",
-    },
-    logoutBtn: {
-      background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-      color: "#ffffff",
-      border: "none",
-      padding: "10px 18px",
-      borderRadius: "10px",
-      cursor: "pointer",
-      fontSize: "13px",
-      fontWeight: 600,
-      display: "flex",
-      alignItems: "center",
-      gap: "6px",
-      boxShadow: "0 4px 12px rgba(239, 68, 68, 0.3)",
-      transition: "all 0.3s ease",
-    },
-    aiCoachBtn: {
-      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
-      color: "#fff",
-      border: "none",
-      padding: "12px 20px",
-      borderRadius: "12px",
-      cursor: "pointer",
-      fontSize: "14px",
-      fontWeight: 600,
-      display: "flex",
-      alignItems: "center",
-      gap: "8px",
-      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
-      transition: "all 0.3s ease",
     },
     container: {
       maxWidth: "1400px",
@@ -281,6 +214,17 @@ export default function Dashboard() {
       borderRadius: "12px",
       transition: "width 0.3s ease",
     },
+    srOnly: {
+      position: "absolute",
+      width: "1px",
+      height: "1px",
+      padding: 0,
+      margin: "-1px",
+      overflow: "hidden",
+      clip: "rect(0, 0, 0, 0)",
+      whiteSpace: "nowrap",
+      border: 0,
+    },
   };
 
   // Helper function to get color for each status
@@ -300,13 +244,43 @@ export default function Dashboard() {
     <div style={styles.page}>
       <StudentHeader activePage="dashboard" />
 
-      <div style={styles.container}>
-        <div style={styles.header}>
+      <main
+        style={{
+          ...styles.container,
+          ...(isTablet ? { padding: "24px 24px" } : {}),
+          ...(isMobile ? { padding: "20px 16px" } : {}),
+        }}
+        aria-label="Student dashboard"
+      >
+        <div
+          style={{
+            ...styles.header,
+            ...(isMobile
+              ? {
+                  flexDirection: "column",
+                  alignItems: "stretch",
+                  gap: "12px",
+                  marginBottom: "20px",
+                }
+              : {}),
+          }}
+        >
           <h1 style={styles.title}>Dashboard</h1>
-          <div style={styles.dropdownContainer}>
-            <label style={styles.dropdownLabel}>Time Period:</label>
+          <div
+            style={{
+              ...styles.dropdownContainer,
+              ...(isMobile ? { flexDirection: "column", alignItems: "stretch", gap: "6px" } : {}),
+            }}
+          >
+            <label htmlFor="dashboard-window-days" style={styles.dropdownLabel}>
+              Time Period
+            </label>
             <select
-              style={styles.dropdown}
+              id="dashboard-window-days"
+              style={{
+                ...styles.dropdown,
+                ...(isMobile ? { width: "100%" } : {}),
+              }}
               value={windowDays}
               onChange={(e) => setWindowDays(Number(e.target.value))}
             >
@@ -319,35 +293,72 @@ export default function Dashboard() {
         </div>
 
         {loading && (
-          <div style={styles.loading}>Loading metrics...</div>
+          <div style={styles.loading} role="status" aria-live="polite">
+            Loading metrics...
+          </div>
         )}
 
         {error && (
-          <div style={styles.error}>{error}</div>
+          <div style={styles.error} role="alert">
+            {error}
+          </div>
         )}
 
         {!loading && !error && metrics && (
           <>
             {/* Summary Cards */}
-            <div style={styles.metricsContainer}>
-              <div style={styles.metricCard}>
+            <section
+              style={{
+                ...styles.metricsContainer,
+                ...(isTablet ? { gridTemplateColumns: "repeat(2, minmax(0, 1fr))" } : {}),
+                ...(isMobile ? { gridTemplateColumns: "1fr", gap: "16px", marginTop: "18px" } : {}),
+              }}
+              aria-labelledby="student-dashboard-summary"
+            >
+              <h2 id="student-dashboard-summary" style={styles.srOnly}>
+                Application summary
+              </h2>
+              <article
+                style={{
+                  ...styles.metricCard,
+                  ...(isSmallMobile ? { padding: "20px" } : {}),
+                }}
+              >
                 <div style={styles.metricTitle}>Total Applications</div>
                 <div style={styles.metricValue}>{metrics.totalApplied || 0}</div>
                 <div style={styles.metricDescription}>All time applications</div>
-              </div>
-              <div style={styles.metricCard}>
+              </article>
+              <article
+                style={{
+                  ...styles.metricCard,
+                  ...(isSmallMobile ? { padding: "20px" } : {}),
+                }}
+              >
                 <div style={styles.metricTitle}>Applications in Period</div>
                 <div style={styles.metricValue}>{metrics.appliedInWindow || 0}</div>
                 <div style={styles.metricDescription}>Last {windowDays} days</div>
-              </div>
-            </div>
+              </article>
+            </section>
 
             {/* Status Breakdown - All Time */}
-            <div style={styles.section}>
-              <h2 style={styles.sectionTitle}>Status Breakdown (All Time)</h2>
-              <div style={styles.chartsContainer}>
+            <section style={styles.section} aria-labelledby="student-dashboard-all-time-title">
+              <h2 id="student-dashboard-all-time-title" style={styles.sectionTitle}>
+                Status Breakdown (All Time)
+              </h2>
+              <div
+                style={{
+                  ...styles.chartsContainer,
+                  ...(isMobile ? { gridTemplateColumns: "1fr", gap: "12px" } : {}),
+                }}
+              >
                 {Object.entries(metrics.totalByStatus || {}).map(([status, count]) => (
-                  <div key={status} style={styles.statusCard}>
+                  <article
+                    key={status}
+                    style={{
+                      ...styles.statusCard,
+                      ...(isSmallMobile ? { padding: "18px" } : {}),
+                    }}
+                  >
                     <div style={styles.statusHeader}>
                       <div style={styles.statusName}>{status.replace(/_/g, ' ')}</div>
                       <div style={styles.statusCount}>{count}</div>
@@ -359,19 +370,36 @@ export default function Dashboard() {
                           width: `${metrics.totalApplied > 0 ? (count / metrics.totalApplied) * 100 : 0}%`,
                           background: getStatusColor(status),
                         }}
+                        aria-hidden="true"
                       />
                     </div>
-                  </div>
+                    <span style={styles.srOnly}>
+                      {status.replace(/_/g, " ")}: {count} of {metrics.totalApplied || 0}
+                    </span>
+                  </article>
                 ))}
               </div>
-            </div>
+            </section>
 
             {/* Status Breakdown - In Window */}
-            <div style={styles.section}>
-              <h2 style={styles.sectionTitle}>Status Breakdown (Last {windowDays} Days)</h2>
-              <div style={styles.chartsContainer}>
+            <section style={styles.section} aria-labelledby="student-dashboard-window-title">
+              <h2 id="student-dashboard-window-title" style={styles.sectionTitle}>
+                Status Breakdown (Last {windowDays} Days)
+              </h2>
+              <div
+                style={{
+                  ...styles.chartsContainer,
+                  ...(isMobile ? { gridTemplateColumns: "1fr", gap: "12px" } : {}),
+                }}
+              >
                 {Object.entries(metrics.byStatusInWindow || {}).map(([status, count]) => (
-                  <div key={status} style={styles.statusCard}>
+                  <article
+                    key={status}
+                    style={{
+                      ...styles.statusCard,
+                      ...(isSmallMobile ? { padding: "18px" } : {}),
+                    }}
+                  >
                     <div style={styles.statusHeader}>
                       <div style={styles.statusName}>{status.replace(/_/g, ' ')}</div>
                       <div style={styles.statusCount}>{count}</div>
@@ -383,19 +411,25 @@ export default function Dashboard() {
                           width: `${metrics.appliedInWindow > 0 ? (count / metrics.appliedInWindow) * 100 : 0}%`,
                           background: getStatusColor(status),
                         }}
+                        aria-hidden="true"
                       />
                     </div>
-                  </div>
+                    <span style={styles.srOnly}>
+                      {status.replace(/_/g, " ")}: {count} of {metrics.appliedInWindow || 0}
+                    </span>
+                  </article>
                 ))}
               </div>
-            </div>
+            </section>
           </>
         )}
 
         {!loading && !error && !metrics && (
-          <div style={styles.loading}>No metrics data available</div>
+          <div style={styles.loading} role="status">
+            No metrics data available
+          </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
