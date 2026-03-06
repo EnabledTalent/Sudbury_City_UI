@@ -203,13 +203,19 @@ export default function CompanyProfile() {
 
   return (
     <div className="company-profile">
-      <a className="skip-link" href={isEditMode ? "#company-profile-edit-form" : "#company-profile-main"}>
+      <a className="skip-link" href="#company-profile-content">
         Skip to company profile content
       </a>
 
       <EmployerHeader activePage="companyProfile" />
 
-      <main className="company-profile__main">
+      <main
+        id="company-profile-content"
+        className="company-profile__main"
+        tabIndex={-1}
+        aria-busy={loading ? "true" : "false"}
+        aria-label="Company profile"
+      >
         {loading ? (
           <section className="company-profile__state company-profile__state--loading" role="status" aria-live="polite">
             Loading organization profile...
@@ -271,6 +277,8 @@ export default function CompanyProfile() {
                       onChange={handleInputChange}
                       className="company-profile__input"
                       autoComplete="organization"
+                      required
+                      aria-required="true"
                     />
                   </div>
 
@@ -406,7 +414,14 @@ export default function CompanyProfile() {
                 </form>
               </section>
             ) : (
-              <section id="company-profile-main" className="company-profile__content-grid" aria-label="Company details">
+              <section
+                id="company-profile-main"
+                className="company-profile__content-grid"
+                aria-labelledby="company-profile-overview-title"
+              >
+                <h2 id="company-profile-overview-title" className="company-profile__sr-only">
+                  Company overview
+                </h2>
                 <article className="company-profile__about-card">
                   <h2 className="company-profile__section-title">About</h2>
                   <p className="company-profile__about-text">{companyData.about || "No description available."}</p>
@@ -438,10 +453,12 @@ export default function CompanyProfile() {
                       href={profileWebsiteHref}
                       target="_blank"
                       rel="noreferrer noopener"
+                      aria-label={`Visit company website ${companyData.website} (opens in a new tab)`}
                     >
                       <span className="company-profile__website-text">{companyData.website}</span>
+                      <span className="company-profile__sr-only">opens in a new tab</span>
                       <span className="company-profile__website-arrow" aria-hidden="true">
-                        v
+                        →
                       </span>
                     </a>
                   )}
