@@ -3,7 +3,7 @@ import { fetchEmployerJobs, fetchEmployerJobStats, fetchJobApplications, updateA
 import EmployerHeader from "../../components/employer/EmployerHeader";
 import Toast from "../../components/Toast";
 import { fetchProfile } from "../../services/profileService";
-import { Pencil } from "lucide-react";
+import { Pencil, Search } from "lucide-react";
 
 export default function ListedJobs() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -117,15 +117,15 @@ export default function ListedJobs() {
           
           // Parse description and requirements from strings
           const description = job.description
-            ? job.description.split(/\n|•/).filter((line) => line.trim())
+            ? job.description.split(/\n|\u2022/).filter((line) => line.trim())
             : [];
           const requirements = job.requirements
-            ? job.requirements.split(/\n|•/).filter((line) => line.trim())
+            ? job.requirements.split(/\n|\u2022/).filter((line) => line.trim())
             : [];
 
           return {
             id: job.id,
-            companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "∞",
+            companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "NA",
             jobTitle: job.role || "",
             companyName: job.companyName || "",
             location: job.location || job.address || "",
@@ -297,15 +297,15 @@ export default function ListedJobs() {
       const jobsWithStats = jobsData.map((job) => {
         const jobStats = stats.find((stat) => stat.jobId === job.id);
         const description = job.description
-          ? job.description.split(/\n|•/).filter((line) => line.trim())
+          ? job.description.split(/\n|\u2022/).filter((line) => line.trim())
           : [];
         const requirements = job.requirements
-          ? job.requirements.split(/\n|•/).filter((line) => line.trim())
+          ? job.requirements.split(/\n|\u2022/).filter((line) => line.trim())
           : [];
 
         return {
           id: job.id,
-          companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "∞",
+          companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "NA",
           jobTitle: job.role || "",
           companyName: job.companyName || "",
           location: job.location || job.address || "",
@@ -378,15 +378,15 @@ export default function ListedJobs() {
       const jobsWithStats = jobsData.map((job) => {
         const jobStats = stats.find((stat) => stat.jobId === job.id);
         const description = job.description
-          ? job.description.split(/\n|•/).filter((line) => line.trim())
+          ? job.description.split(/\n|\u2022/).filter((line) => line.trim())
           : [];
         const requirements = job.requirements
-          ? job.requirements.split(/\n|•/).filter((line) => line.trim())
+          ? job.requirements.split(/\n|\u2022/).filter((line) => line.trim())
           : [];
 
         return {
           id: job.id,
-          companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "∞",
+          companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "NA",
           jobTitle: job.role || "",
           companyName: job.companyName || "",
           location: job.location || job.address || "",
@@ -1089,7 +1089,7 @@ export default function ListedJobs() {
         <aside style={styles.leftPanel} aria-label="Listed jobs">
           <div style={styles.searchSection}>
             <div style={styles.searchBar}>
-              <span>🔍</span>
+              <Search size={14} aria-hidden="true" />
               <input
                 type="text"
                 placeholder="Search your listed jobs"
@@ -1120,8 +1120,8 @@ export default function ListedJobs() {
               }
               onClick={() => setSelectedJob(job)}
               onKeyDown={(event) => activateWithKeyboard(event, () => setSelectedJob(job))}
-              role="button"
-              tabIndex={0}
+                        role="button"
+                        tabIndex={0}
               aria-pressed={selectedJob?.id === job.id}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
@@ -1147,17 +1147,9 @@ export default function ListedJobs() {
                       e.stopPropagation();
                       activateWithKeyboard(e, () => handleEditClick(job));
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "#f3f4f6";
-                      e.currentTarget.style.color = "#16a34a";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "transparent";
-                      e.currentTarget.style.color = "#6b7280";
-                    }}
                     title="Edit Job"
-                    role="button"
-                    tabIndex={0}
+                        role="button"
+                        tabIndex={0}
                     aria-label={`Edit ${job.jobTitle}`}
                   >
                     <Pencil size={16} strokeWidth={2.5} />
@@ -1181,20 +1173,12 @@ export default function ListedJobs() {
                       e.stopPropagation();
                       activateWithKeyboard(e, () => handleDeleteClick(job));
                     }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = "#fee2e2";
-                      e.target.style.color = "#dc2626";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = "transparent";
-                      e.target.style.color = "#ef4444";
-                    }}
                     title="Delete Job"
-                    role="button"
-                    tabIndex={0}
+                        role="button"
+                        tabIndex={0}
                     aria-label={`Delete ${job.jobTitle}`}
                   >
-                    ×
+                    x
                   </span>
                 </div>
               </div>
@@ -1274,17 +1258,9 @@ export default function ListedJobs() {
                       e.stopPropagation();
                       activateWithKeyboard(e, () => handleEditClick(selectedJob));
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "#f3f4f6";
-                      e.currentTarget.style.color = "#16a34a";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "transparent";
-                      e.currentTarget.style.color = "#6b7280";
-                    }}
                     title="Edit Job"
-                    role="button"
-                    tabIndex={0}
+                        role="button"
+                        tabIndex={0}
                     aria-label={`Edit ${selectedJob.jobTitle}`}
                   >
                     <Pencil size={16} strokeWidth={2.5} />
@@ -1308,20 +1284,12 @@ export default function ListedJobs() {
                       e.stopPropagation();
                       activateWithKeyboard(e, () => handleDeleteClick(selectedJob));
                     }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = "#fee2e2";
-                      e.target.style.color = "#dc2626";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = "transparent";
-                      e.target.style.color = "#ef4444";
-                    }}
                     title="Delete Job"
-                    role="button"
-                    tabIndex={0}
+                        role="button"
+                        tabIndex={0}
                     aria-label={`Delete ${selectedJob.jobTitle}`}
                   >
-                    ×
+                    x
                   </span>
                 </div>
               </div>
@@ -1382,7 +1350,7 @@ export default function ListedJobs() {
                   }
                 }}
               >
-                View Candidates →
+                View Candidates ->
               </button>
 
               {/* Job Overview */}
@@ -1495,14 +1463,8 @@ export default function ListedJobs() {
                 style={styles.modalCloseBtn}
                 onClick={() => setShowCandidatesModal(false)}
                 aria-label="Close candidates modal"
-                onMouseEnter={(e) => {
-                  e.target.style.background = "#f3f4f6";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = "transparent";
-                }}
               >
-                ×
+                x
               </button>
             </div>
             <div style={styles.modalBody}>
@@ -1565,21 +1527,7 @@ export default function ListedJobs() {
                         onClick={() => setSelectedApplication(application)}
                         onKeyDown={(event) =>
                           activateWithKeyboard(event, () => setSelectedApplication(application))
-                        }
-                        onMouseEnter={(e) => {
-                          if (!isSelected) {
-                            e.currentTarget.style.boxShadow = "0 10px 24px rgba(0,0,0,0.08)";
-                            e.currentTarget.style.transform = "translateY(-1px)";
-                            e.currentTarget.style.borderColor = "#d1d5db";
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isSelected) {
-                            e.currentTarget.style.boxShadow = styles.candidateCardModal.boxShadow;
-                            e.currentTarget.style.transform = "translateY(0)";
-                            e.currentTarget.style.borderColor = "#e5e7eb";
-                          }
-                        }}
+                        }
                         role="button"
                         tabIndex={0}
                         aria-pressed={isSelected}
@@ -1592,9 +1540,9 @@ export default function ListedJobs() {
                           <div style={styles.candidateNameModal}>{fullName}</div>
                           <div style={styles.candidateRoleModal}>{role}</div>
                           <div style={styles.candidateDetailsModal}>
-                            <span>📍 {location}</span>
-                            {yearsOfExp > 0 && <span> • 💼 {yearsOfExp} Yrs</span>}
-                            {email && <span> • ✉️ {email}</span>}
+                            <span>Location: {location}</span>
+                            {yearsOfExp > 0 && <span> | Exp: {yearsOfExp} Yrs</span>}
+                            {email && <span> | Email: {email}</span>}
                           </div>
                           <div style={styles.applicationStatusRow}>
                             <div style={styles.statusLeft}>
@@ -1616,7 +1564,7 @@ export default function ListedJobs() {
                               )}
                               {matchPctDisplay !== null && (
                                 <div style={styles.matchBadgeModal}>
-                                  🎯 {matchPctDisplay}% Match
+                                  Match: {matchPctDisplay}%
                                 </div>
                               )}
                             </div>
@@ -1681,15 +1629,15 @@ export default function ListedJobs() {
                                     const jobsWithStats = jobsData.map((job) => {
                                       const jobStats = stats.find((stat) => stat.jobId === job.id);
                                       const description = job.description
-                                        ? job.description.split(/\n|•/).filter((line) => line.trim())
+                                        ? job.description.split(/\n|\u2022/).filter((line) => line.trim())
                                         : [];
                                       const requirements = job.requirements
-                                        ? job.requirements.split(/\n|•/).filter((line) => line.trim())
+                                        ? job.requirements.split(/\n|\u2022/).filter((line) => line.trim())
                                         : [];
                                       
                                       return {
                                         id: job.id,
-                                        companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "∞",
+                                        companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "NA",
                                         jobTitle: job.role || "",
                                         companyName: job.companyName || "",
                                         location: job.location || job.address || "",
@@ -1797,9 +1745,9 @@ export default function ListedJobs() {
                             <div style={{ flex: 1 }}>
                               <div style={styles.detailsName}>{fullName}</div>
                               <div style={styles.detailsMeta}>
-                                <span>💼 {role}</span>
-                                <span>📍 {location}</span>
-                                {matchPctDisplay !== null && <span>🎯 {matchPctDisplay}% Match</span>}
+                                <span>Role: {role}</span>
+                                <span>Location: {location}</span>
+                                {matchPctDisplay !== null && <span>Match: {matchPctDisplay}%</span>}
                                 {selectedApplication.status && (
                                   <span>
                                     Status:{" "}
@@ -1815,7 +1763,7 @@ export default function ListedJobs() {
                           <div style={styles.detailsSection}>
                             <div style={styles.detailsSectionTitle}>Contact</div>
                             {loadingCandidateProfile && (
-                              <div style={styles.detailsRow}>Loading full profile…</div>
+                              <div style={styles.detailsRow}>Loading full profile...</div>
                             )}
                             {candidateProfileError && (
                               <div style={{ ...styles.detailsRow, color: "#ef4444" }}>{candidateProfileError}</div>
@@ -1860,8 +1808,8 @@ export default function ListedJobs() {
                               education.slice(0, 5).map((edu, i) => (
                                 <div key={i} style={styles.detailsRow}>
                                   <strong>{edu.degree || "Education"}</strong>
-                                  {edu.institution ? ` • ${edu.institution}` : ""}
-                                  {edu.endDate ? ` • ${edu.endDate}` : (edu.year ? ` • ${edu.year}` : "")}
+                                  {edu.institution ? ` | ${edu.institution}` : ""}
+                                  {edu.endDate ? ` | ${edu.endDate}` : (edu.year ? ` | ${edu.year}` : "")}
                                 </div>
                               ))
                             )}
@@ -1875,8 +1823,8 @@ export default function ListedJobs() {
                               workExperience.slice(0, 5).map((exp, i) => (
                                 <div key={i} style={styles.detailsRow}>
                                   <strong>{exp.jobTitle || exp.title || "Role"}</strong>
-                                  {exp.company ? ` • ${exp.company}` : ""}
-                                  {exp.duration ? ` • ${exp.duration}` : ""}
+                                  {exp.company ? ` | ${exp.company}` : ""}
+                                  {exp.duration ? ` | ${exp.duration}` : ""}
                                 </div>
                               ))
                             )}
@@ -1913,14 +1861,8 @@ export default function ListedJobs() {
                 style={styles.modalCloseBtn}
                 onClick={() => setShowEditModal(false)}
                 aria-label="Close edit job modal"
-                onMouseEnter={(e) => {
-                  e.target.style.background = "#f3f4f6";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = "transparent";
-                }}
               >
-                ×
+                x
               </button>
             </div>
             <div style={styles.modalBody}>
@@ -2115,14 +2057,8 @@ export default function ListedJobs() {
                   setJobToDelete(null);
                 }}
                 aria-label="Close delete confirmation modal"
-                onMouseEnter={(e) => {
-                  e.target.style.background = "#f3f4f6";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = "transparent";
-                }}
               >
-                ×
+                x
               </button>
             </div>
             <div style={styles.modalBody}>
@@ -2178,4 +2114,9 @@ export default function ListedJobs() {
     </div>
   );
 }
+
+
+
+
+
 
