@@ -7,7 +7,7 @@ import { fetchProfile } from "../services/profileService";
 import Toast from "../components/Toast";
 
 export default function Login() {
-  const [mode, setMode] = useState("signup"); // signup | login
+  const [mode, setMode] = useState("signup");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -28,17 +28,15 @@ export default function Login() {
     setError("");
     setShowPassword(false);
 
-    // Never carry password across screens/modes
     setForm((prev) => {
       if (nextMode === "login") {
         return {
           ...prev,
-          username: prev.username || prev.email, // convenient, but safe
+          username: prev.username || prev.email,
           password: "",
         };
       }
 
-      // signup
       return {
         ...prev,
         password: "",
@@ -54,91 +52,106 @@ export default function Login() {
 
     try {
       if (mode === "login") {
-        // ⏳ WAIT FOR RESPONSE
+
         const data = await loginUser(form.username, form.password);
-        // ✅ CONFIRM TOKEN IS STORED
+
+        // ✅ Save login email for profile autofill
+        const loginEmail = data?.sub || data?.email || form.username;
+        if (loginEmail) {
+          localStorage.setItem("userEmail", loginEmail);
+        }
+
         const token = localStorage.getItem("token");
         const role = localStorage.getItem("role");
 
         if (token) {
-          // Route based on role
+
           if (role === "EMPLOYER") {
-            // Check if organization profile exists
+
             try {
               const orgProfile = await fetchOrganizationProfile();
+
               if (orgProfile) {
-                // Organization profile exists, navigate to dashboard
                 navigate("/employer/dashboard");
               } else {
-                // No organization profile, navigate to home to fill it
                 navigate("/employer/home");
               }
+
             } catch (err) {
               console.error("Error checking organization profile:", err);
-              // If error, still navigate to home to fill organization info
               navigate("/employer/home");
             }
+
           } else {
-            // Student login - check if profile exists
+
             try {
               const email = data.sub || data.email || data.username;
+
               if (email) {
                 const profile = await fetchProfile(email);
+
                 if (profile && Object.keys(profile).length > 0) {
-                  // Profile exists, navigate to view profile
                   navigate("/student/view-profile");
                 } else {
-                  // No profile, navigate to upload resume
                   navigate("/student");
                 }
               } else {
                 navigate("/student");
               }
+
             } catch (err) {
               console.error("Error checking profile:", err);
               navigate("/student");
             }
+
           }
+
         } else {
           setError("Token not stored");
         }
+
       } else {
+
         await registerUser({
           name: form.name,
           role: form.role === "student" ? "Student" : form.role,
           username: form.email,
           password: form.password,
         });
+
         setToast({
           message: "Signup successful! Please verify your email, then log in.",
           type: "success",
         });
-        // Switch to login mode after successful signup
+
         setTimeout(() => {
           switchAuthMode("login");
           setToast({ message: "", type: "error" });
         }, 2000);
       }
+
     } catch (err) {
-      const message = err?.message || (mode === "signup" ? "Signup failed" : "Login failed");
+
+      const message =
+        err?.message || (mode === "signup" ? "Signup failed" : "Login failed");
+
       if (mode === "signup") {
         setError("");
         setToast({ message, type: "error" });
       } else {
         setError(message);
       }
+
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="auth-page">
       <div className="auth-wrapper">
         <div className="auth-container">
 
-          {/* LEFT PANEL */}
           <div className="auth-left">
             <div className="logo-circle">S</div>
             <h1>
@@ -147,8 +160,8 @@ export default function Login() {
             <p>Because every talent deserves the right chance</p>
           </div>
 
-          {/* RIGHT CARD */}
           <div className="auth-right">
+
             <h2>{mode === "signup" ? "Sign Up" : "Login"}</h2>
 
             <p className="auth-subtitle">
@@ -159,7 +172,6 @@ export default function Login() {
 
             <form onSubmit={handleSubmit}>
 
-              {/* SIGNUP */}
               {mode === "signup" && (
                 <>
                   <div className="form-group">
@@ -199,7 +211,6 @@ export default function Login() {
                 </>
               )}
 
-              {/* LOGIN */}
               {mode === "login" && (
                 <div className="form-group">
                   <label>Username</label>
@@ -213,10 +224,11 @@ export default function Login() {
                 </div>
               )}
 
-              {/* PASSWORD */}
               <div className="form-group">
                 <label>Password</label>
+
                 <div className="password-wrapper">
+
                   <input
                     type={showPassword ? "text" : "password"}
                     value={form.password}
@@ -224,28 +236,27 @@ export default function Login() {
                       setForm({ ...form, password: e.target.value })
                     }
                   />
+
                   <span
                     className="password-toggle"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </span>
+
                 </div>
               </div>
 
               {error && <p className="error-text">{error}</p>}
 
-              <button
-                className="submit-btn"
-                disabled={loading}
-                type="submit"
-              >
+              <button className="submit-btn" disabled={loading} type="submit">
                 {loading
                   ? "Please wait..."
                   : mode === "signup"
                   ? "Create account"
                   : "Login"}
               </button>
+
             </form>
 
             <p className="helper-text">Takes less than 2 minutes</p>
@@ -267,10 +278,11 @@ export default function Login() {
               By clicking login, you agree to our{" "}
               <u>Terms of Service</u> and <u>Privacy Policy</u>
             </p>
-          </div>
 
+          </div>
         </div>
       </div>
+
       <Toast
         message={toast.message}
         type={toast.type}
