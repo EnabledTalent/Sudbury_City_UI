@@ -1,0 +1,558 @@
+.company-profile {
+  background: #f2f7fd;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.company-profile__header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.company-profile__top-nav {
+  background: #ffffff;
+  padding: 20px 40px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  backdrop-filter: blur(10px);
+}
+
+.company-profile__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 20px;
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
+}
+
+.company-profile__logo-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.company-profile__nav-links,
+.company-profile__user-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.company-profile__nav-link,
+.company-profile__icon-btn,
+.company-profile__action-btn,
+.company-profile__logout-btn,
+.company-profile__retry-btn,
+.company-profile__edit-btn,
+.company-profile__cancel-btn,
+.company-profile__save-btn {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  min-height: 44px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.company-profile__nav-link {
+  background: #ffffff;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.company-profile__nav-link:hover {
+  background: #f9fafb;
+}
+
+.company-profile__nav-link--active {
+  color: #14532d;
+  border-color: #14532d;
+  background: #ecfdf5;
+}
+
+.company-profile__icon-btn {
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+  background: #ffffff;
+  color: #374151;
+  border-color: #d1d5db;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.company-profile__action-btn {
+  color: #ffffff;
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+}
+
+.company-profile__logout-btn {
+  color: #ffffff;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.company-profile__main {
+  flex: 1;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px 40px;
+}
+
+.company-profile__state {
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  padding: 20px;
+}
+
+.company-profile__state--loading {
+  color: #374151;
+}
+
+.company-profile__state--error {
+  border-color: #fca5a5;
+  background: #fee2e2;
+  color: #991b1b;
+  display: grid;
+  gap: 12px;
+}
+
+.company-profile__retry-btn {
+  width: fit-content;
+  background: #ffffff;
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+
+.company-profile__banner {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 10px 30px rgba(251, 191, 36, 0.25), 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.company-profile__logo-container {
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.company-profile__company-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #16a34a;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.company-profile__company-info {
+  flex: 1;
+}
+
+.company-profile__company-name {
+  margin: 0 0 8px;
+  font-size: 32px;
+  line-height: 1.2;
+  color: #111827;
+}
+
+.company-profile__company-subtitle {
+  margin: 0;
+  color: #4b5563;
+  font-size: 16px;
+}
+
+.company-profile__edit-btn {
+  background: #ffffff;
+  border-color: #d1d5db;
+  color: #111827;
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.company-profile__edit-section {
+  max-width: 860px;
+}
+
+.company-profile__form-card,
+.company-profile__about-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.company-profile__form-card {
+  padding: 28px;
+}
+
+.company-profile__form-title,
+.company-profile__section-title {
+  margin: 0 0 20px;
+  font-size: 24px;
+  color: #111827;
+}
+
+.company-profile__form-group {
+  margin-bottom: 20px;
+}
+
+.company-profile__label,
+.company-profile__legend {
+  display: block;
+  margin-bottom: 8px;
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.company-profile__fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0 0 20px;
+}
+
+.company-profile__input,
+.company-profile__textarea,
+.company-profile__select {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  color: #111827;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.company-profile__input,
+.company-profile__select {
+  min-height: 44px;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+
+.company-profile__textarea {
+  min-height: 120px;
+  resize: vertical;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.company-profile__field-hint {
+  margin: 0 0 8px;
+  color: #4b5563;
+  font-size: 12px;
+}
+
+.company-profile__field-error {
+  margin: 8px 0 0;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.company-profile__radio-group {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.company-profile__radio-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.company-profile__radio-input {
+  width: 18px;
+  height: 18px;
+  accent-color: #15803d;
+}
+
+.company-profile__radio-label {
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.company-profile__select-wrapper {
+  position: relative;
+}
+
+.company-profile__select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 40px;
+}
+
+.company-profile__select-arrow {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #374151;
+}
+
+.company-profile__actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.company-profile__cancel-btn {
+  background: #f3f4f6;
+  color: #1f2937;
+  border-color: #d1d5db;
+}
+
+.company-profile__save-btn {
+  color: #ffffff;
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+}
+
+.company-profile__content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+.company-profile__about-card {
+  padding: 28px;
+}
+
+.company-profile__about-text {
+  margin: 0;
+  line-height: 1.8;
+  color: #374151;
+  white-space: pre-line;
+}
+
+.company-profile__details-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.company-profile__details-list {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.company-profile__detail-card {
+  margin: 0;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 16px;
+}
+
+.company-profile__detail-label {
+  color: #4b5563;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.company-profile__detail-value {
+  margin: 0;
+  color: #111827;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.company-profile__website-link {
+  background: linear-gradient(90deg, #16a34a, #15803d);
+  border-radius: 12px;
+  min-height: 52px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-decoration: none;
+  color: #ffffff;
+}
+
+.company-profile__website-text {
+  overflow-wrap: anywhere;
+}
+
+.company-profile__website-arrow {
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.company-profile__sr-only {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.company-profile__footer {
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #4b5563;
+  font-size: 12px;
+  padding: 20px 40px;
+}
+
+.company-profile__footer p {
+  margin: 0;
+}
+
+.company-profile__nav-link:focus-visible,
+.company-profile__icon-btn:focus-visible,
+.company-profile__action-btn:focus-visible,
+.company-profile__logout-btn:focus-visible,
+.company-profile__retry-btn:focus-visible,
+.company-profile__edit-btn:focus-visible,
+.company-profile__cancel-btn:focus-visible,
+.company-profile__save-btn:focus-visible,
+.company-profile__input:focus-visible,
+.company-profile__textarea:focus-visible,
+.company-profile__select:focus-visible,
+.company-profile__radio-input:focus-visible + .company-profile__radio-label,
+.company-profile__website-link:focus-visible {
+  outline: 3px solid rgba(21, 128, 61, 0.35);
+  outline-offset: 2px;
+}
+
+@media (max-width: 1160px) {
+  .company-profile__top-nav {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .company-profile__main {
+    padding: 24px;
+  }
+
+  .company-profile__content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 820px) {
+  .company-profile__banner {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .company-profile__company-info {
+    min-width: 0;
+  }
+
+  .company-profile__company-name {
+    font-size: 26px;
+    overflow-wrap: anywhere;
+  }
+
+  .company-profile__company-subtitle {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 640px) {
+  .company-profile__top-nav,
+  .company-profile__main,
+  .company-profile__footer {
+    padding: 16px;
+  }
+
+  .company-profile__banner {
+    padding: 20px;
+    gap: 12px;
+  }
+
+  .company-profile__logo-container {
+    width: 88px;
+    height: 88px;
+  }
+
+  .company-profile__company-logo {
+    width: 62px;
+    height: 62px;
+    font-size: 26px;
+  }
+
+  .company-profile__company-name {
+    font-size: 22px;
+  }
+
+  .company-profile__company-subtitle {
+    font-size: 14px;
+  }
+
+  .company-profile__form-card,
+  .company-profile__about-card {
+    padding: 18px;
+  }
+
+  .company-profile__radio-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .company-profile__actions {
+    flex-direction: column;
+  }
+
+  .company-profile__cancel-btn,
+  .company-profile__save-btn {
+    width: 100%;
+  }
+}

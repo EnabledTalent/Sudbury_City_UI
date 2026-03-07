@@ -1,6 +1,24 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import "./TourOverlay.css";
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+const getFocusableElements = (container) => {
+  if (!container) return [];
+
+  const selector = [
+    "a[href]",
+    "button:not([disabled])",
+    "input:not([disabled])",
+    "select:not([disabled])",
+    "textarea:not([disabled])",
+    "[tabindex]:not([tabindex='-1'])",
+  ].join(",");
+
+  return [...container.querySelectorAll(selector)].filter(
+    (el) => !el.hasAttribute("disabled") && el.getAttribute("aria-hidden") !== "true"
+  );
+};
 
 export default function TourOverlay({
   open,
@@ -11,9 +29,38 @@ export default function TourOverlay({
 }) {
   const [idx, setIdx] = useState(0);
   const [targetRect, setTargetRect] = useState(null);
+  const dialogRef = useRef(null);
+  const primaryButtonRef = useRef(null);
+  const previousFocusedRef = useRef(null);
+  const titleId = useId();
+  const descriptionId = useId();
 
   const step = useMemo(() => steps?.[idx], [steps, idx]);
   const total = steps?.length || 0;
+
+  const markDone = useCallback(
+    (status) => {
+      if (storageKey) {
+        localStorage.setItem(storageKey, status);
+      }
+    },
+    [storageKey]
+  );
+
+  const handleSkip = useCallback(() => {
+    markDone("skipped");
+    onClose?.();
+  }, [markDone, onClose]);
+
+  const handleNext = useCallback(() => {
+    if (idx >= total - 1) {
+      markDone("done");
+      onComplete?.();
+      onClose?.();
+      return;
+    }
+    setIdx((v) => v + 1);
+  }, [idx, total, markDone, onComplete, onClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -53,28 +100,68 @@ export default function TourOverlay({
     };
   }, [open, step]);
 
+  useEffect(() => {
+    if (!open) return undefined;
+
+    previousFocusedRef.current = document.activeElement;
+    const previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const focusTimer = setTimeout(() => {
+      if (primaryButtonRef.current) {
+        primaryButtonRef.current.focus();
+      } else if (dialogRef.current) {
+        dialogRef.current.focus();
+      }
+    }, 0);
+
+    const onKeyDown = (e) => {
+      if (!dialogRef.current) return;
+
+      if (e.key === "Escape") {
+        e.preventDefault();
+        handleSkip();
+        return;
+      }
+
+      if (e.key !== "Tab") return;
+
+      const focusable = getFocusableElements(dialogRef.current);
+      if (focusable.length === 0) {
+        e.preventDefault();
+        dialogRef.current.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+
+      if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      clearTimeout(focusTimer);
+      document.body.style.overflow = previousBodyOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+      if (
+        previousFocusedRef.current &&
+        typeof previousFocusedRef.current.focus === "function"
+      ) {
+        previousFocusedRef.current.focus();
+      }
+    };
+  }, [open, handleSkip]);
+
   if (!open || !step || total === 0) return null;
-
-  const markDone = (status) => {
-    if (storageKey) {
-      localStorage.setItem(storageKey, status);
-    }
-  };
-
-  const handleSkip = () => {
-    markDone("skipped");
-    onClose?.();
-  };
-
-  const handleNext = () => {
-    if (idx >= total - 1) {
-      markDone("done");
-      onComplete?.();
-      onClose?.();
-      return;
-    }
-    setIdx((v) => v + 1);
-  };
 
   const margin = 16;
   const modalWidth = 360;
@@ -87,112 +174,61 @@ export default function TourOverlay({
     const preferredTop = targetRect.top + targetRect.height + 12;
     const preferredBottom = preferredTop + modalHeightEstimate;
     const placeAbove = preferredBottom > window.innerHeight - margin;
-    modalTop = placeAbove
-      ? targetRect.top - modalHeightEstimate - 12
-      : preferredTop;
+    modalTop = placeAbove ? targetRect.top - modalHeightEstimate - 12 : preferredTop;
     modalTop = clamp(modalTop, margin, window.innerHeight - margin - modalHeightEstimate);
-    modalLeft = clamp(
-      targetRect.left,
-      margin,
-      window.innerWidth - margin - modalWidth
-    );
+    modalLeft = clamp(targetRect.left, margin, window.innerWidth - margin - modalWidth);
   }
-
-  const styles = {
-    backdrop: {
-      position: "fixed",
-      inset: 0,
-      background: "rgba(17, 24, 39, 0.55)",
-      zIndex: 20000,
-    },
-    highlight: {
-      position: "fixed",
-      top: targetRect?.top ?? 0,
-      left: targetRect?.left ?? 0,
-      width: targetRect?.width ?? 0,
-      height: targetRect?.height ?? 0,
-      borderRadius: 10,
-      boxShadow: "0 0 0 4px rgba(34, 197, 94, 0.9), 0 12px 30px rgba(0,0,0,0.35)",
-      pointerEvents: "none",
-      zIndex: 20001,
-      opacity: targetRect ? 1 : 0,
-      transition: "opacity 0.2s ease",
-    },
-    modal: {
-      position: "fixed",
-      top: modalTop,
-      left: modalLeft,
-      width: modalWidth,
-      background: "#ffffff",
-      borderRadius: 14,
-      padding: 16,
-      boxShadow: "0 18px 60px rgba(0,0,0,0.35)",
-      zIndex: 20002,
-      border: "1px solid rgba(0,0,0,0.08)",
-    },
-    stepCount: {
-      fontSize: 12,
-      color: "#6b7280",
-      marginBottom: 6,
-      fontWeight: 600,
-    },
-    title: {
-      margin: 0,
-      fontSize: 16,
-      fontWeight: 800,
-      color: "#111827",
-      marginBottom: 6,
-    },
-    body: {
-      margin: 0,
-      fontSize: 13,
-      lineHeight: 1.5,
-      color: "#374151",
-    },
-    actions: {
-      display: "flex",
-      gap: 10,
-      justifyContent: "space-between",
-      marginTop: 14,
-      alignItems: "center",
-    },
-    btnLink: {
-      background: "transparent",
-      border: "none",
-      color: "#6b7280",
-      cursor: "pointer",
-      padding: 0,
-      fontSize: 13,
-      fontWeight: 600,
-    },
-    btnPrimary: {
-      background: "#16a34a",
-      color: "#ffffff",
-      border: "none",
-      borderRadius: 10,
-      padding: "10px 14px",
-      cursor: "pointer",
-      fontSize: 13,
-      fontWeight: 700,
-      minWidth: 86,
-    },
-  };
 
   return (
     <>
-      <div style={styles.backdrop} onClick={handleSkip} />
-      <div style={styles.highlight} />
-      <div style={styles.modal} role="dialog" aria-modal="true">
-        <div style={styles.stepCount}>
-          {idx + 1} / {total}
-        </div>
-        <h4 style={styles.title}>{step.title}</h4>
-        <p style={styles.body}>{step.body}</p>
-        <div style={styles.actions}>
-          <button type="button" style={styles.btnLink} onClick={handleSkip}>
-            Skip
+      <div
+        className="tour-overlay__backdrop"
+        onClick={handleSkip}
+        aria-hidden="true"
+      />
+      <div
+        className="tour-overlay__highlight"
+        style={{
+          top: targetRect?.top ?? 0,
+          left: targetRect?.left ?? 0,
+          width: targetRect?.width ?? 0,
+          height: targetRect?.height ?? 0,
+          opacity: targetRect ? 1 : 0,
+        }}
+        aria-hidden="true"
+      />
+      <div
+        ref={dialogRef}
+        className="tour-overlay__dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
+        style={{
+          top: modalTop,
+          left: modalLeft,
+        }}
+        tabIndex={-1}
+      >
+        <p className="tour-overlay__step-count" aria-live="polite">
+          Step {idx + 1} of {total}
+        </p>
+        <h2 id={titleId} className="tour-overlay__title">
+          {step.title}
+        </h2>
+        <p id={descriptionId} className="tour-overlay__body">
+          {step.body}
+        </p>
+        <div className="tour-overlay__actions">
+          <button type="button" className="tour-overlay__skip" onClick={handleSkip}>
+            Skip tour
           </button>
-          <button type="button" style={styles.btnPrimary} onClick={handleNext}>
+          <button
+            ref={primaryButtonRef}
+            type="button"
+            className="tour-overlay__next"
+            onClick={handleNext}
+          >
             {idx >= total - 1 ? "Done" : "Next"}
           </button>
         </div>
@@ -200,4 +236,3 @@ export default function TourOverlay({
     </>
   );
 }
-

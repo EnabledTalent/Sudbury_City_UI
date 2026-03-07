@@ -1,0 +1,41 @@
+.year-picker {
+  position: relative;
+  width: 100%;
+}
+
+.year-picker__select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 42px 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #111827;
+  font-size: 14px;
+  line-height: 1.4;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.year-picker__select:focus-visible {
+  outline: 3px solid rgba(21, 128, 61, 0.35);
+  outline-offset: 1px;
+  border-color: #15803d;
+}
+
+.year-picker__select:disabled {
+  cursor: not-allowed;
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.year-picker__chevron {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  color: #374151;
+  font-size: 12px;
+  pointer-events: none;
+}

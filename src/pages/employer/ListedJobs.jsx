@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { fetchEmployerJobs, fetchEmployerJobStats, fetchJobApplications, updateApplicationStatus, sendInterviewInvitation, sendJobOffer, rejectApplication, updateJob, deleteJob } from "../../services/jobService";
-import { logoutUser } from "../../services/authService";
+import EmployerHeader from "../../components/employer/EmployerHeader";
 import Toast from "../../components/Toast";
 import { fetchProfile } from "../../services/profileService";
-import { Pencil } from "lucide-react";
+import { Pencil, Search } from "lucide-react";
 
 export default function ListedJobs() {
-  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedJob, setSelectedJob] = useState(null);
   const [filterStatus] = useState("all"); // all, active, closed
@@ -26,6 +24,9 @@ export default function ListedJobs() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [jobToDelete, setJobToDelete] = useState(null);
+  const [viewportWidth, setViewportWidth] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth : 1280
+  );
   const [editFormData, setEditFormData] = useState({
     jobTitle: "",
     companyName: "",
@@ -43,6 +44,49 @@ export default function ListedJobs() {
   });
   const [updating, setUpdating] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const isTablet = viewportWidth <= 1080;
+  const isMobile = viewportWidth <= 768;
+  const isSmallMobile = viewportWidth <= 520;
+
+  useEffect(() => {
+    const onResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  useEffect(() => {
+    const isAnyModalOpen = showCandidatesModal || showEditModal || showDeleteConfirm;
+    if (!isAnyModalOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event) => {
+      if (event.key !== "Escape") return;
+
+      if (showCandidatesModal) {
+        setShowCandidatesModal(false);
+      } else if (showEditModal) {
+        setShowEditModal(false);
+      } else if (showDeleteConfirm) {
+        setShowDeleteConfirm(false);
+        setJobToDelete(null);
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [showCandidatesModal, showDeleteConfirm, showEditModal]);
+
+  const activateWithKeyboard = (event, action) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      action();
+    }
+  };
 
   // Helper function - must be defined before use
   const getTimeAgo = (date) => {
@@ -73,15 +117,15 @@ export default function ListedJobs() {
           
           // Parse description and requirements from strings
           const description = job.description
-            ? job.description.split(/\n|•/).filter((line) => line.trim())
+            ? job.description.split(/\n|\u2022/).filter((line) => line.trim())
             : [];
           const requirements = job.requirements
-            ? job.requirements.split(/\n|•/).filter((line) => line.trim())
+            ? job.requirements.split(/\n|\u2022/).filter((line) => line.trim())
             : [];
 
           return {
             id: job.id,
-            companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "∞",
+            companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "NA",
             jobTitle: job.role || "",
             companyName: job.companyName || "",
             location: job.location || job.address || "",
@@ -253,15 +297,15 @@ export default function ListedJobs() {
       const jobsWithStats = jobsData.map((job) => {
         const jobStats = stats.find((stat) => stat.jobId === job.id);
         const description = job.description
-          ? job.description.split(/\n|•/).filter((line) => line.trim())
+          ? job.description.split(/\n|\u2022/).filter((line) => line.trim())
           : [];
         const requirements = job.requirements
-          ? job.requirements.split(/\n|•/).filter((line) => line.trim())
+          ? job.requirements.split(/\n|\u2022/).filter((line) => line.trim())
           : [];
 
         return {
           id: job.id,
-          companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "∞",
+          companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "NA",
           jobTitle: job.role || "",
           companyName: job.companyName || "",
           location: job.location || job.address || "",
@@ -334,15 +378,15 @@ export default function ListedJobs() {
       const jobsWithStats = jobsData.map((job) => {
         const jobStats = stats.find((stat) => stat.jobId === job.id);
         const description = job.description
-          ? job.description.split(/\n|•/).filter((line) => line.trim())
+          ? job.description.split(/\n|\u2022/).filter((line) => line.trim())
           : [];
         const requirements = job.requirements
-          ? job.requirements.split(/\n|•/).filter((line) => line.trim())
+          ? job.requirements.split(/\n|\u2022/).filter((line) => line.trim())
           : [];
 
         return {
           id: job.id,
-          companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "∞",
+          companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "NA",
           jobTitle: job.role || "",
           companyName: job.companyName || "",
           location: job.location || job.address || "",
@@ -500,19 +544,20 @@ export default function ListedJobs() {
     container: {
       maxWidth: "1600px",
       margin: "0 auto",
-      padding: "32px 40px",
+      padding: isMobile ? "16px" : isTablet ? "24px 20px" : "32px 40px",
       display: "flex",
       gap: "24px",
+      flexDirection: isTablet ? "column" : "row",
     },
     leftPanel: {
-      flex: "0 0 45%",
-      maxHeight: "calc(100vh - 120px)",
-      overflowY: "auto",
+      flex: isTablet ? "1 1 auto" : "0 0 45%",
+      maxHeight: isTablet ? "none" : "calc(100vh - 120px)",
+      overflowY: isTablet ? "visible" : "auto",
     },
     searchSection: {
       background: "#ffffff",
       borderRadius: "16px",
-      padding: "24px",
+      padding: isMobile ? "16px" : "24px",
       marginBottom: "20px",
       boxShadow: "0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
       border: "1px solid rgba(0, 0, 0, 0.04)",
@@ -537,7 +582,7 @@ export default function ListedJobs() {
     jobCard: {
       background: "#ffffff",
       borderRadius: "16px",
-      padding: "24px",
+      padding: isMobile ? "16px" : "24px",
       marginBottom: "16px",
       border: "2px solid transparent",
       cursor: "pointer",
@@ -547,7 +592,7 @@ export default function ListedJobs() {
     jobCardSelected: {
       background: "#ffffff",
       borderRadius: "16px",
-      padding: "24px",
+      padding: isMobile ? "16px" : "24px",
       marginBottom: "16px",
       border: "2px solid #16a34a",
       cursor: "pointer",
@@ -635,6 +680,7 @@ export default function ListedJobs() {
       gap: "16px",
       fontSize: "12px",
       color: "#6b7280",
+      flexWrap: isSmallMobile ? "wrap" : "nowrap",
     },
     metric: {
       display: "flex",
@@ -642,14 +688,14 @@ export default function ListedJobs() {
       gap: "4px",
     },
     rightPanel: {
-      flex: "0 0 55%",
-      maxHeight: "calc(100vh - 120px)",
-      overflowY: "auto",
+      flex: isTablet ? "1 1 auto" : "0 0 55%",
+      maxHeight: isTablet ? "none" : "calc(100vh - 120px)",
+      overflowY: isTablet ? "visible" : "auto",
     },
     jobDetailCard: {
       background: "#ffffff",
       borderRadius: "20px",
-      padding: "40px",
+      padding: isMobile ? "20px" : "40px",
       boxShadow: "0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
       border: "1px solid rgba(0, 0, 0, 0.04)",
     },
@@ -660,6 +706,7 @@ export default function ListedJobs() {
       marginBottom: "24px",
       paddingBottom: "24px",
       borderBottom: "1px solid #e5e7eb",
+      flexDirection: isSmallMobile ? "column" : "row",
     },
     jobHeaderInfo: {
       flex: 1,
@@ -682,7 +729,7 @@ export default function ListedJobs() {
     },
     metricsGrid: {
       display: "grid",
-      gridTemplateColumns: "repeat(2, 1fr)",
+      gridTemplateColumns: isSmallMobile ? "1fr" : "repeat(2, 1fr)",
       gap: "16px",
       marginBottom: "24px",
     },
@@ -731,7 +778,7 @@ export default function ListedJobs() {
     },
     jobOverview: {
       display: "grid",
-      gridTemplateColumns: "repeat(2, 1fr)",
+      gridTemplateColumns: isSmallMobile ? "1fr" : "repeat(2, 1fr)",
       gap: "16px",
       marginBottom: "24px",
     },
@@ -789,14 +836,14 @@ export default function ListedJobs() {
       alignItems: "center",
       justifyContent: "center",
       zIndex: 1000,
-      padding: "20px",
+      padding: isMobile ? "12px" : "20px",
     },
     modalContent: {
       background: "#ffffff",
-      borderRadius: "20px",
+      borderRadius: isMobile ? "14px" : "20px",
       width: "100%",
-      maxWidth: "800px",
-      maxHeight: "80vh",
+      maxWidth: isMobile ? "100%" : "800px",
+      maxHeight: isMobile ? "90vh" : "80vh",
       display: "flex",
       flexDirection: "column",
       boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 10px 20px -5px rgba(0, 0, 0, 0.1)",
@@ -806,11 +853,11 @@ export default function ListedJobs() {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      padding: "24px",
+      padding: isMobile ? "16px" : "24px",
       borderBottom: "1px solid #e5e7eb",
     },
     modalTitle: {
-      fontSize: "20px",
+      fontSize: isMobile ? "18px" : "20px",
       fontWeight: 600,
       color: "#111827",
       margin: 0,
@@ -831,7 +878,7 @@ export default function ListedJobs() {
       transition: "background 0.2s",
     },
     modalBody: {
-      padding: "24px",
+      padding: isMobile ? "16px" : "24px",
       overflowY: "auto",
       flex: 1,
     },
@@ -839,13 +886,15 @@ export default function ListedJobs() {
       display: "flex",
       gap: "16px",
       height: "100%",
-      minHeight: "520px",
+      minHeight: isMobile ? "auto" : "520px",
+      flexDirection: isTablet ? "column" : "row",
     },
     candidatesPane: {
-      width: "420px",
-      minWidth: "420px",
+      width: isTablet ? "100%" : "420px",
+      minWidth: isTablet ? "100%" : "420px",
       overflowY: "auto",
       paddingRight: "4px",
+      maxHeight: isTablet ? "260px" : "none",
     },
     candidatesList: {
       display: "flex",
@@ -906,9 +955,10 @@ export default function ListedJobs() {
     applicationStatusRow: {
       display: "flex",
       justifyContent: "space-between",
-      alignItems: "flex-end",
+      alignItems: isSmallMobile ? "stretch" : "flex-end",
       gap: "10px",
       marginTop: "8px",
+      flexDirection: isSmallMobile ? "column" : "row",
     },
     statusLeft: {
       display: "flex",
@@ -1013,6 +1063,7 @@ export default function ListedJobs() {
     statusActions: {
       display: "flex",
       gap: "8px",
+      width: isSmallMobile ? "100%" : "auto",
     },
     statusSelect: {
       padding: "6px 12px",
@@ -1024,89 +1075,25 @@ export default function ListedJobs() {
       cursor: "pointer",
       fontWeight: 500,
       minWidth: "140px",
+      width: isSmallMobile ? "100%" : "auto",
     },
   };
 
   return (
     <div style={styles.page}>
-      {/* Top Navigation */}
-      <nav style={styles.topNav}>
-        <div style={styles.logo}>
-          <div style={styles.logoIcon}>S</div>
-          <span>Sudburry</span>
-        </div>
-        <div style={styles.navLinks}>
-          <span
-            style={styles.navLink}
-            onClick={() => navigate("/employer/dashboard")}
-          >
-            Dashboard
-          </span>
-          <span
-            style={styles.navLink}
-            onClick={() => navigate("/employer/candidates")}
-          >
-            Candidates
-          </span>
-          <span style={styles.navLinkActive}>Listed Jobs</span>
-          <span
-            style={styles.navLink}
-            onClick={() => navigate("/employer/company-profile")}
-          >
-            Company Profile
-          </span>
-        </div>
-        <div style={styles.userActions}>
-          <span
-            style={styles.userActionLink}
-            onClick={() => navigate("/employer/company-profile")}
-          >
-            <span>👤</span>
-            Profile
-          </span>
-          <button
-            style={styles.logoutBtn}
-            onClick={async () => {
-              // Call logout API
-              await logoutUser();
-              localStorage.removeItem("token");
-              localStorage.removeItem("role");
-              localStorage.removeItem("profileData");
-              navigate("/");
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)";
-              e.target.style.transform = "translateY(-2px)";
-              e.target.style.boxShadow = "0 6px 16px rgba(239, 68, 68, 0.4)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)";
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = "0 4px 12px rgba(239, 68, 68, 0.3)";
-            }}
-          >
-            <span>🚪</span>
-            Log Out
-          </button>
-          <button
-            style={styles.postJobBtn}
-            onClick={() => navigate("/employer/post-job")}
-          >
-            Post a Job +
-          </button>
-        </div>
-      </nav>
+      <EmployerHeader activePage="listedJobs" />
 
       {/* Main Content */}
-      <div style={styles.container}>
+      <main style={styles.container}>
         {/* Left Panel - Job Listings */}
-        <div style={styles.leftPanel}>
+        <aside style={styles.leftPanel} aria-label="Listed jobs">
           <div style={styles.searchSection}>
             <div style={styles.searchBar}>
-              <span>🔍</span>
+              <Search size={14} aria-hidden="true" />
               <input
                 type="text"
                 placeholder="Search your listed jobs"
+                aria-label="Search listed jobs"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={styles.searchInput}
@@ -1132,6 +1119,10 @@ export default function ListedJobs() {
                   : styles.jobCard
               }
               onClick={() => setSelectedJob(job)}
+              onKeyDown={(event) => activateWithKeyboard(event, () => setSelectedJob(job))}
+                        role="button"
+                        tabIndex={0}
+              aria-pressed={selectedJob?.id === job.id}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
                 <div style={styles.postedTime}>Posted {job.postedTime}</div>
@@ -1152,15 +1143,14 @@ export default function ListedJobs() {
                       e.stopPropagation();
                       handleEditClick(job);
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "#f3f4f6";
-                      e.currentTarget.style.color = "#16a34a";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "transparent";
-                      e.currentTarget.style.color = "#6b7280";
+                    onKeyDown={(e) => {
+                      e.stopPropagation();
+                      activateWithKeyboard(e, () => handleEditClick(job));
                     }}
                     title="Edit Job"
+                        role="button"
+                        tabIndex={0}
+                    aria-label={`Edit ${job.jobTitle}`}
                   >
                     <Pencil size={16} strokeWidth={2.5} />
                   </span>
@@ -1179,17 +1169,16 @@ export default function ListedJobs() {
                       e.stopPropagation();
                       handleDeleteClick(job);
                     }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = "#fee2e2";
-                      e.target.style.color = "#dc2626";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = "transparent";
-                      e.target.style.color = "#ef4444";
+                    onKeyDown={(e) => {
+                      e.stopPropagation();
+                      activateWithKeyboard(e, () => handleDeleteClick(job));
                     }}
                     title="Delete Job"
+                        role="button"
+                        tabIndex={0}
+                    aria-label={`Delete ${job.jobTitle}`}
                   >
-                    ×
+                    x
                   </span>
                 </div>
               </div>
@@ -1234,11 +1223,11 @@ export default function ListedJobs() {
             </div>
             ))
           )}
-        </div>
+        </aside>
 
         {/* Right Panel - Job Details */}
         {selectedJob && (
-          <div style={styles.rightPanel}>
+          <section style={styles.rightPanel} aria-label="Job details">
             <div style={styles.jobDetailCard}>
               <div style={styles.jobHeader}>
                 <div style={styles.companyLogo}>{selectedJob.companyLogo}</div>
@@ -1265,15 +1254,14 @@ export default function ListedJobs() {
                       e.stopPropagation();
                       handleEditClick(selectedJob);
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "#f3f4f6";
-                      e.currentTarget.style.color = "#16a34a";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "transparent";
-                      e.currentTarget.style.color = "#6b7280";
+                    onKeyDown={(e) => {
+                      e.stopPropagation();
+                      activateWithKeyboard(e, () => handleEditClick(selectedJob));
                     }}
                     title="Edit Job"
+                        role="button"
+                        tabIndex={0}
+                    aria-label={`Edit ${selectedJob.jobTitle}`}
                   >
                     <Pencil size={16} strokeWidth={2.5} />
                   </span>
@@ -1292,17 +1280,16 @@ export default function ListedJobs() {
                       e.stopPropagation();
                       handleDeleteClick(selectedJob);
                     }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = "#fee2e2";
-                      e.target.style.color = "#dc2626";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = "transparent";
-                      e.target.style.color = "#ef4444";
+                    onKeyDown={(e) => {
+                      e.stopPropagation();
+                      activateWithKeyboard(e, () => handleDeleteClick(selectedJob));
                     }}
                     title="Delete Job"
+                        role="button"
+                        tabIndex={0}
+                    aria-label={`Delete ${selectedJob.jobTitle}`}
                   >
-                    ×
+                    x
                   </span>
                 </div>
               </div>
@@ -1342,7 +1329,9 @@ export default function ListedJobs() {
               </div>
 
               <button 
+                type="button"
                 style={styles.viewCandidatesBtn}
+                aria-label={`View candidates for ${selectedJob.jobTitle}`}
                 onClick={async () => {
                   if (!selectedJob?.id) return;
                   try {
@@ -1361,7 +1350,7 @@ export default function ListedJobs() {
                   }
                 }}
               >
-                View Candidates →
+                View Candidates ->
               </button>
 
               {/* Job Overview */}
@@ -1446,9 +1435,9 @@ export default function ListedJobs() {
                 </ul>
               </div>
             </div>
-          </div>
+          </section>
         )}
-      </div>
+      </main>
       <Toast
         message={toast.message}
         type={toast.type}
@@ -1458,22 +1447,24 @@ export default function ListedJobs() {
       {/* Candidates Modal */}
       {showCandidatesModal && (
         <div style={styles.modalOverlay} onClick={() => setShowCandidatesModal(false)}>
-          <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+          <div
+            style={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="listed-jobs-candidates-title"
+          >
             <div style={styles.modalHeader}>
-              <h2 style={styles.modalTitle}>
+              <h2 id="listed-jobs-candidates-title" style={styles.modalTitle}>
                 Candidates for {selectedJob?.jobTitle}
               </h2>
               <button
+                type="button"
                 style={styles.modalCloseBtn}
                 onClick={() => setShowCandidatesModal(false)}
-                onMouseEnter={(e) => {
-                  e.target.style.background = "#f3f4f6";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = "transparent";
-                }}
+                aria-label="Close candidates modal"
               >
-                ×
+                x
               </button>
             </div>
             <div style={styles.modalBody}>
@@ -1534,20 +1525,13 @@ export default function ListedJobs() {
                           ...(isSelected ? styles.candidateCardModalSelected : {}),
                         }}
                         onClick={() => setSelectedApplication(application)}
-                        onMouseEnter={(e) => {
-                          if (!isSelected) {
-                            e.currentTarget.style.boxShadow = "0 10px 24px rgba(0,0,0,0.08)";
-                            e.currentTarget.style.transform = "translateY(-1px)";
-                            e.currentTarget.style.borderColor = "#d1d5db";
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isSelected) {
-                            e.currentTarget.style.boxShadow = styles.candidateCardModal.boxShadow;
-                            e.currentTarget.style.transform = "translateY(0)";
-                            e.currentTarget.style.borderColor = styles.candidateCardModal.border;
-                          }
-                        }}
+                        onKeyDown={(event) =>
+                          activateWithKeyboard(event, () => setSelectedApplication(application))
+                        }
+                        role="button"
+                        tabIndex={0}
+                        aria-pressed={isSelected}
+                        aria-label={`Open candidate ${fullName}`}
                       >
                         <div style={styles.candidatePicModal}>
                           {fullName.charAt(0).toUpperCase()}
@@ -1556,9 +1540,9 @@ export default function ListedJobs() {
                           <div style={styles.candidateNameModal}>{fullName}</div>
                           <div style={styles.candidateRoleModal}>{role}</div>
                           <div style={styles.candidateDetailsModal}>
-                            <span>📍 {location}</span>
-                            {yearsOfExp > 0 && <span> • 💼 {yearsOfExp} Yrs</span>}
-                            {email && <span> • ✉️ {email}</span>}
+                            <span>Location: {location}</span>
+                            {yearsOfExp > 0 && <span> | Exp: {yearsOfExp} Yrs</span>}
+                            {email && <span> | Email: {email}</span>}
                           </div>
                           <div style={styles.applicationStatusRow}>
                             <div style={styles.statusLeft}>
@@ -1580,7 +1564,7 @@ export default function ListedJobs() {
                               )}
                               {matchPctDisplay !== null && (
                                 <div style={styles.matchBadgeModal}>
-                                  🎯 {matchPctDisplay}% Match
+                                  Match: {matchPctDisplay}%
                                 </div>
                               )}
                             </div>
@@ -1645,15 +1629,15 @@ export default function ListedJobs() {
                                     const jobsWithStats = jobsData.map((job) => {
                                       const jobStats = stats.find((stat) => stat.jobId === job.id);
                                       const description = job.description
-                                        ? job.description.split(/\n|•/).filter((line) => line.trim())
+                                        ? job.description.split(/\n|\u2022/).filter((line) => line.trim())
                                         : [];
                                       const requirements = job.requirements
-                                        ? job.requirements.split(/\n|•/).filter((line) => line.trim())
+                                        ? job.requirements.split(/\n|\u2022/).filter((line) => line.trim())
                                         : [];
                                       
                                       return {
                                         id: job.id,
-                                        companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "∞",
+                                        companyLogo: job.companyName ? job.companyName.charAt(0).toUpperCase() : "NA",
                                         jobTitle: job.role || "",
                                         companyName: job.companyName || "",
                                         location: job.location || job.address || "",
@@ -1701,6 +1685,7 @@ export default function ListedJobs() {
                                     });
                                   }
                                 }}
+                                aria-label={`Update application status for ${fullName}`}
                               >
                                 <option value="" disabled>---</option>
                                 <option value="UNDER_REVIEW">In Review</option>
@@ -1760,9 +1745,9 @@ export default function ListedJobs() {
                             <div style={{ flex: 1 }}>
                               <div style={styles.detailsName}>{fullName}</div>
                               <div style={styles.detailsMeta}>
-                                <span>💼 {role}</span>
-                                <span>📍 {location}</span>
-                                {matchPctDisplay !== null && <span>🎯 {matchPctDisplay}% Match</span>}
+                                <span>Role: {role}</span>
+                                <span>Location: {location}</span>
+                                {matchPctDisplay !== null && <span>Match: {matchPctDisplay}%</span>}
                                 {selectedApplication.status && (
                                   <span>
                                     Status:{" "}
@@ -1778,7 +1763,7 @@ export default function ListedJobs() {
                           <div style={styles.detailsSection}>
                             <div style={styles.detailsSectionTitle}>Contact</div>
                             {loadingCandidateProfile && (
-                              <div style={styles.detailsRow}>Loading full profile…</div>
+                              <div style={styles.detailsRow}>Loading full profile...</div>
                             )}
                             {candidateProfileError && (
                               <div style={{ ...styles.detailsRow, color: "#ef4444" }}>{candidateProfileError}</div>
@@ -1823,8 +1808,8 @@ export default function ListedJobs() {
                               education.slice(0, 5).map((edu, i) => (
                                 <div key={i} style={styles.detailsRow}>
                                   <strong>{edu.degree || "Education"}</strong>
-                                  {edu.institution ? ` • ${edu.institution}` : ""}
-                                  {edu.endDate ? ` • ${edu.endDate}` : (edu.year ? ` • ${edu.year}` : "")}
+                                  {edu.institution ? ` | ${edu.institution}` : ""}
+                                  {edu.endDate ? ` | ${edu.endDate}` : (edu.year ? ` | ${edu.year}` : "")}
                                 </div>
                               ))
                             )}
@@ -1838,8 +1823,8 @@ export default function ListedJobs() {
                               workExperience.slice(0, 5).map((exp, i) => (
                                 <div key={i} style={styles.detailsRow}>
                                   <strong>{exp.jobTitle || exp.title || "Role"}</strong>
-                                  {exp.company ? ` • ${exp.company}` : ""}
-                                  {exp.duration ? ` • ${exp.duration}` : ""}
+                                  {exp.company ? ` | ${exp.company}` : ""}
+                                  {exp.duration ? ` | ${exp.duration}` : ""}
                                 </div>
                               ))
                             )}
@@ -1862,20 +1847,22 @@ export default function ListedJobs() {
       {/* Edit Job Modal */}
       {showEditModal && selectedJob && (
         <div style={styles.modalOverlay} onClick={() => setShowEditModal(false)}>
-          <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+          <div
+            style={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="listed-jobs-edit-title"
+          >
             <div style={styles.modalHeader}>
-              <h2 style={styles.modalTitle}>Edit Job</h2>
+              <h2 id="listed-jobs-edit-title" style={styles.modalTitle}>Edit Job</h2>
               <button
+                type="button"
                 style={styles.modalCloseBtn}
                 onClick={() => setShowEditModal(false)}
-                onMouseEnter={(e) => {
-                  e.target.style.background = "#f3f4f6";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = "transparent";
-                }}
+                aria-label="Close edit job modal"
               >
-                ×
+                x
               </button>
             </div>
             <div style={styles.modalBody}>
@@ -2053,23 +2040,25 @@ export default function ListedJobs() {
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && jobToDelete && (
         <div style={styles.modalOverlay} onClick={() => setShowDeleteConfirm(false)}>
-          <div style={{...styles.modalContent, maxWidth: "500px"}} onClick={(e) => e.stopPropagation()}>
+          <div
+            style={{...styles.modalContent, maxWidth: "500px"}}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="listed-jobs-delete-title"
+          >
             <div style={styles.modalHeader}>
-              <h2 style={styles.modalTitle}>Delete Job</h2>
+              <h2 id="listed-jobs-delete-title" style={styles.modalTitle}>Delete Job</h2>
               <button
+                type="button"
                 style={styles.modalCloseBtn}
                 onClick={() => {
                   setShowDeleteConfirm(false);
                   setJobToDelete(null);
                 }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = "#f3f4f6";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = "transparent";
-                }}
+                aria-label="Close delete confirmation modal"
               >
-                ×
+                x
               </button>
             </div>
             <div style={styles.modalBody}>
@@ -2125,3 +2114,9 @@ export default function ListedJobs() {
     </div>
   );
 }
+
+
+
+
+
+
