@@ -91,14 +91,26 @@ const transformProfileForAPI = (profile) => {
     }),
     preference: profile.preference
       ? {
-          companySize: profile.preference.companySize || "",
-          jobType: profile.preference.jobType || "",
-          jobSearch: profile.preference.jobSearch || "",
+          companySize: Array.isArray(profile.preference.companySize)
+            ? profile.preference.companySize
+            : profile.preference.companySize
+            ? [profile.preference.companySize]
+            : [],
+          jobType: Array.isArray(profile.preference.jobType)
+            ? profile.preference.jobType
+            : profile.preference.jobType
+            ? [profile.preference.jobType]
+            : [],
+          jobSearch: Array.isArray(profile.preference.jobSearch)
+            ? profile.preference.jobSearch
+            : profile.preference.jobSearch
+            ? [profile.preference.jobSearch]
+            : [],
         }
       : {
-          companySize: "",
-          jobType: "",
-          jobSearch: "",
+          companySize: [],
+          jobType: [],
+          jobSearch: [],
         },
     otherDetails: {
       languages: (profile.otherDetails?.languages || []).map((lang) => ({

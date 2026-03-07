@@ -173,10 +173,14 @@ export const loginUser = async (username, password) => {
   // ✅ STORE TOKEN
   localStorage.setItem("token", token);
 
-  // ✅ DECODE ROLE FROM JWT PAYLOAD
+  // ✅ DECODE ROLE AND EMAIL FROM JWT PAYLOAD
   const payload = JSON.parse(atob(token.split(".")[1]));
   localStorage.setItem("role", role || payload.role);
   localStorage.setItem("firstTimeLogin", firstTimeLogin ? "true" : "false");
+  const email = payload.sub || payload.email || payload.username;
+  if (email) {
+    localStorage.setItem("userEmail", email);
+  }
 
   return { ...payload, firstTimeLogin }; // contains role, sub, exp, etc.
 };

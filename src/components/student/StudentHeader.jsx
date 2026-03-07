@@ -55,6 +55,7 @@ export default function StudentHeader({
 
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    localStorage.removeItem("userEmail");
     localStorage.removeItem("profileData");
     localStorage.removeItem("profileEditMode");
     closeMenu();

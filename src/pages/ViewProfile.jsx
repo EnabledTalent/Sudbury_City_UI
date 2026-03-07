@@ -775,16 +775,31 @@ export default function ViewProfile() {
                 {expandedSections.preference && (
                   <div id="profile-section-preference" className="view-profile__section-content" role="region" aria-labelledby="section-heading-preference">
                     <article className="view-profile__item-card">
-                      {profile.preference.companySize && (
-                        <div className="view-profile__item-detail">
-                          <strong>Company Size:</strong> {profile.preference.companySize}
-                        </div>
-                      )}
-                      {profile.preference.jobType && (
-                        <div className="view-profile__item-detail">
-                          <strong>Job Type:</strong> {profile.preference.jobType}
-                        </div>
-                      )}
+                      {(() => {
+                        const fmt = (v) => (Array.isArray(v) ? v.filter(Boolean).join(", ") : v);
+                        const companySize = fmt(profile.preference.companySize);
+                        const jobType = fmt(profile.preference.jobType);
+                        const jobSearch = fmt(profile.preference.jobSearch);
+                        return (
+                          <>
+                            {companySize && (
+                              <div className="view-profile__item-detail">
+                                <strong>Company Size:</strong> {companySize}
+                              </div>
+                            )}
+                            {jobType && (
+                              <div className="view-profile__item-detail">
+                                <strong>Job Type:</strong> {jobType}
+                              </div>
+                            )}
+                            {jobSearch && (
+                              <div className="view-profile__item-detail">
+                                <strong>Job Search:</strong> {jobSearch}
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
                     </article>
                   </div>
                 )}
