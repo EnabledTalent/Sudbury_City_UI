@@ -7,7 +7,7 @@ import { fetchProfile } from "../services/profileService";
 import Toast from "../components/Toast";
 
 export default function Login() {
-  const [mode, setMode] = useState("signup"); // signup | login
+  const [mode, setMode] = useState("signup");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -64,20 +64,25 @@ export default function Login() {
           if (role === "EMPLOYER") {
             try {
               const orgProfile = await fetchOrganizationProfile();
+
               if (orgProfile) {
                 navigate("/employer/dashboard");
               } else {
                 navigate("/employer/home");
               }
+
             } catch (err) {
               console.error("Error checking organization profile:", err);
               navigate("/employer/home");
             }
+
           } else {
             try {
               const email = data.sub || data.email || data.username;
+
               if (email) {
                 const profile = await fetchProfile(email);
+
                 if (profile && Object.keys(profile).length > 0) {
                   navigate("/student/view-profile");
                 } else {
@@ -86,21 +91,27 @@ export default function Login() {
               } else {
                 navigate("/student");
               }
+
             } catch (err) {
               console.error("Error checking profile:", err);
               navigate("/student");
             }
+
           }
+
         } else {
           setError("Token not stored");
         }
+
       } else {
+
         await registerUser({
           name: form.name,
           role: form.role === "student" ? "Student" : form.role,
           username: form.email,
           password: form.password,
         });
+
         setToast({
           message: "Signup successful! Please verify your email, then log in.",
           type: "success",
@@ -111,6 +122,7 @@ export default function Login() {
           setToast({ message: "", type: "error" });
         }, 2000);
       }
+
     } catch (err) {
       const message =
         err?.message || (mode === "signup" ? "Signup failed" : "Login failed");
@@ -120,6 +132,7 @@ export default function Login() {
       } else {
         setError(message);
       }
+
     } finally {
       setLoading(false);
     }
@@ -219,6 +232,7 @@ export default function Login() {
               <div className="form-group">
                 <label htmlFor={`${modePrefix}-password`}>Password</label>
                 <div className="password-wrapper">
+
                   <input
                     id={`${modePrefix}-password`}
                     name="password"
@@ -251,6 +265,7 @@ export default function Login() {
               <button className="submit-btn" disabled={loading} type="submit">
                 {loading ? "Please wait..." : mode === "signup" ? "Create account" : "Login"}
               </button>
+
             </form>
 
             <p className="helper-text">Takes less than 2 minutes</p>
@@ -281,6 +296,7 @@ export default function Login() {
           </section>
         </div>
       </div>
+
       <Toast
         message={toast.message}
         type={toast.type}

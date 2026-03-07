@@ -3,113 +3,114 @@ import { useProfile } from "../../context/ProfileContext";
 import ProfileHeader from "./ProfileHeader";
 
 export default function BasicInfo({ onNext, onPrev }) {
+
   const { profile, updateProfile } = useProfile();
+
   const data = useMemo(() => profile.basicInfo || {}, [profile.basicInfo]);
-  
-  // Get name from various possible sources
-  const getName = () => {
-    return data.name || profile.fullName || "";
-  };
-  
-  const nameParts = getName().split(" ");
-  
-  // Local state for form inputs
+
+  const loginEmail = localStorage.getItem("userEmail") || "";
+
+  const nameParts = (data.name || "").split(" ");
+
   const [firstName, setFirstName] = useState(nameParts[0] || "");
   const [lastName, setLastName] = useState(nameParts.slice(1).join(" ") || "");
-  const [email, setEmail] = useState(data.email ?? profile.email ?? "");
-  const [phone, setPhone] = useState(data.phone ?? profile.phone ?? "");
+  const [phone, setPhone] = useState(data.phone ?? "");
 
-  // Update local state when profile changes
   useEffect(() => {
-    const name = data.name || profile.fullName || "";
-    const nameParts = name.split(" ");
-    setFirstName(nameParts[0] || "");
-    setLastName(nameParts.slice(1).join(" ") || "");
-    setEmail(data.email ?? profile.email ?? "");
-    setPhone(data.phone ?? profile.phone ?? "");
-  }, [data, profile]);
+    const name = data.name || "";
+    const parts = name.split(" ");
+
+    setFirstName(parts[0] || "");
+    setLastName(parts.slice(1).join(" ") || "");
+    setPhone(data.phone ?? "");
+
+  }, [data]);
 
   const handleFirstNameChange = (e) => {
-    setFirstName(e.target.value);
-    const fullName = `${e.target.value} ${lastName}`.trim();
+
+    const value = e.target.value;
+    setFirstName(value);
+
     updateProfile("basicInfo", {
       ...data,
-      name: fullName,
+      name: `${value} ${lastName}`.trim(),
+      email: loginEmail,
     });
   };
 
   const handleLastNameChange = (e) => {
-    setLastName(e.target.value);
-    const fullName = `${firstName} ${e.target.value}`.trim();
-    updateProfile("basicInfo", {
-      ...data,
-      name: fullName,
-    });
-  };
 
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
+    const value = e.target.value;
+    setLastName(value);
+
     updateProfile("basicInfo", {
       ...data,
-      email: e.target.value,
+      name: `${firstName} ${value}`.trim(),
+      email: loginEmail,
     });
   };
 
   const handlePhoneChange = (e) => {
-    setPhone(e.target.value);
+
+    const value = e.target.value;
+    setPhone(value);
+
     updateProfile("basicInfo", {
       ...data,
-      phone: e.target.value,
+      phone: value,
+      email: loginEmail,
     });
   };
 
   return (
     <>
       <ProfileHeader />
+
       <h3>Basic Info</h3>
 
       <div className="form-group">
         <label>First Name</label>
-        <input 
-          value={firstName} 
-          onChange={handleFirstNameChange}
-        />
+        <input value={firstName} onChange={handleFirstNameChange} />
       </div>
 
       <div className="form-group">
         <label>Last Name</label>
-        <input 
-          value={lastName} 
-          onChange={handleLastNameChange}
-        />
+        <input value={lastName} onChange={handleLastNameChange} />
       </div>
 
       <div className="form-group">
         <label>Email Address</label>
-        <input 
-          value={email} 
-          onChange={handleEmailChange}
+
+        <input
+          value={loginEmail}
+          disabled
+          title="Email is linked to your account and cannot be edited"
+          style={{
+            background: "#f3f4f6",
+            cursor: "not-allowed",
+          }}
         />
       </div>
 
       <div className="form-group">
         <label>Phone Number</label>
-        <input 
-          value={phone} 
-          onChange={handlePhoneChange}
-        />
+        <input value={phone} onChange={handlePhoneChange} />
       </div>
 
       <div className="form-actions">
+
         {onPrev && (
           <button className="btn-secondary" onClick={onPrev}>
             Previous
           </button>
         )}
+
         {!onPrev && <div />}
+
         <button className="btn-primary" onClick={onNext}>
           Save & Next
         </button>
+
       </div>
     </>
   );
