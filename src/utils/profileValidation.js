@@ -105,7 +105,7 @@ export const validateReviewAgree = (profile) => {
   const reviewAgree = profile.reviewAgree || {};
 
   if (!reviewAgree.agreed) {
-    errors.agreed = "You must agree to the terms and conditions";
+    errors.agreed = "You must accept the privacy and consent statement";
   }
 
   return errors;

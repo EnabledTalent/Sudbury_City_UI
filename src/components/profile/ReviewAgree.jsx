@@ -32,7 +32,7 @@ export default function ReviewAgree({ onPrev, onNext }) {
   const handleNext = async () => {
     const newErrors = {};
     if (!reviewAgree.agreed) {
-      newErrors.agreed = "You must agree to the terms and conditions";
+      newErrors.agreed = "You must accept the privacy and consent statement";
     }
     // Validate disability selection (mandatory)
     if (reviewAgree.hasDisability === undefined || reviewAgree.hasDisability === null || reviewAgree.hasDisability === "") {
@@ -351,43 +351,35 @@ export default function ReviewAgree({ onPrev, onNext }) {
       </div>
 
       <div style={styles.termsSection}>
-        <div style={styles.termsTitle}>Terms And Conditions</div>
+        <div style={styles.termsTitle}>Privacy, Consent, and Accommodation</div>
         <ul style={styles.termsList}>
           <li style={styles.termsItem}>
             <span style={styles.termsBullet}>•</span>
-            Allow Sudburry to share your resume, pitch yourself and
-            behaviour question video with third parties (ex. prospective
-            employers) to consider you for an internship.
+            I consent to the City of Greater Sudbury using my profile and
+            application details to assess my eligibility for employment
+            opportunities.
           </li>
           <li style={styles.termsItem}>
             <span style={styles.termsBullet}>•</span>
-            The Sudburry program has the right to remove you from the
-            program if you decline more than three interview requests without
-            appropriate justification
+            I understand my information may be shared with authorized City
+            staff and hiring managers involved in recruitment and selection.
           </li>
           <li style={styles.termsItem}>
             <span style={styles.termsBullet}>•</span>
-            The Sudburry has the right to remove you from the program if
-            you decline more than two internship offers without appropriate
-            justification
+            I understand this information is collected and managed in
+            accordance with applicable Ontario privacy laws, including MFIPPA.
           </li>
         </ul>
         <div style={styles.termsText}>
-          Toronto Metropolitan University ("the University") collects personal
-          information under the authority of the{" "}
-          <strong>Toronto Metropolitan University Act, 1977</strong> and in
-          accordance with the{" "}
-          <strong>Toronto Metropolitan University Notice of Collection</strong>{" "}
-          and the{" "}
-          <strong>
-            Freedom of Information and Protection of Privacy Act, external link
-          </strong>
-          .
+          The City of Greater Sudbury collects personal information for
+          recruitment and employment processing. You may request accommodation
+          at any stage of the hiring process.
         </div>
         <div style={styles.contactInfo}>
-          If you have questions about the collection, use and disclosure of this
-          information by the University, please contact Mohammad Adnan Syed, 350
-          Victoria Street, Toronto, M5B 2K3, admin@talent-accelerator.com
+          For questions about collection, use, disclosure, or accommodation,
+          please contact the City of Greater Sudbury Human Resources team. If
+          you require accommodation at any stage of recruitment, please contact
+          myJOBS@greatersudbury.ca.
         </div>
         <div style={styles.checkboxWrapper}>
           <input
@@ -398,8 +390,9 @@ export default function ReviewAgree({ onPrev, onNext }) {
             onChange={(e) => updateField("agreed", e.target.checked)}
           />
           <label htmlFor="agree-checkbox" style={styles.checkboxLabel}>
-            I confirm that I have read, understood and agreed with the
-            statement.
+            I have read and understood this privacy and consent statement, and
+            I consent to the City of Greater Sudbury processing my information
+            for recruitment purposes.
           </label>
         </div>
         {errors.agreed && (

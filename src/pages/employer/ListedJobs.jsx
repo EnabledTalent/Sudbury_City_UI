@@ -1350,7 +1350,7 @@ export default function ListedJobs() {
                   }
                 }}
               >
-                View Candidates ->
+                View Candidates 
               </button>
 
               {/* Job Overview */}
@@ -1527,7 +1527,8 @@ export default function ListedJobs() {
                         onClick={() => setSelectedApplication(application)}
                         onKeyDown={(event) =>
                           activateWithKeyboard(event, () => setSelectedApplication(application))
-                        }
+                        }
+
                         role="button"
                         tabIndex={0}
                         aria-pressed={isSelected}
