@@ -25,6 +25,8 @@ const NAV_ITEMS = [
   },
 ];
 
+const BRAND_LOGO_SRC = `${process.env.PUBLIC_URL}/images/Sudbury logo.svg`;
+
 export default function StudentHeader({
   activePage = "",
   showMainNav = true,
@@ -97,7 +99,12 @@ export default function StudentHeader({
     >
       <nav className="student-header__nav" aria-label="Student navigation">
         <div className="student-header__logo" aria-label="Sudburry">
-          <span className="student-header__logo-icon" aria-hidden="true" />
+          <img
+            className="student-header__logo-image"
+            src={BRAND_LOGO_SRC}
+            alt=""
+            aria-hidden="true"
+          />
           <span>Sudburry</span>
         </div>
 

@@ -19,11 +19,11 @@
   gap: 10px;
 }
 
-.profile-success__brand-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #16a34a;
+.profile-success__brand-image {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .profile-success__brand-text {

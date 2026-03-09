@@ -31,6 +31,8 @@ const NAV_ITEMS = [
   },
 ];
 
+const BRAND_LOGO_SRC = `${process.env.PUBLIC_URL}/images/Sudbury logo.svg`;
+
 export default function EmployerHeader({
   activePage = "",
   showMainNav = true,
@@ -97,7 +99,12 @@ export default function EmployerHeader({
     >
       <nav className="employer-header__nav" aria-label="Employer navigation">
         <div className="employer-header__logo" aria-label="Sudburry">
-          <span className="employer-header__logo-icon" aria-hidden="true" />
+          <img
+            className="employer-header__logo-image"
+            src={BRAND_LOGO_SRC}
+            alt=""
+            aria-hidden="true"
+          />
           <span>Sudburry</span>
         </div>
 

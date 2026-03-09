@@ -25,14 +25,11 @@
   min-width: 220px;
 }
 
-.student-header__logo-icon {
+.student-header__logo-image {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
-  background: #16a34a;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .student-header__menu-panel {

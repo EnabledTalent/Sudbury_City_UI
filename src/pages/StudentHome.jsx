@@ -5,6 +5,7 @@ import { logoutUser } from "../services/authService";
 import "./StudentHome.css";
 
 export default function StudentHome() {
+  const brandLogoSrc = `${process.env.PUBLIC_URL}/images/Sudbury logo.svg`;
   const fileInputRef = useRef(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -50,7 +51,12 @@ export default function StudentHome() {
     <div className="student-home">
       <header className="student-home__header">
         <div className="student-home__brand" aria-label="Sudburry">
-          <span className="student-home__brand-dot" aria-hidden="true" />
+          <img
+            className="student-home__brand-image"
+            src={brandLogoSrc}
+            alt=""
+            aria-hidden="true"
+          />
           <span className="student-home__brand-text">Sudburry</span>
         </div>
 

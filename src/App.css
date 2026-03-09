@@ -83,13 +83,9 @@
   width: 64px;
   height: 64px;
   border-radius: 16px;
+  object-fit: contain;
+  padding: 10px;
   background: rgba(255, 255, 255, 0.95);
-  color: #16a34a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 32px;
   margin-bottom: 40px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
 }

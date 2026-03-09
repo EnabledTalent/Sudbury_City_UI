@@ -19,11 +19,11 @@
   gap: 10px;
 }
 
-.student-home__brand-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #16a34a;
+.student-home__brand-image {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .student-home__brand-text {

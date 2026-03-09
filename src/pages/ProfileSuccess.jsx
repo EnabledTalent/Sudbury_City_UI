@@ -3,6 +3,7 @@ import { logoutUser } from "../services/authService";
 import "./ProfileSuccess.css";
 
 export default function ProfileSuccess() {
+  const brandLogoSrc = `${process.env.PUBLIC_URL}/images/Sudbury logo.svg`;
   const navigate = useNavigate();
   const handleLogout = async () => {
     await logoutUser();
@@ -14,7 +15,12 @@ export default function ProfileSuccess() {
     <div className="profile-success">
       <header className="profile-success__header">
         <div className="profile-success__brand" aria-label="Sudburry">
-          <span className="profile-success__brand-dot" aria-hidden="true" />
+          <img
+            className="profile-success__brand-image"
+            src={brandLogoSrc}
+            alt=""
+            aria-hidden="true"
+          />
           <span className="profile-success__brand-text">Sudburry</span>
         </div>
 

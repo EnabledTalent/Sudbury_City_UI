@@ -156,7 +156,11 @@ export default function Login() {
       <div className="auth-wrapper">
         <div className="auth-container">
           <aside className="auth-left" aria-label="Platform welcome">
-            <div className="logo-circle">S</div>
+            <img
+              className="logo-circle"
+              src={`${process.env.PUBLIC_URL}/images/Sudbury logo.svg`}
+              alt="Sudbury logo"
+            />
             <h2>
               Welcome To <b>Sudburry</b>
             </h2>
