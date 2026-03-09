@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { registerUser, loginUser } from "../services/authService";
@@ -12,11 +12,13 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [toast, setToast] = useState({ message: "", type: "error" });
+  const switchTimerRef = useRef(null);
 
   const navigate = useNavigate();
   const modePrefix = mode === "signup" ? "signup" : "login";
   const authErrorId = "auth-error";
   const authSubtitleId = "auth-subtitle";
+  const authStatusId = "auth-status";
 
   const [form, setForm] = useState({
     name: "",
@@ -25,6 +27,14 @@ export default function Login() {
     password: "",
     role: "employer",
   });
+
+  useEffect(() => {
+    return () => {
+      if (switchTimerRef.current) {
+        clearTimeout(switchTimerRef.current);
+      }
+    };
+  }, []);
 
   const switchAuthMode = (nextMode) => {
     setMode(nextMode);
@@ -117,7 +127,7 @@ export default function Login() {
           type: "success",
         });
 
-        setTimeout(() => {
+        switchTimerRef.current = setTimeout(() => {
           switchAuthMode("login");
           setToast({ message: "", type: "error" });
         }, 2000);
@@ -166,15 +176,23 @@ export default function Login() {
               id="auth-form"
               className="auth-form"
               onSubmit={handleSubmit}
-              aria-describedby={error && mode === "login" ? authErrorId : authSubtitleId}
+              aria-describedby={error && mode === "login" ? `${authSubtitleId} ${authErrorId}` : authSubtitleId}
+              aria-busy={loading}
             >
+              <p id={authStatusId} className="visually-hidden" aria-live="polite" aria-atomic="true">
+                {loading
+                  ? mode === "signup"
+                    ? "Creating account, please wait."
+                    : "Logging in, please wait."
+                  : ""}
+              </p>
               {mode === "signup" && (
                 <>
                   <div className="form-group">
                     <label htmlFor="signup-name">Full name</label>
                     <input
                       id="signup-name"
-                      name="fullName"
+                      name="name"
                       type="text"
                       autoComplete="name"
                       required
@@ -214,7 +232,7 @@ export default function Login() {
 
               {mode === "login" && (
                 <div className="form-group">
-                  <label htmlFor="login-username">Username</label>
+                  <label htmlFor="login-username">Email or username</label>
                   <input
                     id="login-username"
                     name="username"
@@ -250,6 +268,7 @@ export default function Login() {
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={showPassword ? "Hide password" : "Show password"}
                     aria-pressed={showPassword}
+                    disabled={loading}
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -278,6 +297,7 @@ export default function Login() {
                 type="button"
                 className="switch-btn"
                 onClick={() => switchAuthMode(mode === "signup" ? "login" : "signup")}
+                disabled={loading}
               >
                 {mode === "signup" ? "Login" : "Sign Up"}
               </button>
