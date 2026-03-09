@@ -1,87 +1,98 @@
-import { useState, useRef, useEffect } from "react";
-import { getToken } from "../services/authService";
+import { useEffect, useRef, useState } from "react";
 import { BUSINESS_BASE_URL } from "../config/api";
+import { getToken } from "../services/authService";
+import "./ChatWidget.css";
 
-const ChatWidget = ({ onClose }) => {
+const WELCOME_MESSAGE =
+  "Hello! I'm your AI Career Coach. How can I help you with your job search today?";
+
+const getEmailFromStorageOrToken = () => {
+  const profileData = localStorage.getItem("profileData");
+  if (profileData) {
+    try {
+      const parsed = JSON.parse(profileData);
+      return parsed.basicInfo?.email || null;
+    } catch {
+      // Ignore parse errors and fall back to token parsing.
+    }
+  }
+
+  const token = getToken();
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload.sub || payload.email || null;
+    } catch {
+      // Ignore parse errors and return null.
+    }
+  }
+
+  return null;
+};
+
+export default function ChatWidget({ onClose }) {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      content: "Hello! I'm your AI Career Coach. How can I help you with your job search today?",
+      content: WELCOME_MESSAGE,
     },
   ]);
   const [inputMessage, setInputMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const inputRef = useRef(null);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    inputRef.current?.focus();
+  }, []);
 
-  const getEmail = () => {
-    const profileData = localStorage.getItem("profileData");
-    if (profileData) {
-      try {
-        const parsed = JSON.parse(profileData);
-        return parsed.basicInfo?.email;
-      } catch (e) {
-        // Error parsing profileData
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
+
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") {
+        onClose?.();
       }
-    }
-    const token = getToken();
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        return payload.sub || payload.email;
-      } catch (e) {
-        // Error parsing token
-      }
-    }
-    return null;
-  };
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [onClose]);
 
   const sendMessage = async () => {
     if (!inputMessage.trim() || loading) return;
 
     const userMessage = inputMessage.trim();
     setInputMessage("");
-    
-    // Add user message to chat
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     setLoading(true);
 
     try {
-      const email = getEmail();
+      const email = getEmailFromStorageOrToken();
       const token = getToken();
 
       if (!token) {
         throw new Error("No auth token found");
       }
 
-      const requestBody = {
-        message: userMessage,
-      };
-
-      // Add email only if available
+      const requestBody = { message: userMessage };
       if (email) {
         requestBody.email = email;
       }
 
-      const response = await fetch(
-        `${BUSINESS_BASE_URL}/api/jobseeker/ai/chat`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            accept: "*/*",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
+      const response = await fetch(`${BUSINESS_BASE_URL}/api/jobseeker/ai/chat`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          accept: "*/*",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -94,26 +105,16 @@ const ChatWidget = ({ onClose }) => {
       if (responseText && responseText.trim()) {
         try {
           const data = JSON.parse(responseText);
-          // Check for answer field first (formatted response)
-          if (data.answer) {
-            aiResponse = data.answer;
-          } else {
-            // Fallback to other possible fields
-            aiResponse = data.message || data.response || data.content || JSON.stringify(data);
-          }
-        } catch (parseError) {
-          // If response is not JSON, use the text directly
+          aiResponse =
+            data.answer || data.message || data.response || data.content || JSON.stringify(data);
+        } catch {
           aiResponse = responseText;
         }
       } else {
         aiResponse = "I received your message. How can I help you further?";
       }
 
-      // Replace \n with actual newlines if they come as string literals
-      // Also ensure proper line breaks are preserved
-      aiResponse = aiResponse.replace(/\\n/g, '\n');
-
-      // Add AI response to chat
+      aiResponse = aiResponse.replace(/\\n/g, "\n");
       setMessages((prev) => [...prev, { role: "assistant", content: aiResponse }]);
     } catch (error) {
       console.error("Error sending message:", error);
@@ -129,257 +130,70 @@ const ChatWidget = ({ onClose }) => {
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    sendMessage();
   };
-
-  const styles = {
-    widget: {
-      position: "fixed",
-      bottom: "24px",
-      right: "24px",
-      width: "400px",
-      height: "560px",
-      background: "#ffffff",
-      borderRadius: "20px",
-      boxShadow: "0 20px 60px rgba(0, 0, 0, 0.15), 0 8px 24px rgba(0, 0, 0, 0.1)",
-      display: "flex",
-      flexDirection: "column",
-      zIndex: 10000,
-      border: "1px solid rgba(0, 0, 0, 0.06)",
-      overflow: "hidden",
-      animation: "slideUp 0.4s ease-out",
-    },
-    header: {
-      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
-      color: "#ffffff",
-      padding: "20px 24px",
-      borderRadius: "20px 20px 0 0",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.2)",
-    },
-    headerTitle: {
-      fontSize: "18px",
-      fontWeight: 700,
-      display: "flex",
-      alignItems: "center",
-      gap: "10px",
-      letterSpacing: "-0.01em",
-    },
-    closeButton: {
-      background: "rgba(255, 255, 255, 0.15)",
-      border: "none",
-      color: "#ffffff",
-      fontSize: "22px",
-      cursor: "pointer",
-      padding: "0",
-      width: "32px",
-      height: "32px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      borderRadius: "8px",
-      transition: "all 0.3s ease",
-      backdropFilter: "blur(10px)",
-    },
-    messagesContainer: {
-      flex: 1,
-      overflowY: "auto",
-      padding: "20px",
-      display: "flex",
-      flexDirection: "column",
-      gap: "16px",
-      background: "linear-gradient(to bottom, #f9fafb 0%, #ffffff 100%)",
-    },
-    message: {
-      display: "flex",
-      flexDirection: "column",
-      gap: "4px",
-      maxWidth: "80%",
-    },
-    userMessage: {
-      alignSelf: "flex-end",
-      alignItems: "flex-end",
-    },
-    assistantMessage: {
-      alignSelf: "flex-start",
-      alignItems: "flex-start",
-    },
-    messageBubble: {
-      padding: "12px 16px",
-      borderRadius: "16px",
-      fontSize: "14px",
-      lineHeight: "1.6",
-      wordWrap: "break-word",
-      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
-      transition: "all 0.2s ease",
-    },
-    userBubble: {
-      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
-      color: "#ffffff",
-      borderBottomRightRadius: "4px",
-      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.25)",
-    },
-    assistantBubble: {
-      background: "#ffffff",
-      color: "#374151",
-      border: "1px solid rgba(0, 0, 0, 0.06)",
-      borderBottomLeftRadius: "4px",
-      whiteSpace: "pre-wrap", // Preserve line breaks and formatting
-    },
-    inputContainer: {
-      padding: "20px",
-      borderTop: "1px solid rgba(0, 0, 0, 0.06)",
-      background: "#ffffff",
-      borderRadius: "0 0 20px 20px",
-      display: "flex",
-      gap: "12px",
-      boxShadow: "0 -4px 12px rgba(0, 0, 0, 0.04)",
-    },
-    input: {
-      flex: 1,
-      padding: "12px 16px",
-      border: "2px solid #e5e7eb",
-      borderRadius: "12px",
-      fontSize: "14px",
-      outline: "none",
-      resize: "none",
-      fontFamily: "inherit",
-      transition: "all 0.3s ease",
-      background: "#f9fafb",
-    },
-    sendButton: {
-      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
-      color: "#ffffff",
-      border: "none",
-      padding: "12px 24px",
-      borderRadius: "12px",
-      cursor: "pointer",
-      fontSize: "14px",
-      fontWeight: 600,
-      transition: "all 0.3s ease",
-      whiteSpace: "nowrap",
-      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
-    },
-    sendButtonDisabled: {
-      background: "#16a34a",
-      color: "#ffffff",
-      border: "none",
-      padding: "10px 20px",
-      borderRadius: "8px",
-      cursor: "not-allowed",
-      fontSize: "14px",
-      fontWeight: 500,
-      opacity: 0.6,
-      whiteSpace: "nowrap",
-    },
-    loadingIndicator: {
-      fontSize: "12px",
-      color: "#6b7280",
-      fontStyle: "italic",
-      padding: "10px 14px",
-    },
-  };
-
-  // Add CSS animation for slide up effect
-  const animationStyle = `
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-  `;
 
   return (
-    <>
-      <style>{animationStyle}</style>
-      <div style={styles.widget}>
-      <div style={styles.header}>
-        <div style={styles.headerTitle}>
-          <span>Q</span>
-          <span>AI Career Coach</span>
-        </div>
+    <aside className="chat-widget" aria-label="AI Career Coach chat panel">
+      <header className="chat-widget__header">
+        <h2 className="chat-widget__title">AI Career Coach</h2>
         <button
-          style={styles.closeButton}
+          type="button"
+          className="chat-widget__close-btn"
           onClick={onClose}
-          onMouseEnter={(e) => {
-            e.target.style.background = "rgba(255, 255, 255, 0.2)";
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.background = "transparent";
-          }}
           aria-label="Close chat"
         >
-          ×
+          {"\u00D7"}
         </button>
-      </div>
+      </header>
 
-      <div style={styles.messagesContainer}>
+      <ul
+        className="chat-widget__messages"
+        role="log"
+        aria-live="polite"
+        aria-relevant="additions text"
+        aria-label="Conversation"
+      >
         {messages.map((msg, index) => (
-          <div
-            key={index}
-            style={{
-              ...styles.message,
-              ...(msg.role === "user" ? styles.userMessage : styles.assistantMessage),
-            }}
+          <li
+            key={`${msg.role}-${index}`}
+            className={`chat-widget__message chat-widget__message--${msg.role}`}
           >
-            <div
-              style={{
-                ...styles.messageBubble,
-                ...(msg.role === "user" ? styles.userBubble : styles.assistantBubble),
-              }}
-            >
-              {msg.content}
-            </div>
-          </div>
+            <p className="chat-widget__bubble">{msg.content}</p>
+          </li>
         ))}
         {loading && (
-          <div style={styles.loadingIndicator}>AI is typing...</div>
+          <li className="chat-widget__loading" role="status">
+            AI is typing...
+          </li>
         )}
-        <div ref={messagesEndRef} />
-      </div>
+        <li ref={messagesEndRef} className="chat-widget__end-anchor" aria-hidden="true" />
+      </ul>
 
-      <div style={styles.inputContainer}>
+      <form className="chat-widget__form" onSubmit={handleSubmit}>
+        <label className="chat-widget__sr-only" htmlFor="chat-widget-input">
+          Type your message
+        </label>
         <input
+          id="chat-widget-input"
+          ref={inputRef}
           type="text"
-          style={styles.input}
+          className="chat-widget__input"
           value={inputMessage}
-          onChange={(e) => setInputMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onChange={(event) => setInputMessage(event.target.value)}
           placeholder="Type your message..."
           disabled={loading}
         />
         <button
-          style={loading ? styles.sendButtonDisabled : styles.sendButton}
-          onClick={sendMessage}
+          type="submit"
+          className="chat-widget__send-btn"
           disabled={loading || !inputMessage.trim()}
-          onMouseEnter={(e) => {
-            if (!loading && inputMessage.trim()) {
-              e.target.style.background = "#15803d";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!loading && inputMessage.trim()) {
-              e.target.style.background = "#16a34a";
-            }
-          }}
         >
           Send
         </button>
-      </div>
-    </div>
-    </>
+      </form>
+    </aside>
   );
-};
-
-export default ChatWidget;
+}
