@@ -1,6 +1,22 @@
 import { useState, useEffect, useMemo } from "react";
 import { useProfile } from "../../context/ProfileContext";
 import ProfileHeader from "./ProfileHeader";
+import { getToken } from "../../services/authService";
+
+function getLoginEmail() {
+  const stored = localStorage.getItem("userEmail");
+  if (stored) return stored;
+  const token = getToken();
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload.sub || payload.email || payload.username || "";
+    } catch (e) {
+      // ignore
+    }
+  }
+  return "";
+}
 
 export default function BasicInfo({ onNext, onPrev }) {
 
@@ -8,7 +24,7 @@ export default function BasicInfo({ onNext, onPrev }) {
 
   const data = useMemo(() => profile.basicInfo || {}, [profile.basicInfo]);
 
-  const loginEmail = localStorage.getItem("userEmail") || "";
+  const loginEmail = getLoginEmail();
 
   const nameParts = (data.name || "").split(" ");
 
@@ -83,8 +99,9 @@ export default function BasicInfo({ onNext, onPrev }) {
 
         <input
           value={loginEmail}
-          disabled
-          title="Email is linked to your account and cannot be edited"
+          readOnly
+          aria-readonly="true"
+          title="Cannot edit email"
           style={{
             background: "#f3f4f6",
             cursor: "not-allowed",

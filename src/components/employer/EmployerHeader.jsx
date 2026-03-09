@@ -56,6 +56,7 @@ export default function EmployerHeader({
 
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    localStorage.removeItem("userEmail");
     localStorage.removeItem("profileData");
     closeMenu();
     navigate("/");

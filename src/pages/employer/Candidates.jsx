@@ -321,18 +321,21 @@ export default function Candidates() {
       return <p className="candidates__empty-text">No preferences added.</p>;
     }
 
-    const entries = Object.entries(selectedCandidate.preference).filter(
-      ([, value]) => value != null && String(value).trim() !== ""
-    );
+    const formatValue = (value) =>
+      Array.isArray(value) ? value.filter(Boolean).join(", ") : value != null ? String(value) : "";
+
+    const entries = Object.entries(selectedCandidate.preference)
+      .map(([key, value]) => [key, formatValue(value)])
+      .filter(([, str]) => str.trim() !== "");
 
     if (!entries.length) return <p className="candidates__empty-text">No preferences added.</p>;
 
     return (
       <dl className="candidates__key-value">
-        {entries.map(([key, value]) => (
+        {entries.map(([key, displayValue]) => (
           <div key={key} className="candidates__key-value-row">
             <dt>{key}</dt>
-            <dd>{String(value)}</dd>
+            <dd>{displayValue}</dd>
           </div>
         ))}
       </dl>

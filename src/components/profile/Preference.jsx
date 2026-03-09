@@ -1,19 +1,37 @@
+import { useMemo } from "react";
 import { useProfile } from "../../context/ProfileContext";
 import ProfileHeader from "./ProfileHeader";
 
 const defaultPreference = {
-  companySize: "",
-  jobType: "",
-  jobSearch: "",
+  companySize: [],
+  jobType: [],
+  jobSearch: [],
 };
+
+function ensureArray(value) {
+  if (Array.isArray(value)) return value;
+  if (value == null || value === "") return [];
+  return [String(value)];
+}
 
 export default function Preference({ onPrev, onNext }) {
   const { profile, updateProfile } = useProfile();
 
-  const preference = profile.preference || defaultPreference;
+  const preference = useMemo(() => {
+    const raw = profile.preference || defaultPreference;
+    return {
+      companySize: ensureArray(raw.companySize),
+      jobType: ensureArray(raw.jobType),
+      jobSearch: ensureArray(raw.jobSearch),
+    };
+  }, [profile.preference]);
 
-  const updatePreference = (field, value) => {
-    updateProfile("preference", { ...preference, [field]: value });
+  const togglePreference = (field, option) => {
+    const current = preference[field] || [];
+    const next = current.includes(option)
+      ? current.filter((v) => v !== option)
+      : [...current, option];
+    updateProfile("preference", { ...preference, [field]: next });
   };
 
   const styles = {
@@ -112,17 +130,17 @@ export default function Preference({ onPrev, onNext }) {
             <label
               key={size}
               style={
-                preference.companySize === size
+                preference.companySize.includes(size)
                   ? styles.radioOptionSelected
                   : styles.radioOption
               }
             >
               <input
-                type="radio"
+                type="checkbox"
                 name="companySize"
                 style={styles.radioInput}
-                checked={preference.companySize === size}
-                onChange={() => updatePreference("companySize", size)}
+                checked={preference.companySize.includes(size)}
+                onChange={() => togglePreference("companySize", size)}
               />
               <span style={styles.radioLabel}>{size}</span>
             </label>
@@ -137,17 +155,17 @@ export default function Preference({ onPrev, onNext }) {
             <label
               key={type}
               style={
-                preference.jobType === type
+                preference.jobType.includes(type)
                   ? styles.radioOptionSelected
                   : styles.radioOption
               }
             >
               <input
-                type="radio"
+                type="checkbox"
                 name="jobType"
                 style={styles.radioInput}
-                checked={preference.jobType === type}
-                onChange={() => updatePreference("jobType", type)}
+                checked={preference.jobType.includes(type)}
+                onChange={() => togglePreference("jobType", type)}
               />
               <span style={styles.radioLabel}>{type}</span>
             </label>
@@ -162,17 +180,17 @@ export default function Preference({ onPrev, onNext }) {
             <label
               key={search}
               style={
-                preference.jobSearch === search
+                preference.jobSearch.includes(search)
                   ? styles.radioOptionSelected
                   : styles.radioOption
               }
             >
               <input
-                type="radio"
+                type="checkbox"
                 name="jobSearch"
                 style={styles.radioInput}
-                checked={preference.jobSearch === search}
-                onChange={() => updatePreference("jobSearch", search)}
+                checked={preference.jobSearch.includes(search)}
+                onChange={() => togglePreference("jobSearch", search)}
               />
               <span style={styles.radioLabel}>{search}</span>
             </label>
