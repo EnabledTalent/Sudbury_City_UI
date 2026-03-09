@@ -1,5 +1,5 @@
 // Base URL for all endpoints post login (business endpoints)
-export const BUSINESS_BASE_URL = "https://sudburry-java-service.onrender.com";
+export const BUSINESS_BASE_URL = "http://localhost:8083";
 
 // Base URL for login/register/signup/logout (API Gateway)
 const BASE_URL = "https://sudburry-auth-service.onrender.com";

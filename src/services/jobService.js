@@ -436,6 +436,10 @@ const transformProfileForApplication = (profile) => {
           discovery: profile.reviewAgree.discovery || "",
           comments: profile.reviewAgree.comments || "",
           agreed: profile.reviewAgree.agreed || false,
+          hasDisability:
+            profile.reviewAgree.hasDisability === undefined
+              ? null
+              : profile.reviewAgree.hasDisability,
         }
       : null,
     
@@ -930,15 +934,24 @@ export const fetchJobseekerNotifications = async (email = null) => {
   const responseText = await response.text();
   
   if (!responseText || !responseText.trim()) {
-    return [];
+    return { invites: [], recruiterActions: [], recommendedJobs: [], legacy: [] };
   }
 
   try {
     const data = JSON.parse(responseText);
-    return Array.isArray(data) ? data : [];
+    if (Array.isArray(data)) {
+      return { invites: [], recruiterActions: [], recommendedJobs: [], legacy: data };
+    }
+
+    return {
+      invites: Array.isArray(data.invites) ? data.invites : [],
+      recruiterActions: Array.isArray(data.recruiterActions) ? data.recruiterActions : [],
+      recommendedJobs: Array.isArray(data.recommendedJobs) ? data.recommendedJobs : [],
+      legacy: Array.isArray(data.notifications) ? data.notifications : [],
+    };
   } catch (e) {
     console.error("Error parsing notifications:", e);
-    return [];
+    return { invites: [], recruiterActions: [], recommendedJobs: [], legacy: [] };
   }
 };
 

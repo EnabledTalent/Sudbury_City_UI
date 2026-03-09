@@ -23,9 +23,11 @@ export const calculateProfileCompletion = (profile) => {
   if (isFilled(basicInfo.phone)) filledFields++;
 
   // Education
-  const education = profile.education?.[0] || {};
   totalFields += 1; // degree (required)
-  if (isFilled(education.degree)) filledFields++;
+  const educationList = profile.education || [];
+  if (Array.isArray(educationList) && educationList.some((edu) => isFilled(edu?.degree))) {
+    filledFields++;
+  }
 
   // Work Experience
   const workExp = profile.workExperience || [];

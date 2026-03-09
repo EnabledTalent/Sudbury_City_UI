@@ -12,6 +12,7 @@ export default function MyJobs() {
   const confirmDialogTitleId = useId();
   const confirmDialogDescId = useId();
   const detailsHeadingRef = useRef(null);
+  const autoApplyHandledRef = useRef(false);
   const { profile } = useProfile();
   const [filter, setFilter] = useState("all"); // "all", "applied", "accepted", "rejected"
   const [selectedJob, setSelectedJob] = useState(null);
@@ -107,6 +108,22 @@ export default function MyJobs() {
     loadJobs();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- filter is the only intended trigger; profile email/selectedJob used inside but would cause unnecessary re-fetches or loops
   }, [filter]);
+
+  useEffect(() => {
+    const shouldAutoApply = Boolean(location.state?.autoApply);
+    const targetJobId = location.state?.selectedJobId;
+    if (!shouldAutoApply) return;
+    if (!targetJobId) return;
+    if (autoApplyHandledRef.current) return;
+    if (filter !== "all") return;
+    if (!selectedJob) return;
+    if (selectedJob.id !== targetJobId) return;
+    if (applying || applySuccess || selectedJob.externalApplied) return;
+
+    autoApplyHandledRef.current = true;
+    handleApply();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: trigger when selected job is ready
+  }, [selectedJob, filter]);
 
   useEffect(() => {
     const onFocus = () => {

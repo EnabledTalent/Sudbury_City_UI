@@ -128,6 +128,10 @@ const transformProfileForAPI = (profile) => {
       discovery: profile.reviewAgree?.discovery || "",
       comments: profile.reviewAgree?.comments || "",
       agreed: profile.reviewAgree?.agreed || false,
+      hasDisability:
+        profile.reviewAgree?.hasDisability === undefined
+          ? null
+          : profile.reviewAgree?.hasDisability,
     },
   };
 

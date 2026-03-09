@@ -43,6 +43,10 @@
   flex: 1;
 }
 
+.student-header__menu-panel--actions-right {
+  justify-content: flex-end;
+}
+
 .student-header__menu-btn {
   display: none;
   width: 44px;

@@ -1,0 +1,109 @@
+.student-home {
+  background: #f2f7fd;
+  min-height: 100vh;
+}
+
+.student-home__main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px;
+}
+
+.student-home__card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 56px 48px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08), 0 4px 12px rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.student-home__title {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.student-home__subtitle {
+  margin: 0;
+  font-size: 15px;
+  color: #6b7280;
+}
+
+.student-home__upload {
+  border: 2px dashed #d7e3f3;
+  border-radius: 18px;
+  padding: 40px 24px;
+  margin-top: 32px;
+  background: #fbfdff;
+}
+
+.student-home__upload-text {
+  margin: 0;
+  color: #374151;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.student-home__primary-btn {
+  margin-top: 16px;
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  color: #ffffff;
+  border: 0;
+  padding: 12px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 10px 18px rgba(22, 163, 74, 0.25);
+}
+
+.student-home__primary-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.student-home__support-text {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.student-home__error {
+  margin-top: 12px;
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.student-home__manual {
+  margin-top: 18px;
+  font-size: 14px;
+  color: #374151;
+}
+
+.student-home__manual-link {
+  color: #15803d;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.student-home__manual-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .student-home__main {
+    padding: 24px 16px;
+  }
+
+  .student-home__card {
+    padding: 40px 18px;
+  }
+
+  .student-home__title {
+    font-size: 24px;
+  }
+}
+

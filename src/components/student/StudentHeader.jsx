@@ -43,6 +43,7 @@ export default function StudentHeader({
   const rootRef = useRef(null);
   const menuButtonRef = useRef(null);
   const menuPanelId = useId();
+  const alignActionsRight = !showMainNav && !showSearch;
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -113,7 +114,12 @@ export default function StudentHeader({
           {menuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
         </button>
 
-        <div id={menuPanelId} className="student-header__menu-panel">
+        <div
+          id={menuPanelId}
+          className={`student-header__menu-panel ${
+            alignActionsRight ? "student-header__menu-panel--actions-right" : ""
+          }`}
+        >
           {showMainNav && (
             <div className="student-header__nav-links">
               {NAV_ITEMS.map((item) => {

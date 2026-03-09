@@ -273,6 +273,40 @@
   margin: 0 0 12px;
 }
 
+.view-profile__about-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 14px;
+}
+
+.view-profile__about-fullname {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.view-profile__about-contact-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: center;
+}
+
+.view-profile__about-contact-link {
+  color: #15803d;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.view-profile__about-contact-link:hover {
+  text-decoration: underline;
+}
+
 .view-profile__about-textarea {
   width: 100%;
   padding: 12px;
@@ -417,6 +451,27 @@
   color: #9ca3af;
   margin: 0 0 12px;
   display: block;
+}
+
+.view-profile__notification-meta {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0 0 8px;
+}
+
+.view-profile__notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.view-profile__notifications-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 10px;
 }
 
 .view-profile__notification-buttons {

@@ -10,11 +10,31 @@ export const validateBasicInfo = (profile) => {
 };
 
 export const validateEducation = (profile) => {
-  const e = profile.education?.[0] || {};
-  const errors = {};
+  const list = Array.isArray(profile.education) ? profile.education : [];
+  const entries = list.length > 0 ? list : [{}];
+  const errors = [];
 
-  // Only degree/course name is required for job application
-  if (!e.degree) errors.degree = "Degree/Course name is required";
+  entries.forEach((e, index) => {
+    const entry = e || {};
+    const entryErrors = {};
+    const hasAnyField =
+      entry.degree ||
+      entry.fieldOfStudy ||
+      entry.institution ||
+      entry.startDate ||
+      entry.endDate ||
+      entry.grade ||
+      entry.location;
+
+    // Keep existing behavior: the first education entry is required.
+    // Additional entries only require degree if the user started filling them.
+    const shouldRequireDegree = index === 0 || hasAnyField;
+    if (shouldRequireDegree && !entry.degree) {
+      entryErrors.degree = "Degree/Course name is required";
+    }
+
+    errors[index] = entryErrors;
+  });
 
   return errors;
 };
@@ -106,6 +126,10 @@ export const validateReviewAgree = (profile) => {
 
   if (!reviewAgree.agreed) {
     errors.agreed = "You must agree to the terms and conditions";
+  }
+
+  if (reviewAgree.hasDisability === undefined || reviewAgree.hasDisability === null || reviewAgree.hasDisability === "") {
+    errors.hasDisability = "Please select if you have a disability";
   }
 
   return errors;

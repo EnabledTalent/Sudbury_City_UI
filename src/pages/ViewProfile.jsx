@@ -30,11 +30,13 @@ export default function ViewProfile() {
     otherDetails: false,
   });
   const [showChatWidget, setShowChatWidget] = useState(false);
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState({
+    invites: [],
+    recruiterActions: [],
+    recommendedJobs: [],
+    legacy: [],
+  });
   const [loadingNotifications, setLoadingNotifications] = useState(false);
-  const [aboutText, setAboutText] = useState("");
-  const [isEditingAbout, setIsEditingAbout] = useState(false);
-  const [savingAbout, setSavingAbout] = useState(false);
   const [toast, setToast] = useState({ message: "", type: "error" });
   const [showTour, setShowTour] = useState(false);
 
@@ -77,12 +79,9 @@ export default function ViewProfile() {
           setProfile(data);
           // Also update the context to keep it in sync
           loadProfileData(data);
-          // Initialize about text from otherDetails.otherDetailsText
-          setAboutText(data.otherDetails?.otherDetailsText || "");
         } else {
           setProfile({});
           setError("No profile data found. Please complete your profile first.");
-          setAboutText("");
         }
       } catch (err) {
         console.error("Error fetching profile:", err);
@@ -127,10 +126,12 @@ export default function ViewProfile() {
       try {
         setLoadingNotifications(true);
         const data = await fetchJobseekerNotifications(email);
-        setNotifications(data || []);
+        setNotifications(
+          data || { invites: [], recruiterActions: [], recommendedJobs: [], legacy: [] }
+        );
       } catch (err) {
         console.error("Error fetching notifications:", err);
-        setNotifications([]);
+        setNotifications({ invites: [], recruiterActions: [], recommendedJobs: [], legacy: [] });
       } finally {
         setLoadingNotifications(false);
       }
@@ -239,8 +240,24 @@ export default function ViewProfile() {
         .substring(0, 2)
     : "U";
   const jobTitle = profile?.basicInfo?.jobTitle || profile?.workExperience?.[0]?.jobTitle || "Job Title";
+  const contactEmail = profileToUse?.basicInfo?.email || profileToUse?.email || "";
+  const contactPhone = profileToUse?.basicInfo?.phone || profileToUse?.phone || "";
+  const contactLinkedin = profileToUse?.basicInfo?.linkedin || profileToUse?.linkedin || "";
+  const normalizeUrl = (value) => {
+    if (!value || typeof value !== "string") return "";
+    const raw = value.trim();
+    if (!raw) return "";
+    if (/^https?:\/\//i.test(raw)) return raw;
+    return `https://${raw}`;
+  };
+  const hasContactDetails = Boolean(contactEmail || contactPhone || contactLinkedin);
   const chevronIcon = "\u25BE";
-  const unreadNotificationsCount = notifications.filter((notification) => !notification.read).length;
+  const invites = notifications?.invites || [];
+  const recruiterActions = notifications?.recruiterActions || [];
+  const recommendedJobs = notifications?.recommendedJobs || [];
+  const legacyNotifications = notifications?.legacy || [];
+  const notificationsCount =
+    invites.length + recruiterActions.length + recommendedJobs.length + legacyNotifications.length;
 
   return (
     <div className="view-profile">
@@ -341,90 +358,35 @@ export default function ViewProfile() {
               </header>
               {expandedSections.about && (
                 <div id="profile-section-about" className="view-profile__section-content" role="region" aria-labelledby="section-heading-about">
-                  {isEditingAbout ? (
-                    <div>
-                      <label htmlFor="about-textarea" className="view-profile__sr-only">
-                        About
-                      </label>
-                      <textarea
-                        id="about-textarea"
-                        className="view-profile__about-textarea"
-                        value={aboutText}
-                        onChange={(e) => setAboutText(e.target.value)}
-                        placeholder="Tell us about yourself..."
-                        rows={6}
-                      />
-                      <div className="view-profile__about-actions">
-                        <button
-                          type="button"
-                          className="view-profile__btn-cancel"
-                          onClick={() => {
-                            setIsEditingAbout(false);
-                            // Reset to original value
-                            setAboutText(profileToUse?.otherDetails?.otherDetailsText || "");
-                          }}
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="button"
-                          className="view-profile__btn-save"
-                          onClick={async () => {
-                            setSavingAbout(true);
-                            try {
-                              const email = getEmail();
-                              if (!email) {
-                                setToast({ message: "Email not found", type: "error" });
-                                setSavingAbout(false);
-                                return;
-                              }
-
-                              // Get current profile
-                              const currentProfile = profileToUse || {};
-                              
-                              // Update profile with new about text in otherDetails
-                              const updatedProfile = {
-                                ...currentProfile,
-                                otherDetails: {
-                                  ...currentProfile.otherDetails,
-                                  otherDetailsText: aboutText,
-                                },
-                              };
-
-                              await updateProfile(updatedProfile);
-                              
-                              // Update local state
-                              setProfile(updatedProfile);
-                              loadProfileData(updatedProfile);
-                              
-                              setIsEditingAbout(false);
-                              setToast({ message: "About section updated successfully!", type: "success" });
-                            } catch (error) {
-                              console.error("Error updating about:", error);
-                              setToast({ message: `Failed to update: ${error.message}`, type: "error" });
-                            } finally {
-                              setSavingAbout(false);
-                            }
-                          }}
-                          disabled={savingAbout}
-                        >
-                          {savingAbout ? "Saving..." : "Save"}
-                        </button>
+                  {hasContactDetails && (
+                    <div className="view-profile__about-contact" aria-label="Basic information">
+                      <div className="view-profile__about-fullname">{name}</div>
+                      <div className="view-profile__about-contact-items">
+                        {contactPhone && (
+                          <a className="view-profile__about-contact-link" href={`tel:${contactPhone}`}>
+                            {contactPhone}
+                          </a>
+                        )}
+                        {contactEmail && (
+                          <a className="view-profile__about-contact-link" href={`mailto:${contactEmail}`}>
+                            {contactEmail}
+                          </a>
+                        )}
+                        {contactLinkedin && (
+                          <a
+                            className="view-profile__about-contact-link"
+                            href={normalizeUrl(contactLinkedin)}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            LinkedIn
+                          </a>
+                        )}
                       </div>
                     </div>
-                  ) : (
-                    <div>
-                      <p className="view-profile__about-text">
-                        {aboutText || "No about information available. Click Edit to add information about yourself."}
-                      </p>
-                      <button
-                        type="button"
-                        className="view-profile__btn-edit"
-                        onClick={() => setIsEditingAbout(true)}
-                      >
-                        {aboutText ? "Edit" : "Add About"}
-                      </button>
-                    </div>
+                  )}
+                  {!hasContactDetails && (
+                    <div className="view-profile__empty">No basic info available</div>
                   )}
                 </div>
               )}
@@ -845,52 +807,204 @@ export default function ViewProfile() {
           {/* Right Column - Notifications */}
           <aside className="view-profile__right" aria-label="Notifications">
             <h3 className="view-profile__notifications-header">
-              Notifications {notifications.length > 0 ? `(${unreadNotificationsCount} Unread)` : ""}
+              Notifications {notificationsCount > 0 ? `(${notificationsCount})` : ""}
             </h3>
             
             {loadingNotifications ? (
               <div className="view-profile__notifications-status" role="status" aria-live="polite">
                 Loading notifications...
               </div>
-            ) : notifications.length === 0 ? (
+            ) : notificationsCount === 0 ? (
               <div className="view-profile__notifications-status" role="status" aria-live="polite">
                 No notifications available
               </div>
             ) : (
-              notifications.map((notification, index) => {
-                const jobId = notification.jobId || notification.job?.id;
-                const isJobInvitation = notification.type === "JOB_INVITATION" || jobId;
-                
-                return (
-                  <article key={notification.id || index} className="view-profile__notification-card">
-                    <p className="view-profile__notification-text">
-                      {notification.message || notification.text || "New notification"}
-                    </p>
-                    {notification.createdAt && (
-                      <time dateTime={notification.createdAt} className="view-profile__notification-time">
-                        {new Date(notification.createdAt).toLocaleString()}
-                      </time>
-                    )}
-                    {isJobInvitation && (
-                      <div className="view-profile__notification-buttons">
-                        <button 
-                          type="button"
-                          className="view-profile__accept-btn"
-                          onClick={() => {
-                            // Navigate to My Jobs page to apply
-                            // Pass jobId in state if available
-                            navigate("/student/my-jobs", { 
-                              state: jobId ? { selectedJobId: jobId } : {} 
-                            });
-                          }}
+              <div className="view-profile__notifications-list">
+                {invites.length > 0 && (
+                  <section className="view-profile__notifications-section" aria-label="Invites">
+                    <div className="view-profile__notifications-section-title">Invites</div>
+                    {invites.map((invite, index) => (
+                      <article
+                        key={invite.inviteId || `${invite.jobId || "invite"}-${index}`}
+                        className="view-profile__notification-card"
+                      >
+                        <p className="view-profile__notification-text">
+                          {invite.message ||
+                            `Recruiter from ${invite.companyName || "a company"} sent an invitation request for ${
+                              invite.jobRole || "a job"
+                            }.`}
+                        </p>
+                        {invite.invitedAt && (
+                          <time
+                            dateTime={invite.invitedAt}
+                            className="view-profile__notification-time"
+                          >
+                            {new Date(invite.invitedAt).toLocaleString()}
+                          </time>
+                        )}
+                        {invite.jobId && (
+                          <div className="view-profile__notification-buttons">
+                            <button
+                              type="button"
+                              className="view-profile__accept-btn"
+                              onClick={() => {
+                                navigate("/student/my-jobs", {
+                                  state: { selectedJobId: invite.jobId },
+                                });
+                              }}
+                            >
+                              View in My Jobs
+                            </button>
+                          </div>
+                        )}
+                      </article>
+                    ))}
+                  </section>
+                )}
+
+                {recruiterActions.length > 0 && (
+                  <section
+                    className="view-profile__notifications-section"
+                    aria-label="Recruiter actions"
+                  >
+                    <div className="view-profile__notifications-section-title">
+                      Recruiter Updates
+                    </div>
+                    {recruiterActions.map((action, index) => (
+                      <article
+                        key={action.applicationId || `${action.jobId || "action"}-${index}`}
+                        className="view-profile__notification-card"
+                      >
+                        <p className="view-profile__notification-text">
+                          {action.message ||
+                            `Recruiter update for ${action.jobRole || "a job"} at ${
+                              action.companyName || "a company"
+                            }.`}
+                        </p>
+                        {(action.status || action.companyName || action.jobRole) && (
+                          <p className="view-profile__notification-meta">
+                            {action.companyName ? <strong>{action.companyName}</strong> : null}
+                            {action.companyName && action.jobRole ? " • " : null}
+                            {action.jobRole || null}
+                            {action.status ? ` • ${action.status}` : ""}
+                          </p>
+                        )}
+                        {action.timestamp && (
+                          <time
+                            dateTime={action.timestamp}
+                            className="view-profile__notification-time"
+                          >
+                            {new Date(action.timestamp).toLocaleString()}
+                          </time>
+                        )}
+                      </article>
+                    ))}
+                  </section>
+                )}
+
+                {recommendedJobs.length > 0 && (
+                  <section
+                    className="view-profile__notifications-section"
+                    aria-label="Recommended jobs"
+                  >
+                    <div className="view-profile__notifications-section-title">
+                      Recommended Jobs
+                    </div>
+                    {recommendedJobs.map((rec, index) => {
+                      const job = rec?.job || {};
+                      const jobId = job.id;
+                      const companyName = job.companyName || job.employer?.companyName || "Company";
+                      const title = job.role || "Job";
+                      const match = rec?.matchPercentage ?? rec?.skillMatchPercentage ?? 0;
+
+                      return (
+                        <article
+                          key={jobId || `${companyName}-${title}-${index}`}
+                          className="view-profile__notification-card"
                         >
-                          Accept request
-                        </button>
-                      </div>
-                    )}
-                  </article>
-                );
-              })
+                          <p className="view-profile__notification-text">
+                            <strong>{title}</strong> at <strong>{companyName}</strong>
+                          </p>
+                          {job.location && (
+                            <p className="view-profile__notification-meta">{job.location}</p>
+                          )}
+                          {match ? (
+                            <p className="view-profile__notification-meta">{match}% match</p>
+                          ) : null}
+                          {Array.isArray(rec?.missingSkills) && rec.missingSkills.length > 0 && (
+                            <p className="view-profile__notification-meta">
+                              Missing skills: {rec.missingSkills.slice(0, 4).join(", ")}
+                              {rec.missingSkills.length > 4 ? "…" : ""}
+                            </p>
+                          )}
+                          <div className="view-profile__notification-buttons">
+                            <button
+                              type="button"
+                              className="view-profile__accept-btn"
+                              disabled={!jobId}
+                              onClick={() => {
+                                if (!jobId) return;
+                                navigate("/student/my-jobs", {
+                                  state: { selectedJobId: jobId, autoApply: true },
+                                });
+                              }}
+                            >
+                              Apply
+                            </button>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </section>
+                )}
+
+                {legacyNotifications.length > 0 && (
+                  <section
+                    className="view-profile__notifications-section"
+                    aria-label="Notifications"
+                  >
+                    <div className="view-profile__notifications-section-title">Other</div>
+                    {legacyNotifications.map((notification, index) => {
+                      const jobId = notification.jobId || notification.job?.id;
+                      const isJobInvitation = notification.type === "JOB_INVITATION" || jobId;
+
+                      return (
+                        <article
+                          key={notification.id || index}
+                          className="view-profile__notification-card"
+                        >
+                          <p className="view-profile__notification-text">
+                            {notification.message || notification.text || "New notification"}
+                          </p>
+                          {notification.createdAt && (
+                            <time
+                              dateTime={notification.createdAt}
+                              className="view-profile__notification-time"
+                            >
+                              {new Date(notification.createdAt).toLocaleString()}
+                            </time>
+                          )}
+                          {isJobInvitation && (
+                            <div className="view-profile__notification-buttons">
+                              <button
+                                type="button"
+                                className="view-profile__accept-btn"
+                                onClick={() => {
+                                  navigate("/student/my-jobs", {
+                                    state: jobId ? { selectedJobId: jobId } : {},
+                                  });
+                                }}
+                              >
+                                View in My Jobs
+                              </button>
+                            </div>
+                          )}
+                        </article>
+                      );
+                    })}
+                  </section>
+                )}
+              </div>
             )}
           </aside>
         </div>

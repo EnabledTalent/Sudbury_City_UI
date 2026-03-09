@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
 import { uploadResume } from "../services/jobService";
-import { logoutUser } from "../services/authService";
 import { useNavigate } from "react-router-dom";
+import StudentHeader from "../components/student/StudentHeader";
+import "./StudentHome.css";
 
 export default function StudentHome() {
   const fileInputRef = useRef(null);
@@ -44,109 +45,61 @@ export default function StudentHome() {
   };
 
   return (
-    <div style={{ background: "#f2f7fd", minHeight: "100vh" }}>
-      {/* HEADER */}
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "20px 40px",
-        }}
-      >
-        <div style={{ fontWeight: "600" }}>Sudburry</div>
+    <div className="student-home">
+      <StudentHeader showMainNav={false} showAiCoach={false} />
 
-        <div style={{ display: "flex", gap: "20px" }}>
-          <span>Profile</span>
-          <span
-            style={{ cursor: "pointer" }}
-            onClick={async () => {
-              // Call logout API
-              await logoutUser();
-              localStorage.clear();
-              window.location.href = "/";
-            }}
-          >
-            Log out
-          </span>
-          <button
-            style={{
-              background: "#22c55e",
-              color: "#fff",
-              border: "none",
-              padding: "10px 16px",
-              borderRadius: "8px",
-            }}
-          >
-            AI Career Coach
-          </button>
-        </div>
-      </header>
+      <main className="student-home__main" aria-label="Student onboarding">
+        <section className="student-home__card">
+          <h1 className="student-home__title">Create your Sudburry profile</h1>
+          <p className="student-home__subtitle">Upload your resume to build a profile automatically.</p>
 
-      {/* MAIN CARD */}
-      <div
-        style={{
-          background: "#fff",
-          maxWidth: "900px",
-          margin: "60px auto",
-          padding: "60px",
-          borderRadius: "20px",
-          textAlign: "center",
-        }}
-      >
-        <h2>Create your Sudburry profile</h2>
-        <p>You can find matching jobs from Sudburry</p>
+          <div className="student-home__upload">
+            <p className="student-home__upload-text">Upload your resume (PDF)</p>
 
-        <div
-          style={{
-            border: "2px dashed #dce6f2",
-            borderRadius: "16px",
-            padding: "40px",
-            marginTop: "40px",
-          }}
-        >
-          <p>Upload your resume to build a profile automatically</p>
+            <button
+              type="button"
+              className="student-home__primary-btn"
+              onClick={handleUploadClick}
+              disabled={loading}
+            >
+              {loading ? "Uploading..." : "Upload Resume"}
+            </button>
 
-          <button
-            onClick={handleUploadClick}
-            disabled={loading}
-            style={{
-              background: "#16a34a",
-              color: "#fff",
-              border: "none",
-              padding: "12px 20px",
-              borderRadius: "8px",
-              marginTop: "16px",
-              cursor: "pointer",
-            }}
-          >
-            {loading ? "Uploading..." : "Upload Resume"}
-          </button>
+            <input
+              type="file"
+              accept=".pdf"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              style={{ display: "none" }}
+            />
 
-          <input
-            type="file"
-            accept=".pdf"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            style={{ display: "none" }}
-          />
+            <p className="student-home__support-text">Supports file format .pdf</p>
+            {error && <p className="student-home__error">{error}</p>}
+          </div>
 
-          <p style={{ marginTop: "12px", fontSize: "13px" }}>
-            Supports file format .pdf
+          <p className="student-home__manual">
+            Don’t have a resume file ready?{" "}
+            <span
+              className="student-home__manual-link"
+              role="button"
+              tabIndex={0}
+              onClick={() => {
+                localStorage.setItem("tour:student:profileBuilder:pending", "true");
+                navigate("/student/profile");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  localStorage.setItem("tour:student:profileBuilder:pending", "true");
+                  navigate("/student/profile");
+                }
+              }}
+            >
+              Create manually
+            </span>
           </p>
-
-          {error && (
-            <p style={{ color: "red", marginTop: "10px" }}>{error}</p>
-          )}
-        </div>
-
-        <p style={{ marginTop: "20px", fontSize: "14px" }}>
-          Don’t have resume file ready?{" "}
-          <span style={{ color: "#22c55e", cursor: "pointer" }}>
-            Create manually
-          </span>
-        </p>
-      </div>
+        </section>
+      </main>
     </div>
   );
 }

@@ -179,6 +179,11 @@ export const normalizeUploadData = (uploadData) => {
       discovery: uploadData.reviewAgree?.discovery || "",
       comments: uploadData.reviewAgree?.comments || "",
       agreed: uploadData.reviewAgree === true || uploadData.reviewAgree?.agreed || false,
+      hasDisability:
+        uploadData.reviewAgree?.hasDisability ??
+        uploadData.hasDisability ??
+        uploadData.otherDetails?.hasDisability ??
+        null,
     },
   };
 
