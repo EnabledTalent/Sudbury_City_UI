@@ -60,8 +60,20 @@ export default function Stepper({ steps, activeStep, onStepClick }) {
         {steps.map((step, index) => {
           const { hasError, errorCount } = getStepStatus(step.key);
           const isActive = index === activeStep;
+          const isCompleted = index < activeStep && !hasError;
+          const shouldShowError = index <= activeStep && hasError;
           const canNavigate = canNavigateTo(index);
           const errorLabel = `${errorCount.toString().padStart(2, "0")} ${errorCount === 1 ? "error" : "errors"}`;
+          const iconClassName = `profile-stepper__icon ${
+            shouldShowError
+              ? "is-error"
+              : isCompleted
+                ? "is-success"
+                : isActive
+                  ? "is-active"
+                  : "is-pending"
+          }`;
+          const iconText = shouldShowError ? "!" : isCompleted ? "\u2713" : String(index + 1);
 
           return (
             <li
@@ -79,15 +91,12 @@ export default function Stepper({ steps, activeStep, onStepClick }) {
                 aria-disabled={!canNavigate}
                 aria-current={isActive ? "step" : undefined}
               >
-                <span
-                  className={`profile-stepper__icon ${hasError ? "is-error" : "is-success"}`}
-                  aria-hidden="true"
-                >
-                  {hasError ? "!" : "\u2713"}
+                <span className={iconClassName} aria-hidden="true">
+                  {iconText}
                 </span>
                 <span className="profile-stepper__content">
                   <span className="profile-stepper__label">{step.label}</span>
-                  {hasError && errorCount > 0 && (
+                  {shouldShowError && errorCount > 0 && (
                     <span className="profile-stepper__error-text">{errorLabel}</span>
                   )}
                 </span>
