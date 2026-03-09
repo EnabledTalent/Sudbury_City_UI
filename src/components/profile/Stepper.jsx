@@ -9,6 +9,7 @@ import {
   validateOtherDetails,
   validateReviewAgree,
 } from "../../utils/profileValidation";
+import "./Stepper.css";
 
 const validators = {
   basicInfo: validateBasicInfo,
@@ -21,30 +22,24 @@ const validators = {
   reviewAgree: validateReviewAgree,
 };
 
-// Helper function to count errors
 const countErrors = (errors) => {
   if (Array.isArray(errors)) {
-    return errors.reduce((count, e) => {
-      return count + (e ? Object.keys(e).length : 0);
-    }, 0);
+    return errors.reduce((count, entry) => count + (entry ? Object.keys(entry).length : 0), 0);
   }
   return Object.keys(errors || {}).length;
 };
 
-// Helper function to check if step has errors
-const hasErrors = (errors) => {
-  return countErrors(errors) > 0;
-};
+const hasErrors = (errors) => countErrors(errors) > 0;
 
 export default function Stepper({ steps, activeStep, onStepClick }) {
   const { profile } = useProfile();
 
   const canNavigateTo = (index) => {
-    for (let i = 0; i < index; i++) {
+    for (let i = 0; i < index; i += 1) {
       const stepKey = steps[i].key;
       const validate = validators[stepKey];
       if (validate && hasErrors(validate(profile))) {
-        return false; // ❌ BLOCK
+        return false;
       }
     }
     return true;
@@ -53,131 +48,54 @@ export default function Stepper({ steps, activeStep, onStepClick }) {
   const getStepStatus = (stepKey) => {
     const validate = validators[stepKey];
     if (!validate) return { hasError: false, errorCount: 0 };
-    
+
     const errors = validate(profile);
     const errorCount = countErrors(errors);
     return { hasError: errorCount > 0, errorCount };
   };
 
-  const styles = {
-    stepper: {
-      width: "260px",
-      background: "#ffffff",
-      borderRadius: "16px",
-      padding: "20px",
-      position: "relative",
-    },
-    step: {
-      display: "flex",
-      alignItems: "center",
-      gap: "12px",
-      padding: "12px",
-      cursor: "pointer",
-      fontSize: "14px",
-      color: "#6b7280",
-      position: "relative",
-      transition: "all 0.2s",
-    },
-    stepActive: {
-      fontWeight: 600,
-      color: "#111827",
-    },
-    stepDisabled: {
-      opacity: 0.5,
-      cursor: "not-allowed",
-    },
-    iconContainer: {
-      width: "24px",
-      height: "24px",
-      borderRadius: "50%",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontSize: "14px",
-      fontWeight: "bold",
-      flexShrink: 0,
-    },
-    iconSuccess: {
-      background: "#22c55e",
-      color: "#ffffff",
-    },
-    iconError: {
-      background: "#ef4444",
-      color: "#ffffff",
-    },
-    stepContent: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      flex: 1,
-    },
-    stepLabel: {
-      flex: 1,
-    },
-    errorText: {
-      fontSize: "12px",
-      color: "#ef4444",
-      fontWeight: 500,
-      marginLeft: "8px",
-    },
-  };
-
   return (
-    <div style={styles.stepper}>
-      {/* Connector line */}
-      <div
-        style={{
-          position: "absolute",
-          left: "35px",
-          top: "48px",
-          bottom: "20px",
-          width: "2px",
-          background: "#e5e7eb",
-          zIndex: 0,
-        }}
-      />
-      
-      {steps.map((step, idx) => {
-        const { hasError, errorCount } = getStepStatus(step.key);
-        const isActive = idx === activeStep;
-        const canNavigate = canNavigateTo(idx);
-        
-        return (
-          <div
-            key={step.key}
-            data-tour={`profile-step-${step.key}`}
-            style={{
-              ...styles.step,
-              ...(isActive ? styles.stepActive : {}),
-              ...(!canNavigate ? styles.stepDisabled : {}),
-              position: "relative",
-              zIndex: 1,
-            }}
-            onClick={() => {
-              if (canNavigate) {
-                onStepClick(idx);
-              }
-            }}
-          >
-            <div
-              style={{
-                ...styles.iconContainer,
-                ...(hasError ? styles.iconError : styles.iconSuccess),
-              }}
+    <nav className="profile-stepper" aria-label="Profile setup steps">
+      <ol className="profile-stepper__list">
+        {steps.map((step, index) => {
+          const { hasError, errorCount } = getStepStatus(step.key);
+          const isActive = index === activeStep;
+          const canNavigate = canNavigateTo(index);
+          const errorLabel = `${errorCount.toString().padStart(2, "0")} ${errorCount === 1 ? "error" : "errors"}`;
+
+          return (
+            <li
+              key={step.key}
+              className="profile-stepper__item"
+              data-tour={`profile-step-${step.key}`}
             >
-              {hasError ? "!" : "✓"}
-            </div>
-            <div style={styles.stepContent}>
-              <span style={styles.stepLabel}>{step.label}</span>
-              {hasError && errorCount > 0 && (
-                <span style={styles.errorText}>
-                  {errorCount.toString().padStart(2, "0")} error
+              <button
+                type="button"
+                className="profile-stepper__button"
+                onClick={() => {
+                  if (canNavigate) onStepClick(index);
+                }}
+                disabled={!canNavigate}
+                aria-disabled={!canNavigate}
+                aria-current={isActive ? "step" : undefined}
+              >
+                <span
+                  className={`profile-stepper__icon ${hasError ? "is-error" : "is-success"}`}
+                  aria-hidden="true"
+                >
+                  {hasError ? "!" : "\u2713"}
                 </span>
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
+                <span className="profile-stepper__content">
+                  <span className="profile-stepper__label">{step.label}</span>
+                  {hasError && errorCount > 0 && (
+                    <span className="profile-stepper__error-text">{errorLabel}</span>
+                  )}
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
   );
 }

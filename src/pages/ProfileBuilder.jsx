@@ -14,6 +14,7 @@ import { fetchProfile } from "../services/profileService";
 import { useProfile } from "../context/ProfileContext";
 import { getToken } from "../services/authService";
 import TourOverlay from "../components/TourOverlay";
+import "./ProfileBuilder.css";
 
 
 const steps = [
@@ -32,9 +33,12 @@ const steps = [
 export default function ProfileBuilder() {
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState("");
   const [showTour, setShowTour] = useState(false);
   const { loadProfileData } = useProfile();
   const hasFetchedProfile = useRef(false);
+  const previousStepRef = useRef(0);
+  const stepContentRef = useRef(null);
   const ActiveComponent = steps[activeStep].component;
   const tourKey = "tour:student:profileBuilder:v1";
 
@@ -78,10 +82,12 @@ export default function ProfileBuilder() {
       
       const loadProfileFromAPI = async () => {
         setLoading(true);
+        setLoadError("");
         const email = getEmail();
         
         if (!email) {
           console.error("Email not found. Cannot fetch profile.");
+          setLoadError("We could not load your saved profile details. You can continue and fill them manually.");
           setLoading(false);
           return;
         }
@@ -97,6 +103,7 @@ export default function ProfileBuilder() {
           }
         } catch (error) {
           console.error("Error fetching profile for edit mode:", error);
+          setLoadError("We could not load your saved profile details. You can continue and fill them manually.");
         } finally {
           setLoading(false);
         }
@@ -117,6 +124,27 @@ export default function ProfileBuilder() {
       localStorage.removeItem("tour:student:profileBuilder:pending");
     }
   }, []);
+
+  useEffect(() => {
+    if (previousStepRef.current !== activeStep && stepContentRef.current) {
+      stepContentRef.current.focus();
+    }
+    previousStepRef.current = activeStep;
+  }, [activeStep]);
+
+  const handleStepClick = (index) => setActiveStep(index);
+
+  const handleNext = () => {
+    if (activeStep < steps.length - 1) {
+      setActiveStep((stepIndex) => stepIndex + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (activeStep > 0) {
+      setActiveStep((stepIndex) => stepIndex - 1);
+    }
+  };
 
   const tourSteps = [
     {
@@ -156,7 +184,7 @@ export default function ProfileBuilder() {
     },
     {
       title: "Preference",
-      body: "Set the roles, locations, and preferences you’re looking for.",
+      body: "Set the roles, locations, and preferences you're looking for.",
       target: '[data-tour="profile-step-preference"]',
     },
     {
@@ -172,40 +200,57 @@ export default function ProfileBuilder() {
   ];
 
   return (
-    <div className="profile-layout">
-      {/* LEFT PANEL */}
-      <Stepper
-        steps={steps}
-        activeStep={activeStep}
-        onStepClick={setActiveStep}
-      />
+    <div className="profile-builder">
+      <aside className="profile-builder__sidebar" aria-label="Profile setup steps">
+        <Stepper
+          steps={steps}
+          activeStep={activeStep}
+          onStepClick={handleStepClick}
+        />
+      </aside>
 
-      {/* RIGHT CONTENT */}
-      <div className="profile-content">
-        <div className="profile-content-header">
+      <main
+        className="profile-builder__main"
+        aria-labelledby="profile-builder-heading"
+        aria-busy={loading}
+      >
+        <div className="profile-builder__header">
+          <h1 id="profile-builder-heading" className="profile-builder__title">
+            Build Your Profile
+          </h1>
           <button
             type="button"
-            className="profile-tour-btn"
+            className="profile-builder__tour-btn"
             onClick={() => setShowTour(true)}
           >
             Launch Tour
           </button>
         </div>
+
+        {loadError && (
+          <div className="profile-builder__status profile-builder__status--error" role="alert">
+            {loadError}
+          </div>
+        )}
+
         {loading ? (
-          <div style={{ padding: "40px", textAlign: "center", color: "#6b7280" }}>
+          <div className="profile-builder__status" role="status" aria-live="polite">
             Loading profile data...
           </div>
         ) : (
-          <ActiveComponent
-            onNext={() => {
-              if (activeStep < steps.length - 1) {
-                setActiveStep((s) => s + 1);
-              }
-            }}
-            onPrev={activeStep > 0 ? () => setActiveStep((s) => s - 1) : undefined}
-          />
+          <section
+            ref={stepContentRef}
+            className="profile-builder__step-content"
+            tabIndex={-1}
+            aria-label={`${steps[activeStep].label} step content`}
+          >
+            <ActiveComponent
+              onNext={handleNext}
+              onPrev={activeStep > 0 ? handlePrev : undefined}
+            />
+          </section>
         )}
-      </div>
+      </main>
 
       <TourOverlay
         open={showTour}
@@ -216,3 +261,4 @@ export default function ProfileBuilder() {
     </div>
   );
 }
+
