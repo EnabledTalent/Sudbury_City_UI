@@ -1,81 +1,61 @@
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../services/authService";
+import "./ProfileSuccess.css";
 
 export default function ProfileSuccess() {
   const navigate = useNavigate();
+  const handleLogout = async () => {
+    await logoutUser();
+    localStorage.clear();
+    navigate("/");
+  };
 
   return (
-    <div style={{ background: "#f2f7fd", minHeight: "100vh" }}>
-      {/* HEADER */}
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "20px 40px",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <span style={{ fontWeight: "600" }}>Sudburry</span>
+    <div className="profile-success">
+      <header className="profile-success__header">
+        <div className="profile-success__brand" aria-label="Sudburry">
+          <span className="profile-success__brand-dot" aria-hidden="true" />
+          <span className="profile-success__brand-text">Sudburry</span>
         </div>
 
-        <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
-          <span>Profile</span>
-          <span
-            style={{ cursor: "pointer" }}
-            onClick={async () => {
-              // Call logout API
-              await logoutUser();
-              localStorage.clear();
-              navigate("/");
-            }}
+        <nav className="profile-success__actions" aria-label="User actions">
+          <span className="profile-success__profile-label">Profile</span>
+          <button
+            type="button"
+            className="profile-success__logout-btn"
+            onClick={handleLogout}
           >
             Log Out
-          </span>
+          </button>
           <button
-            style={{
-              background: "#22c55e",
-              color: "#fff",
-              border: "none",
-              padding: "10px 16px",
-              borderRadius: "8px",
-              cursor: "pointer",
-            }}
+            type="button"
+            className="profile-success__coach-btn"
+            onClick={() => navigate("/student/view-profile")}
           >
             AI Career Coach
           </button>
-        </div>
+        </nav>
       </header>
 
-      {/* SUCCESS CARD */}
-      <div
-        style={{
-          background: "#fff",
-          maxWidth: "900px",
-          margin: "80px auto",
-          padding: "100px 40px",
-          borderRadius: "20px",
-          textAlign: "center",
-        }}
-      >
-        <h2 style={{ fontSize: "24px", marginBottom: "20px" }}>
-          Congrats, Your Profile has been created successfully
-        </h2>
+      <main className="profile-success__main" aria-labelledby="profile-success-heading">
+        <section className="profile-success__card">
+          <h1 id="profile-success-heading" className="profile-success__title">
+            Congrats, your profile has been created successfully
+          </h1>
 
-        <button
-          onClick={() => navigate("/student/view-profile")}
-          style={{
-            background: "#16a34a",
-            color: "#fff",
-            border: "none",
-            padding: "12px 24px",
-            borderRadius: "8px",
-            cursor: "pointer",
-          }}
-        >
-          View your profile
-        </button>
-      </div>
+          <p className="profile-success__description">
+            You can now view and update your profile, track your applications, and continue exploring roles.
+          </p>
+
+          <button
+            type="button"
+            className="profile-success__primary-btn"
+            onClick={() => navigate("/student/view-profile")}
+          >
+            View your profile
+          </button>
+        </section>
+      </main>
     </div>
   );
 }
