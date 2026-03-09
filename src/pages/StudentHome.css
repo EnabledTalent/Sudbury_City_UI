@@ -1,0 +1,232 @@
+.student-home {
+  background: #f2f7fd;
+  min-height: 100vh;
+}
+
+.student-home__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 40px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.student-home__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.student-home__brand-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #16a34a;
+}
+
+.student-home__brand-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: #15803d;
+}
+
+.student-home__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.student-home__profile-label {
+  color: #374151;
+  font-size: 14px;
+}
+
+.student-home__logout-btn,
+.student-home__coach-btn,
+.student-home__upload-btn,
+.student-home__manual-btn {
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.student-home__logout-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  border-radius: 10px;
+  padding: 10px 16px;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.student-home__coach-btn {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  color: #ffffff;
+  border-radius: 10px;
+  padding: 10px 16px;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+}
+
+.student-home__main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 60px 24px;
+}
+
+.student-home__card {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  text-align: center;
+  padding: 56px 32px;
+}
+
+.student-home__title {
+  margin: 0 0 10px;
+  color: #111827;
+  font-size: 34px;
+  line-height: 1.2;
+}
+
+.student-home__subtitle {
+  margin: 0;
+  color: #4b5563;
+  font-size: 16px;
+}
+
+.student-home__upload {
+  margin-top: 32px;
+  border: 2px dashed #dce6f2;
+  border-radius: 16px;
+  padding: 40px 20px;
+}
+
+.student-home__upload-text {
+  margin: 0;
+  color: #374151;
+  font-size: 16px;
+}
+
+.student-home__upload-btn {
+  margin-top: 16px;
+  background: #16a34a;
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 12px 20px;
+}
+
+.student-home__upload-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.student-home__file-input {
+  display: none;
+}
+
+.student-home__hint {
+  margin: 12px 0 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.student-home__error {
+  margin: 10px 0 0;
+  color: #b91c1c;
+  font-size: 14px;
+}
+
+.student-home__manual-row {
+  margin: 20px 0 0;
+  color: #4b5563;
+  font-size: 14px;
+}
+
+.student-home__manual-btn {
+  background: transparent;
+  color: #16a34a;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.student-home__logout-btn:hover,
+.student-home__coach-btn:hover,
+.student-home__upload-btn:hover {
+  transform: translateY(-1px);
+}
+
+.student-home__logout-btn:focus-visible,
+.student-home__coach-btn:focus-visible,
+.student-home__upload-btn:focus-visible,
+.student-home__manual-btn:focus-visible {
+  outline: 3px solid #0f172a;
+  outline-offset: 2px;
+}
+
+@media (max-width: 1024px) {
+  .student-home__header {
+    padding: 16px 24px;
+  }
+
+  .student-home__main {
+    padding: 40px 20px;
+  }
+
+  .student-home__title {
+    font-size: 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .student-home__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .student-home__actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .student-home__logout-btn,
+  .student-home__coach-btn {
+    flex: 1 1 calc(50% - 6px);
+  }
+
+  .student-home__card {
+    padding: 40px 20px;
+  }
+
+  .student-home__title {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 560px) {
+  .student-home__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .student-home__logout-btn,
+  .student-home__coach-btn {
+    width: 100%;
+    flex: 1 1 auto;
+  }
+
+  .student-home__upload {
+    padding: 28px 14px;
+  }
+
+  .student-home__title {
+    font-size: 22px;
+  }
+
+  .student-home__upload-btn {
+    width: 100%;
+  }
+}
