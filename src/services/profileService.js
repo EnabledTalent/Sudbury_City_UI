@@ -1,6 +1,18 @@
 import { BUSINESS_BASE_URL } from "../config/api";
 import { getToken } from "./authService";
 
+const toSingleSelect = (value) => {
+  if (Array.isArray(value)) {
+    const firstNonEmpty = value.find(
+      (item) => item !== null && item !== undefined && String(item).trim() !== ""
+    );
+    return firstNonEmpty ? String(firstNonEmpty) : "";
+  }
+
+  if (value === null || value === undefined) return "";
+  return String(value);
+};
+
 /**
  * Transform profile data from context format to API format
  */
@@ -91,26 +103,14 @@ const transformProfileForAPI = (profile) => {
     }),
     preference: profile.preference
       ? {
-          companySize: Array.isArray(profile.preference.companySize)
-            ? profile.preference.companySize
-            : profile.preference.companySize
-            ? [profile.preference.companySize]
-            : [],
-          jobType: Array.isArray(profile.preference.jobType)
-            ? profile.preference.jobType
-            : profile.preference.jobType
-            ? [profile.preference.jobType]
-            : [],
-          jobSearch: Array.isArray(profile.preference.jobSearch)
-            ? profile.preference.jobSearch
-            : profile.preference.jobSearch
-            ? [profile.preference.jobSearch]
-            : [],
+          companySize: toSingleSelect(profile.preference.companySize),
+          jobType: toSingleSelect(profile.preference.jobType),
+          jobSearch: toSingleSelect(profile.preference.jobSearch),
         }
       : {
-          companySize: [],
-          jobType: [],
-          jobSearch: [],
+          companySize: "",
+          jobType: "",
+          jobSearch: "",
         },
     otherDetails: {
       languages: (profile.otherDetails?.languages || []).map((lang) => ({
