@@ -19,9 +19,9 @@ const normalizeExperience = (exp) => ({
   jobTitle: exp.jobTitle || "",
   startDate: exp.startDate ? `${exp.startDate}-01-01` : "",
   endDate: exp.endDate ? `${exp.endDate}-12-31` : "",
-  description: Array.isArray(exp.responsibilities)
-    ? exp.responsibilities.join("\n")
-    : "",
+  description:
+    exp.description ||
+    (Array.isArray(exp.responsibilities) ? exp.responsibilities.join("\n") : ""),
 });
 
 // UI → backend
@@ -38,6 +38,7 @@ const denormalizeExperience = (exp) => ({
         .map((l) => l.trim())
         .filter(Boolean)
     : [],
+  description: exp.description || null,
   technologies: null,
 });
 

@@ -20,6 +20,18 @@ const toDisplayText = (value) => {
   return String(value).trim();
 };
 
+const getFirstFilledValue = (...values) => {
+  for (const value of values) {
+    if (value === undefined || value === null) continue;
+    if (Array.isArray(value) && value.filter(Boolean).length > 0) return value;
+    if (typeof value === "string" && value.trim() !== "") return value;
+    if (typeof value !== "string") return value;
+  }
+  return "";
+};
+
+const isHttpUrl = (value) => /^https?:\/\/\S+$/i.test(String(value || "").trim());
+
 const normalizeAboutHeading = (line) => {
   const cleaned = String(line || "").replace(/:$/, "").trim().toLowerCase();
   if (!cleaned) return null;
@@ -103,7 +115,6 @@ export default function ViewProfile() {
   const [error, setError] = useState("");
   const [expandedSections, setExpandedSections] = useState({
     about: true,
-    culturalInterest: false,
     education: false,
     workExperience: false,
     skills: false,
@@ -659,28 +670,6 @@ export default function ViewProfile() {
 	              )}
             </section>
 
-            {/* Cultural Interest */}
-            <section className="view-profile__section" aria-labelledby="section-heading-cultural-interest">
-              <header className="view-profile__section-header">
-                <h3 id="section-heading-cultural-interest" className="view-profile__section-title">Cultural Interest</h3>
-                <button
-                  type="button"
-                  className="view-profile__chevron-btn"
-                  onClick={() => toggleSection("culturalInterest")}
-                  aria-expanded={expandedSections.culturalInterest}
-                  aria-controls="profile-section-cultural-interest"
-                  aria-label={expandedSections.culturalInterest ? "Collapse Cultural Interest section" : "Expand Cultural Interest section"}
-                >
-                  <span className="view-profile__chevron">{chevronIcon}</span>
-                </button>
-              </header>
-              {expandedSections.culturalInterest && (
-                <div id="profile-section-cultural-interest" className="view-profile__section-content" role="region" aria-labelledby="section-heading-cultural-interest">
-                  <div className="view-profile__empty">No cultural interests added</div>
-                </div>
-              )}
-            </section>
-
             {/* Education */}
             <section className="view-profile__section" aria-labelledby="section-heading-education">
               <header className="view-profile__section-header">
@@ -703,34 +692,64 @@ export default function ViewProfile() {
                   <span className="view-profile__chevron">{chevronIcon}</span>
                 </button>
               </header>
-              {expandedSections.education && (
-                <div id="profile-section-education" className="view-profile__section-content" role="region" aria-labelledby="section-heading-education">
-                  {profile?.education && profile.education.length > 0 ? (
-                    profile.education.map((edu, index) => (
-                      <article key={index} className="view-profile__item-card">
-                        <div className="view-profile__item-title">{edu.degree || "Degree"}</div>
-                        {edu.institution && (
-                          <div className="view-profile__item-detail">
-                            <strong>Institution:</strong> {edu.institution}
-                          </div>
-                        )}
-                        {edu.fieldOfStudy && (
-                          <div className="view-profile__item-detail">
-                            <strong>Field:</strong> {edu.fieldOfStudy}
-                          </div>
-                        )}
-                        {(edu.startDate || edu.endDate) && (
-                          <div className="view-profile__item-detail">
-                            <strong>Duration:</strong> {edu.startDate || ""} - {edu.endDate || "Present"}
-                          </div>
-                        )}
-                      </article>
-                    ))
-                  ) : (
-                    <div className="view-profile__empty">No education entries</div>
-                  )}
-                </div>
-              )}
+	              {expandedSections.education && (
+	                <div id="profile-section-education" className="view-profile__section-content" role="region" aria-labelledby="section-heading-education">
+	                  {profile?.education && profile.education.length > 0 ? (
+	                    profile.education.map((edu, index) => {
+	                      const entry = typeof edu === "string" ? { degree: edu } : edu || {};
+	                      const degree = getFirstFilledValue(entry.degree, entry.program, entry.course);
+	                      const institution = getFirstFilledValue(
+	                        entry.institution,
+	                        entry.school,
+	                        entry.university
+	                      );
+	                      const field = getFirstFilledValue(
+	                        entry.fieldOfStudy,
+	                        entry.major,
+	                        entry.field
+	                      );
+	                      const start = getFirstFilledValue(entry.startDate, entry.startYear);
+	                      const end = getFirstFilledValue(entry.endDate, entry.graduationDate);
+	                      const educationDescription = getFirstFilledValue(
+	                        entry.description,
+	                        entry.notes
+	                      );
+
+	                      return (
+	                        <article key={index} className="view-profile__item-card">
+	                          <div className="view-profile__item-title">{toDisplayText(degree) || "Degree"}</div>
+	                          {toDisplayText(institution) && (
+	                            <div className="view-profile__item-detail">
+	                              <strong>Institution:</strong> {toDisplayText(institution)}
+	                            </div>
+	                          )}
+	                          {toDisplayText(field) && (
+	                            <div className="view-profile__item-detail">
+	                              <strong>Field:</strong> {toDisplayText(field)}
+	                            </div>
+	                          )}
+	                          {(toDisplayText(start) || toDisplayText(end)) && (
+	                            <div className="view-profile__item-detail">
+	                              <strong>Duration:</strong> {toDisplayText(start)} - {toDisplayText(end) || "Present"}
+	                            </div>
+	                          )}
+	                          {toDisplayText(educationDescription) && (
+	                            <div className="view-profile__item-detail">
+	                              <strong>Description:</strong>{" "}
+	                              {renderTextWithLinks(
+	                                toDisplayText(educationDescription),
+	                                `education-description-${index}`
+	                              )}
+	                            </div>
+	                          )}
+	                        </article>
+	                      );
+	                    })
+	                  ) : (
+	                    <div className="view-profile__empty">No education entries</div>
+	                  )}
+	                </div>
+	              )}
             </section>
 
             {/* Work Experience */}
@@ -757,28 +776,38 @@ export default function ViewProfile() {
               </header>
               {expandedSections.workExperience && (
                 <div id="profile-section-work-experience" className="view-profile__section-content" role="region" aria-labelledby="section-heading-work-experience">
-                  {profile?.workExperience && profile.workExperience.length > 0 ? (
-                    profile.workExperience.map((exp, index) => (
-                      <article key={index} className="view-profile__item-card">
-                        <div className="view-profile__item-title">
-                          {exp.jobTitle || "Job Title"} at {exp.company || "Company"}
-                        </div>
+		                  {profile?.workExperience && profile.workExperience.length > 0 ? (
+		                    profile.workExperience.map((exp, index) => (
+		                      <article key={index} className="view-profile__item-card">
+		                        <div className="view-profile__item-title">
+		                          {toDisplayText(getFirstFilledValue(exp.jobTitle, exp.title)) || "Job Title"} at{" "}
+		                          {toDisplayText(getFirstFilledValue(exp.company, exp.companyName)) || "Company"}
+		                        </div>
                         {(exp.startDate || exp.endDate) && (
                           <div className="view-profile__item-detail">
                             <strong>Duration:</strong> {exp.startDate || ""} - {exp.endDate || (exp.currentlyWorking ? "Present" : "")}
                           </div>
                         )}
-                        {exp.location && (
-                          <div className="view-profile__item-detail">
-                            <strong>Location:</strong> {exp.location}
-                          </div>
-                        )}
-                        {exp.description && (
-                          <div className="view-profile__item-detail">{exp.description}</div>
-                        )}
-                      </article>
-                    ))
-                  ) : (
+	                        {exp.location && (
+	                          <div className="view-profile__item-detail">
+	                            <strong>Location:</strong> {exp.location}
+	                          </div>
+	                        )}
+	                        {(toDisplayText(exp.description) ||
+	                          (Array.isArray(exp.responsibilities) && exp.responsibilities.length > 0)) && (
+	                          <div className="view-profile__item-detail">
+	                            <strong>Description:</strong>{" "}
+	                            {toDisplayText(exp.description)
+	                              ? renderTextWithLinks(exp.description, `work-description-${index}`)
+	                              : renderTextWithLinks(
+	                                  exp.responsibilities.filter(Boolean).join("\n"),
+	                                  `work-responsibilities-${index}`
+	                                )}
+	                          </div>
+	                        )}
+	                      </article>
+	                    ))
+	                  ) : (
                     <div className="view-profile__empty">No work experience entries</div>
                   )}
                 </div>
@@ -876,20 +905,68 @@ export default function ViewProfile() {
                   <span className="view-profile__chevron">{chevronIcon}</span>
                 </button>
               </header>
-              {expandedSections.projects && (
-                <div id="profile-section-projects" className="view-profile__section-content" role="region" aria-labelledby="section-heading-projects">
-                  {profile?.projects && profile.projects.length > 0 ? (
-                    profile.projects.map((proj, index) => {
-                      const project = typeof proj === "string" ? { name: proj } : proj;
-                      return (
-                        <article key={index} className="view-profile__item-card">
-                          <div className="view-profile__item-title">{project.name || "Project"}</div>
-                          {project.description && (
-                            <div className="view-profile__item-detail">{project.description}</div>
-                          )}
-                        </article>
-                      );
-                    })
+	              {expandedSections.projects && (
+	                <div id="profile-section-projects" className="view-profile__section-content" role="region" aria-labelledby="section-heading-projects">
+	                  {profile?.projects && profile.projects.length > 0 ? (
+	                    profile.projects.map((proj, index) => {
+	                      const project = typeof proj === "string" ? { name: proj } : proj || {};
+	                      const projectName = getFirstFilledValue(project.name, project.title);
+	                      const projectDescription = getFirstFilledValue(
+	                        project.description,
+	                        project.summary,
+	                        project.details
+	                      );
+	                      const projectUrl = getFirstFilledValue(
+	                        project.url,
+	                        project.projectUrl,
+	                        project.liveUrl,
+	                        project.githubUrl
+	                      );
+	                      const projectStart = getFirstFilledValue(project.startDate, project.startYear);
+	                      const projectEnd = getFirstFilledValue(
+	                        project.endDate,
+	                        project.endYear,
+	                        project.currentlyWorking ? "Present" : ""
+	                      );
+	                      return (
+	                        <article key={index} className="view-profile__item-card">
+	                          <div className="view-profile__item-title">
+	                            {toDisplayText(projectName) || "Project"}
+	                          </div>
+	                          {toDisplayText(projectDescription) && (
+	                            <div className="view-profile__item-detail">
+	                              {renderTextWithLinks(
+	                                toDisplayText(projectDescription),
+	                                `project-description-${index}`
+	                              )}
+	                            </div>
+	                          )}
+	                          {(toDisplayText(projectStart) || toDisplayText(projectEnd)) && (
+	                            <div className="view-profile__item-detail">
+	                              <strong>Duration:</strong> {toDisplayText(projectStart)} -{" "}
+	                              {toDisplayText(projectEnd) || "Present"}
+	                            </div>
+	                          )}
+	                          {toDisplayText(projectUrl) && (
+	                            <div className="view-profile__item-detail">
+	                              <strong>Project Link:</strong>{" "}
+	                              {isHttpUrl(projectUrl) ? (
+	                                <a
+	                                  className="view-profile__about-link"
+	                                  href={toDisplayText(projectUrl)}
+	                                  target="_blank"
+	                                  rel="noopener noreferrer"
+	                                >
+	                                  {toDisplayText(projectUrl)}
+	                                </a>
+	                              ) : (
+	                                toDisplayText(projectUrl)
+	                              )}
+	                            </div>
+	                          )}
+	                        </article>
+	                      );
+	                    })
                   ) : (
                     <div className="view-profile__empty">No projects added</div>
                   )}
@@ -919,20 +996,44 @@ export default function ViewProfile() {
                   <span className="view-profile__chevron">{chevronIcon}</span>
                 </button>
               </header>
-              {expandedSections.achievements && (
-                <div id="profile-section-achievements" className="view-profile__section-content" role="region" aria-labelledby="section-heading-achievements">
-                  {profile?.achievements && profile.achievements.length > 0 ? (
-                    profile.achievements.map((ach, index) => {
-                      const achievement = typeof ach === "string" ? { title: ach } : ach;
-                      return (
-                        <article key={index} className="view-profile__item-card">
-                          <div className="view-profile__item-title">{achievement.title || "Achievement"}</div>
-                          {achievement.description && (
-                            <div className="view-profile__item-detail">{achievement.description}</div>
-                          )}
-                        </article>
-                      );
-                    })
+	              {expandedSections.achievements && (
+	                <div id="profile-section-achievements" className="view-profile__section-content" role="region" aria-labelledby="section-heading-achievements">
+	                  {profile?.achievements && profile.achievements.length > 0 ? (
+	                    profile.achievements.map((ach, index) => {
+	                      const achievement = typeof ach === "string" ? { title: ach } : ach || {};
+	                      const achievementTitle = getFirstFilledValue(
+	                        achievement.title,
+	                        achievement.name
+	                      );
+	                      const achievementDescription = getFirstFilledValue(
+	                        achievement.description,
+	                        achievement.details
+	                      );
+	                      const achievementDate = getFirstFilledValue(
+	                        achievement.issueDate,
+	                        achievement.date
+	                      );
+	                      return (
+	                        <article key={index} className="view-profile__item-card">
+	                          <div className="view-profile__item-title">
+	                            {toDisplayText(achievementTitle) || "Achievement"}
+	                          </div>
+	                          {toDisplayText(achievementDate) && (
+	                            <div className="view-profile__item-detail">
+	                              <strong>Date:</strong> {toDisplayText(achievementDate)}
+	                            </div>
+	                          )}
+	                          {toDisplayText(achievementDescription) && (
+	                            <div className="view-profile__item-detail">
+	                              {renderTextWithLinks(
+	                                toDisplayText(achievementDescription),
+	                                `achievement-description-${index}`
+	                              )}
+	                            </div>
+	                          )}
+	                        </article>
+	                      );
+	                    })
                   ) : (
                     <div className="view-profile__empty">No achievements added</div>
                   )}
@@ -962,21 +1063,59 @@ export default function ViewProfile() {
                   <span className="view-profile__chevron">{chevronIcon}</span>
                 </button>
               </header>
-              {expandedSections.certification && (
-                <div id="profile-section-certifications" className="view-profile__section-content" role="region" aria-labelledby="section-heading-certifications">
-                  {profile?.certification && profile.certification.length > 0 ? (
-                    profile.certification.map((cert, index) => {
-                      const certification = typeof cert === "string" ? { name: cert } : cert;
-                      return (
-                        <article key={index} className="view-profile__item-card">
-                          <div className="view-profile__item-title">{certification.name || "Certification"}</div>
-                          {certification.issuedOrganization && (
-                            <div className="view-profile__item-detail">
-                              <strong>Organization:</strong> {certification.issuedOrganization}
-                            </div>
-                          )}
-                        </article>
-                      );
+	              {expandedSections.certification && (
+	                <div id="profile-section-certifications" className="view-profile__section-content" role="region" aria-labelledby="section-heading-certifications">
+	                  {profile?.certification && profile.certification.length > 0 ? (
+	                    profile.certification.map((cert, index) => {
+	                      const certification = typeof cert === "string" ? { name: cert } : cert || {};
+	                      const certName = getFirstFilledValue(certification.name, certification.title);
+	                      const certOrg = getFirstFilledValue(
+	                        certification.issuedOrganization,
+	                        certification.organization
+	                      );
+	                      const certDate = getFirstFilledValue(
+	                        certification.issueDate,
+	                        certification.date
+	                      );
+	                      const credentialValue = getFirstFilledValue(
+	                        certification.credentialId,
+	                        certification.credentialURL,
+	                        certification.url
+	                      );
+	                      return (
+	                        <article key={index} className="view-profile__item-card">
+	                          <div className="view-profile__item-title">
+	                            {toDisplayText(certName) || "Certification"}
+	                          </div>
+	                          {toDisplayText(certOrg) && (
+	                            <div className="view-profile__item-detail">
+	                              <strong>Organization:</strong> {toDisplayText(certOrg)}
+	                            </div>
+	                          )}
+	                          {toDisplayText(certDate) && (
+	                            <div className="view-profile__item-detail">
+	                              <strong>Issue Date:</strong> {toDisplayText(certDate)}
+	                            </div>
+	                          )}
+	                          {toDisplayText(credentialValue) && (
+	                            <div className="view-profile__item-detail">
+	                              <strong>Credential:</strong>{" "}
+	                              {isHttpUrl(credentialValue) ? (
+	                                <a
+	                                  className="view-profile__about-link"
+	                                  href={toDisplayText(credentialValue)}
+	                                  target="_blank"
+	                                  rel="noopener noreferrer"
+	                                >
+	                                  {toDisplayText(credentialValue)}
+	                                </a>
+	                              ) : (
+	                                toDisplayText(credentialValue)
+	                              )}
+	                            </div>
+	                          )}
+	                        </article>
+	                      );
                     })
                   ) : (
                     <div className="view-profile__empty">No certifications added</div>
