@@ -30,14 +30,14 @@ const getEmailFromStorageOrToken = () => {
   return null;
 };
 
-export default function ChatWidget({ onClose }) {
+export default function ChatWidget({ onClose, initialInput = "" }) {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
       content: WELCOME_MESSAGE,
     },
   ]);
-  const [inputMessage, setInputMessage] = useState("");
+  const [inputMessage, setInputMessage] = useState(initialInput);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -45,6 +45,11 @@ export default function ChatWidget({ onClose }) {
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    setInputMessage(initialInput || "");
+    inputRef.current?.focus();
+  }, [initialInput]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

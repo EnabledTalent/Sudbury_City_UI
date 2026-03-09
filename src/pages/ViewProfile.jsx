@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { Fragment, useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { getToken } from "../services/authService";
 import { fetchProfile, updateProfile } from "../services/profileService";
@@ -10,6 +10,90 @@ import Toast from "../components/Toast";
 import TourOverlay from "../components/TourOverlay";
 import StudentHeader from "../components/student/StudentHeader";
 import "./ViewProfile.css";
+
+const ABOUT_PREVIEW_LIMIT = 320;
+const URL_PART_REGEX = /(https?:\/\/[^\s]+)/gi;
+
+const toDisplayText = (value) => {
+  if (value === undefined || value === null) return "";
+  if (Array.isArray(value)) return value.filter(Boolean).join(", ");
+  return String(value).trim();
+};
+
+const normalizeAboutHeading = (line) => {
+  const cleaned = String(line || "").replace(/:$/, "").trim().toLowerCase();
+  if (!cleaned) return null;
+  if (cleaned === "professional summary" || cleaned === "summary") return "Summary";
+  if (cleaned === "core skills" || cleaned === "strengths" || cleaned === "skills") return "Strengths";
+  if (cleaned === "looking for" || cleaned === "objective" || cleaned === "career objective") return "Looking For";
+  return null;
+};
+
+const parseAboutSections = (text) => {
+  const value = String(text || "").trim();
+  if (!value) return [];
+
+  const lines = value.split(/\r?\n/);
+  const sections = [];
+  let currentTitle = "About";
+  let currentLines = [];
+
+  const pushCurrent = () => {
+    const content = currentLines.join("\n").trim();
+    if (!content) return;
+    const existing = sections.find((section) => section.title === currentTitle);
+    if (existing) {
+      existing.content = `${existing.content}\n${content}`.trim();
+    } else {
+      sections.push({ title: currentTitle, content });
+    }
+  };
+
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    const nextTitle = normalizeAboutHeading(trimmed);
+    if (nextTitle) {
+      pushCurrent();
+      currentTitle = nextTitle;
+      currentLines = [];
+      return;
+    }
+    currentLines.push(line);
+  });
+
+  pushCurrent();
+  return sections;
+};
+
+const renderTextWithLinks = (text, keyPrefix = "about-text") => {
+  const lines = String(text || "").split(/\r?\n/);
+
+  return lines.map((line, lineIndex) => {
+    const parts = line.split(URL_PART_REGEX);
+
+    return (
+      <Fragment key={`${keyPrefix}-line-${lineIndex}`}>
+        {parts.map((part, partIndex) => {
+          const isUrl = /^https?:\/\/\S+$/i.test(part);
+          if (!isUrl) return part;
+
+          return (
+            <a
+              key={`${keyPrefix}-line-${lineIndex}-part-${partIndex}`}
+              className="view-profile__about-link"
+              href={part}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {part}
+            </a>
+          );
+        })}
+        {lineIndex < lines.length - 1 && <br />}
+      </Fragment>
+    );
+  });
+};
 
 export default function ViewProfile() {
   const navigate = useNavigate();
@@ -35,6 +119,8 @@ export default function ViewProfile() {
   const [aboutText, setAboutText] = useState("");
   const [isEditingAbout, setIsEditingAbout] = useState(false);
   const [savingAbout, setSavingAbout] = useState(false);
+  const [showFullAbout, setShowFullAbout] = useState(false);
+  const [coachPrompt, setCoachPrompt] = useState("");
   const [toast, setToast] = useState({ message: "", type: "error" });
   const [showTour, setShowTour] = useState(false);
 
@@ -241,13 +327,83 @@ export default function ViewProfile() {
   const jobTitle = profile?.basicInfo?.jobTitle || profile?.workExperience?.[0]?.jobTitle || "Job Title";
   const chevronIcon = "\u25BE";
   const unreadNotificationsCount = notifications.filter((notification) => !notification.read).length;
+  const aboutNormalized = String(aboutText || "").trim();
+  const aboutIsLong = aboutNormalized.length > ABOUT_PREVIEW_LIMIT;
+  const aboutPreview = aboutIsLong
+    ? `${aboutNormalized.slice(0, ABOUT_PREVIEW_LIMIT).trimEnd()}...`
+    : aboutNormalized;
+  const aboutSections = parseAboutSections(aboutNormalized);
+
+  const aboutHighlights = (() => {
+    const highlights = [];
+    const pushHighlight = (label, value) => {
+      const text = toDisplayText(value);
+      if (!text) return;
+      highlights.push({ label, value: text });
+    };
+
+    const profileRole =
+      profileToUse?.basicInfo?.jobTitle || profileToUse?.workExperience?.[0]?.jobTitle || "";
+    const location =
+      profileToUse?.city ||
+      profileToUse?.postalCode ||
+      profileToUse?.basicInfo?.location ||
+      profileToUse?.workExperience?.[0]?.location ||
+      "";
+    const preferredType = profileToUse?.preference?.jobType;
+    const availability = profileToUse?.otherDetails?.earliestAvailability;
+    const yearsOfExperience = profileToUse?.yearsOfExperience;
+    const topSkills = Array.isArray(profileToUse?.primarySkills)
+      ? profileToUse.primarySkills.filter(Boolean).slice(0, 3)
+      : [];
+
+    pushHighlight("Role", profileRole);
+    pushHighlight("Location", location);
+
+    if (yearsOfExperience !== undefined && yearsOfExperience !== null && yearsOfExperience !== "") {
+      const yearsNumber = Number(yearsOfExperience);
+      const yearsValue = Number.isFinite(yearsNumber)
+        ? `${yearsNumber} year${yearsNumber === 1 ? "" : "s"}`
+        : yearsOfExperience;
+      pushHighlight("Experience", yearsValue);
+    }
+
+    pushHighlight("Preference", preferredType);
+
+    if (availability !== undefined && availability !== null && availability !== "") {
+      const availabilityText = String(availability).trim();
+      const formattedAvailability = /^\d+$/.test(availabilityText)
+        ? `${availabilityText} week${availabilityText === "1" ? "" : "s"}`
+        : availabilityText;
+      pushHighlight("Availability", formattedAvailability);
+    }
+
+    topSkills.forEach((skill) => pushHighlight("Skill", skill));
+    return highlights.slice(0, 6);
+  })();
+
+  const openCoachWithAboutPrompt = () => {
+    const prompt = aboutNormalized
+      ? `Improve this About section for municipal job applications in Greater Sudbury. Keep it concise, professional, and specific:\n\n${aboutNormalized}`
+      : "Help me draft a strong About section for municipal job applications in Greater Sudbury. Include Summary, Strengths, and Looking For.";
+    setCoachPrompt(prompt);
+    setShowChatWidget(true);
+  };
+
+  const closeChatWidget = () => {
+    setShowChatWidget(false);
+    setCoachPrompt("");
+  };
 
   return (
     <div className="view-profile">
       <StudentHeader
         activePage="home"
         showAiCoach
-        onAiCoachClick={() => setShowChatWidget(true)}
+        onAiCoachClick={() => {
+          setCoachPrompt("");
+          setShowChatWidget(true);
+        }}
         extraActions={
           <button
             type="button"
@@ -339,10 +495,10 @@ export default function ViewProfile() {
                   <span className="view-profile__chevron">{chevronIcon}</span>
                 </button>
               </header>
-              {expandedSections.about && (
-                <div id="profile-section-about" className="view-profile__section-content" role="region" aria-labelledby="section-heading-about">
-                  {isEditingAbout ? (
-                    <div>
+	              {expandedSections.about && (
+	                <div id="profile-section-about" className="view-profile__section-content" role="region" aria-labelledby="section-heading-about">
+	                  {isEditingAbout ? (
+	                    <div>
                       <label htmlFor="about-textarea" className="view-profile__sr-only">
                         About
                       </label>
@@ -355,15 +511,16 @@ export default function ViewProfile() {
                         rows={6}
                       />
                       <div className="view-profile__about-actions">
-                        <button
-                          type="button"
-                          className="view-profile__btn-cancel"
-                          onClick={() => {
-                            setIsEditingAbout(false);
-                            // Reset to original value
-                            setAboutText(profileToUse?.otherDetails?.otherDetailsText || "");
-                          }}
-                        >
+	                        <button
+	                          type="button"
+	                          className="view-profile__btn-cancel"
+	                          onClick={() => {
+	                            setIsEditingAbout(false);
+	                            setShowFullAbout(false);
+	                            // Reset to original value
+	                            setAboutText(profileToUse?.otherDetails?.otherDetailsText || "");
+	                          }}
+	                        >
                           Cancel
                         </button>
                         <button
@@ -396,11 +553,12 @@ export default function ViewProfile() {
                               // Update local state
                               setProfile(updatedProfile);
                               loadProfileData(updatedProfile);
-                              
-                              setIsEditingAbout(false);
-                              setToast({ message: "About section updated successfully!", type: "success" });
-                            } catch (error) {
-                              console.error("Error updating about:", error);
+	                              
+	                              setIsEditingAbout(false);
+	                              setShowFullAbout(false);
+	                              setToast({ message: "About section updated successfully!", type: "success" });
+	                            } catch (error) {
+	                              console.error("Error updating about:", error);
                               setToast({ message: `Failed to update: ${error.message}`, type: "error" });
                             } finally {
                               setSavingAbout(false);
@@ -410,24 +568,95 @@ export default function ViewProfile() {
                         >
                           {savingAbout ? "Saving..." : "Save"}
                         </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="view-profile__about-text">
-                        {aboutText || "No about information available. Click Edit to add information about yourself."}
-                      </p>
-                      <button
-                        type="button"
-                        className="view-profile__btn-edit"
-                        onClick={() => setIsEditingAbout(true)}
-                      >
-                        {aboutText ? "Edit" : "Add About"}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+	                      </div>
+	                    </div>
+	                  ) : (
+	                    <div className="view-profile__about-wrap">
+	                      {aboutHighlights.length > 0 && (
+	                        <ul className="view-profile__about-highlights" aria-label="Candidate highlights">
+	                          {aboutHighlights.map((highlight, index) => (
+	                            <li key={`${highlight.label}-${index}`} className="view-profile__about-highlight">
+	                              <span className="view-profile__about-highlight-label">{highlight.label}:</span>{" "}
+	                              <span>{highlight.value}</span>
+	                            </li>
+	                          ))}
+	                        </ul>
+	                      )}
+
+	                      {aboutNormalized ? (
+	                        <>
+	                          {aboutSections.length > 1 && (showFullAbout || !aboutIsLong) ? (
+	                            <div className="view-profile__about-structured">
+	                              {aboutSections.map((section) => (
+	                                <section
+	                                  key={`${section.title}-${section.content.length}`}
+	                                  className="view-profile__about-block"
+	                                  aria-label={section.title}
+	                                >
+                                  <h4 className="view-profile__about-block-title">{section.title}</h4>
+                                  <p className="view-profile__about-text">
+                                    {renderTextWithLinks(section.content, `about-section-${section.title}`)}
+                                  </p>
+                                </section>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="view-profile__about-text">
+                              {renderTextWithLinks(
+                                showFullAbout ? aboutNormalized : aboutPreview,
+                                "about-main"
+                              )}
+                            </p>
+                          )}
+
+	                          {aboutIsLong && (
+	                            <button
+	                              type="button"
+	                              className="view-profile__about-toggle"
+	                              onClick={() => setShowFullAbout((prev) => !prev)}
+	                              aria-expanded={showFullAbout}
+	                            >
+	                              {showFullAbout ? "Read less" : "Read more"}
+	                            </button>
+	                          )}
+	                        </>
+	                      ) : (
+	                        <div className="view-profile__about-empty-card">
+	                          <p className="view-profile__about-text">
+	                            No about information available yet.
+	                          </p>
+	                          <p className="view-profile__about-template-title">Suggested starter:</p>
+	                          <ul className="view-profile__about-template-list">
+	                            <li>Who you are and the role you are targeting.</li>
+	                            <li>Two or three strengths and tools you use.</li>
+	                            <li>The value you bring to City of Sudbury teams.</li>
+	                          </ul>
+	                        </div>
+	                      )}
+
+	                      <div className="view-profile__about-toolbar">
+	                        <button
+	                          type="button"
+	                          className="view-profile__btn-edit"
+	                          onClick={() => {
+	                            setShowFullAbout(true);
+	                            setIsEditingAbout(true);
+	                          }}
+	                        >
+	                          {aboutText ? "Edit About" : "Add About"}
+	                        </button>
+	                        <button
+	                          type="button"
+	                          className="view-profile__btn-ai"
+	                          onClick={openCoachWithAboutPrompt}
+	                        >
+	                          Improve with AI Coach
+	                        </button>
+	                      </div>
+	                    </div>
+	                  )}
+	                </div>
+	              )}
             </section>
 
             {/* Cultural Interest */}
@@ -896,8 +1125,8 @@ export default function ViewProfile() {
         </div>
       </main>
 
-      {/* Chat Widget */}
-      {showChatWidget && <ChatWidget onClose={() => setShowChatWidget(false)} />}
+	      {/* Chat Widget */}
+	      {showChatWidget && <ChatWidget onClose={closeChatWidget} initialInput={coachPrompt} />}
       
       {/* Toast */}
       {toast.message && (
