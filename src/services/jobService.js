@@ -302,6 +302,18 @@ export const uploadResume = async (file) => {
  * Transform profile data to Application Payload format
  * Matches the DTO structure for apply-with-profile endpoint
  */
+const toSingleSelect = (value) => {
+  if (Array.isArray(value)) {
+    const firstNonEmpty = value.find(
+      (item) => item !== null && item !== undefined && String(item).trim() !== ""
+    );
+    return firstNonEmpty ? String(firstNonEmpty) : "";
+  }
+
+  if (value === null || value === undefined) return "";
+  return String(value);
+};
+
 const transformProfileForApplication = (profile) => {
   // Calculate years of experience from work experience
   const calculateYearsOfExperience = () => {
@@ -395,24 +407,12 @@ const transformProfileForApplication = (profile) => {
       };
     }),
     
-    // Single Objects (preference fields sent as arrays)
+    // Single Objects (preference fields sent as scalar strings)
     preference: profile.preference
       ? {
-          companySize: Array.isArray(profile.preference.companySize)
-            ? profile.preference.companySize
-            : profile.preference.companySize
-            ? [profile.preference.companySize]
-            : [],
-          jobType: Array.isArray(profile.preference.jobType)
-            ? profile.preference.jobType
-            : profile.preference.jobType
-            ? [profile.preference.jobType]
-            : [],
-          jobSearch: Array.isArray(profile.preference.jobSearch)
-            ? profile.preference.jobSearch
-            : profile.preference.jobSearch
-            ? [profile.preference.jobSearch]
-            : [],
+          companySize: toSingleSelect(profile.preference.companySize),
+          jobType: toSingleSelect(profile.preference.jobType),
+          jobSearch: toSingleSelect(profile.preference.jobSearch),
         }
       : null,
     
