@@ -230,7 +230,7 @@ export default function Dashboard() {
   // Helper function to get color for each status
   const getStatusColor = (status) => {
     const colors = {
-      APPLIED: "#16a34a", // Blue
+      APPLIED: "#2d6a5e",
       UNDER_REVIEW: "#f59e0b", // Amber
       INTERVIEW: "#8b5cf6", // Purple
       OFFERED: "#10b981", // Green

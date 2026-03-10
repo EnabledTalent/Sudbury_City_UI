@@ -219,7 +219,7 @@ export default function Achievements({ onPrev, onNext }) {
       gap: "8px",
     },
     addButtonIcon: {
-      color: "#16a34a",
+      color: "#c8a45c",
       fontSize: "18px",
     },
     formActions: {
@@ -237,7 +237,7 @@ export default function Achievements({ onPrev, onNext }) {
       fontWeight: 500,
     },
     btnPrimary: {
-      background: "#16a34a",
+      background: "#c8a45c",
       color: "#ffffff",
       border: "none",
       padding: "12px 20px",
@@ -279,7 +279,7 @@ export default function Achievements({ onPrev, onNext }) {
               style={errors[index]?.title ? styles.inputError : styles.input}
               value={ach.title}
               onChange={(e) => updateAchievement(index, "title", e.target.value)}
-              onFocus={(e) => (e.target.style.borderColor = "#16a34a")}
+              onFocus={(e) => (e.target.style.borderColor = "#c8a45c")}
               onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
             />
             {errors[index]?.title && (
@@ -297,7 +297,7 @@ export default function Achievements({ onPrev, onNext }) {
                 updateAchievement(index, "issueDate", e.target.value)
               }
               placeholder="e.g., 2022"
-              onFocus={(e) => (e.target.style.borderColor = "#16a34a")}
+              onFocus={(e) => (e.target.style.borderColor = "#c8a45c")}
               onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
             />
           </div>
@@ -311,7 +311,7 @@ export default function Achievements({ onPrev, onNext }) {
               onChange={(e) =>
                 updateAchievement(index, "description", e.target.value)
               }
-              onFocus={(e) => (e.target.style.borderColor = "#16a34a")}
+              onFocus={(e) => (e.target.style.borderColor = "#c8a45c")}
               onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
             />
           </div>

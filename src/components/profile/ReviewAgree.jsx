@@ -169,7 +169,7 @@ export default function ReviewAgree({ onPrev, onNext }) {
       width: "20px",
       height: "20px",
       cursor: "pointer",
-      accentColor: "#16a34a",
+      accentColor: "#c8a45c",
       marginTop: "2px",
     },
     checkboxLabel: {
@@ -198,7 +198,7 @@ export default function ReviewAgree({ onPrev, onNext }) {
       width: "18px",
       height: "18px",
       cursor: "pointer",
-      accentColor: "#16a34a",
+      accentColor: "#c8a45c",
     },
     radioLabel: {
       fontSize: "14px",
@@ -220,7 +220,7 @@ export default function ReviewAgree({ onPrev, onNext }) {
       fontWeight: 500,
     },
     btnPrimary: {
-      background: "#16a34a",
+      background: "#c8a45c",
       color: "#ffffff",
       border: "none",
       padding: "12px 20px",
@@ -236,7 +236,7 @@ export default function ReviewAgree({ onPrev, onNext }) {
       minWidth: "140px",
     },
     btnPrimaryDisabled: {
-      background: "#16a34a",
+      background: "#c8a45c",
       color: "#ffffff",
       border: "none",
       padding: "12px 20px",
@@ -345,7 +345,7 @@ export default function ReviewAgree({ onPrev, onNext }) {
           value={reviewAgree.comments}
           onChange={(e) => updateField("comments", e.target.value)}
           placeholder="Please leave any additional comments or feedback"
-          onFocus={(e) => (e.target.style.borderColor = "#16a34a")}
+          onFocus={(e) => (e.target.style.borderColor = "#c8a45c")}
           onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
         />
       </div>

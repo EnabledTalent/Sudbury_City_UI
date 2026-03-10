@@ -98,7 +98,7 @@ export default function Stepper({ steps, activeStep, onStepClick }) {
       flexShrink: 0,
     },
     iconSuccess: {
-      background: "#22c55e",
+      background: "#2d6a5e",
       color: "#ffffff",
     },
     iconError: {

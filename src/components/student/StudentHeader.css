@@ -5,14 +5,14 @@
 }
 
 .student-header__nav {
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--header-bg, #2d3a3a);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding: 12px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .student-header__logo {
@@ -21,7 +21,7 @@
   gap: 12px;
   font-size: 20px;
   font-weight: 700;
-  color: #15803d;
+  color: #ffffff;
   min-width: 220px;
 }
 
@@ -29,7 +29,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #16a34a;
+  background: var(--accent, #c8a45c);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -52,10 +52,10 @@
   width: 44px;
   min-width: 44px;
   height: 44px;
-  border: 1px solid #d1d5db;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
-  background: #ffffff;
-  color: #334155;
+  background: transparent;
+  color: #ffffff;
   align-items: center;
   justify-content: center;
   cursor: pointer;
@@ -91,7 +91,7 @@
 
 .student-header__nav-link {
   background: transparent;
-  color: #667085;
+  color: rgba(255, 255, 255, 0.65);
   border: 0;
   border-bottom: 2px solid transparent;
   border-radius: 0;
@@ -101,12 +101,12 @@
 }
 
 .student-header__nav-link:hover {
-  color: #111827;
+  color: #ffffff;
 }
 
 .student-header__nav-link--active {
-  color: #15803d;
-  border-bottom-color: #16a34a;
+  color: var(--accent, #c8a45c);
+  border-bottom-color: var(--accent, #c8a45c);
 }
 
 .student-header__search {
@@ -115,9 +115,9 @@
   gap: 8px;
   min-height: 44px;
   border-radius: 10px;
-  border: 1px solid #d1d5db;
-  background: #f9fafb;
-  color: #64748b;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
   padding: 0 12px;
   min-width: 250px;
 }
@@ -126,14 +126,14 @@
   border: 0;
   outline: none;
   background: transparent;
-  color: #0f172a;
+  color: #ffffff;
   min-width: 0;
   width: 100%;
   padding: 0;
 }
 
 .student-header__search input::placeholder {
-  color: #94a3b8;
+  color: rgba(255, 255, 255, 0.45);
   font-weight: 500;
 }
 
@@ -144,10 +144,11 @@
 }
 
 .student-header__action--primary {
-  color: #ffffff;
-  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
-  box-shadow: 0 6px 14px rgba(21, 128, 61, 0.24);
+  color: #1a1a2e;
+  background: linear-gradient(135deg, var(--accent, #c8a45c) 0%, var(--accent-dark, #b8943f) 100%);
+  box-shadow: 0 6px 14px rgba(200, 164, 92, 0.24);
   padding: 10px 20px;
+  font-weight: 700;
 }
 
 .student-header__action--danger {
@@ -158,15 +159,15 @@
 }
 
 .student-header__launch-tour {
-  border: 1px solid #d1d5db;
-  background: #ffffff;
-  color: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: #ffffff;
   padding: 10px 14px;
   cursor: pointer;
 }
 
 .student-header__launch-tour:hover {
-  background: #f3f4f6;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .student-header__nav-link:focus-visible,
@@ -174,7 +175,7 @@
 .student-header__launch-tour:focus-visible,
 .student-header__menu-btn:focus-visible,
 .student-header__search:focus-within {
-  outline: 3px solid rgba(21, 128, 61, 0.35);
+  outline: 3px solid rgba(200, 164, 92, 0.4);
   outline-offset: 2px;
 }
 
@@ -213,7 +214,7 @@
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding-top: 12px;
     margin-top: 2px;
   }
@@ -246,15 +247,15 @@
   }
 
   .student-header__nav-link {
-    border: 1px solid #d1d5db;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 10px;
     min-height: 44px;
     padding: 10px 12px;
   }
 
   .student-header__nav-link--active {
-    border-color: #16a34a;
-    background: #ecfdf5;
+    border-color: var(--accent, #c8a45c);
+    background: rgba(200, 164, 92, 0.12);
   }
 
   .student-header__action--primary,

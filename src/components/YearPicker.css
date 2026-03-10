@@ -21,7 +21,7 @@
 .year-picker__select:focus-visible {
   outline: 3px solid rgba(21, 128, 61, 0.35);
   outline-offset: 1px;
-  border-color: #15803d;
+  border-color: #b8943f;
 }
 
 .year-picker__select:disabled {

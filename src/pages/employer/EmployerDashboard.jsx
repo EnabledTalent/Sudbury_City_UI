@@ -179,7 +179,7 @@ export default function EmployerDashboard() {
 
   const styles = {
     page: {
-      background: "#f2f7fd",
+      background: "#f5f3ef",
       minHeight: "100vh",
     },
     topNav: {
@@ -201,7 +201,7 @@ export default function EmployerDashboard() {
       gap: "10px",
       fontWeight: 700,
       fontSize: "20px",
-      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      background: "linear-gradient(135deg, #c8a45c 0%, #b8943f 100%)",
       WebkitBackgroundClip: "text",
       WebkitTextFillColor: "transparent",
       backgroundClip: "text",
@@ -211,7 +211,7 @@ export default function EmployerDashboard() {
       width: "32px",
       height: "32px",
       borderRadius: "50%",
-      background: "linear-gradient(135deg, #16a34a, #15803d)",
+      background: "linear-gradient(135deg, #c8a45c, #b8943f)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -234,7 +234,7 @@ export default function EmployerDashboard() {
     },
     navLinkActive: {
       fontSize: "14px",
-      color: "#16a34a",
+      color: "#c8a45c",
       cursor: "pointer",
       textDecoration: "none",
       paddingBottom: "4px",
@@ -287,7 +287,7 @@ export default function EmployerDashboard() {
       transition: "all 0.3s ease",
     },
     postJobBtn: {
-      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      background: "linear-gradient(135deg, #c8a45c 0%, #b8943f 100%)",
       color: "#ffffff",
       border: "none",
       padding: "12px 24px",
@@ -366,7 +366,7 @@ export default function EmployerDashboard() {
       cursor: "pointer",
       fontSize: "13px",
       fontWeight: 600,
-      color: "#16a34a",
+      color: "#c8a45c",
       boxShadow: "0 4px 12px rgba(22, 163, 74, 0.2)",
       transition: "all 0.3s ease",
     },
@@ -428,7 +428,7 @@ export default function EmployerDashboard() {
       width: "48px",
       height: "48px",
       borderRadius: "8px",
-      background: "#16a34a",
+      background: "#c8a45c",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -578,13 +578,13 @@ export default function EmployerDashboard() {
       borderRadius: "50%",
     },
     attentionBulletOrange: {
-      background: "#16a34a",
+      background: "#c8a45c",
     },
     attentionBulletRed: {
       background: "#ef4444",
     },
     reviewBtn: {
-      background: "linear-gradient(90deg, #16a34a, #15803d)",
+      background: "linear-gradient(90deg, #c8a45c, #b8943f)",
       color: "#ffffff",
       border: "none",
       padding: "8px 16px",
@@ -642,7 +642,7 @@ export default function EmployerDashboard() {
     },
     candidateMatching: {
       fontSize: "12px",
-      color: "#16a34a",
+      color: "#c8a45c",
       fontWeight: 600,
     },
   };
@@ -734,7 +734,7 @@ export default function EmployerDashboard() {
                         Acceptance Rate Metrics
                       </div>
                       {acceptanceRateData.acceptanceRate !== undefined && (
-                        <div style={{ fontSize: "32px", fontWeight: 700, color: "#16a34a", marginBottom: "12px" }}>
+                        <div style={{ fontSize: "32px", fontWeight: 700, color: "#c8a45c", marginBottom: "12px" }}>
                           {typeof acceptanceRateData.acceptanceRate === "number" 
                             ? (acceptanceRateData.acceptanceRate < 1 
                                 ? (acceptanceRateData.acceptanceRate * 100).toFixed(1) 

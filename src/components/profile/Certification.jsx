@@ -214,7 +214,7 @@ export default function Certification({ onPrev, onNext }) {
       boxSizing: "border-box",
     },
     inputFocus: {
-      borderColor: "#16a34a",
+      borderColor: "#c8a45c",
       boxShadow: "0 0 0 3px rgba(251, 146, 60, 0.1)",
     },
     inputError: {
@@ -276,8 +276,8 @@ export default function Certification({ onPrev, onNext }) {
       justifyContent: "center",
     },
     addButtonHover: {
-      borderColor: "#16a34a",
-      color: "#16a34a",
+      borderColor: "#c8a45c",
+      color: "#c8a45c",
       background: "#fff7ed",
     },
     addButtonIcon: {
@@ -309,7 +309,7 @@ export default function Certification({ onPrev, onNext }) {
       borderColor: "#d1d5db",
     },
     btnPrimary: {
-      background: "linear-gradient(135deg, #16a34a 0%, #22c55e 100%)",
+      background: "linear-gradient(135deg, #c8a45c 0%, #2d6a5e 100%)",
       color: "#ffffff",
       border: "none",
       padding: "14px 28px",

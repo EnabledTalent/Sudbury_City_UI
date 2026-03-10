@@ -436,7 +436,7 @@ export default function ListedJobs() {
 
   const styles = {
     page: {
-      background: "#f2f7fd",
+      background: "#f5f3ef",
       minHeight: "100vh",
     },
     topNav: {
@@ -458,7 +458,7 @@ export default function ListedJobs() {
       gap: "10px",
       fontWeight: 700,
       fontSize: "20px",
-      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      background: "linear-gradient(135deg, #c8a45c 0%, #b8943f 100%)",
       WebkitBackgroundClip: "text",
       WebkitTextFillColor: "transparent",
       backgroundClip: "text",
@@ -468,7 +468,7 @@ export default function ListedJobs() {
       width: "32px",
       height: "32px",
       borderRadius: "50%",
-      background: "linear-gradient(135deg, #16a34a, #15803d)",
+      background: "linear-gradient(135deg, #c8a45c, #b8943f)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -491,7 +491,7 @@ export default function ListedJobs() {
     },
     navLinkActive: {
       fontSize: "14px",
-      color: "#16a34a",
+      color: "#c8a45c",
       cursor: "pointer",
       textDecoration: "none",
       paddingBottom: "4px",
@@ -527,7 +527,7 @@ export default function ListedJobs() {
       transition: "all 0.3s ease",
     },
     postJobBtn: {
-      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      background: "linear-gradient(135deg, #c8a45c 0%, #b8943f 100%)",
       color: "#ffffff",
       border: "none",
       padding: "12px 24px",
@@ -627,7 +627,7 @@ export default function ListedJobs() {
       width: "48px",
       height: "48px",
       borderRadius: "8px",
-      background: "#16a34a",
+      background: "#c8a45c",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -754,7 +754,7 @@ export default function ListedJobs() {
       color: "#6b7280",
     },
     viewCandidatesBtn: {
-      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      background: "linear-gradient(135deg, #c8a45c 0%, #b8943f 100%)",
       color: "#ffffff",
       border: "none",
       padding: "14px 28px",
@@ -822,7 +822,7 @@ export default function ListedJobs() {
       width: "6px",
       height: "6px",
       borderRadius: "50%",
-      background: "#16a34a",
+      background: "#c8a45c",
     },
     // Modal styles
     modalOverlay: {
@@ -922,7 +922,7 @@ export default function ListedJobs() {
       width: "44px",
       height: "44px",
       borderRadius: "50%",
-      background: "linear-gradient(135deg, #16a34a, #15803d)",
+      background: "linear-gradient(135deg, #c8a45c, #b8943f)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -1000,7 +1000,7 @@ export default function ListedJobs() {
       width: "52px",
       height: "52px",
       borderRadius: "50%",
-      background: "linear-gradient(135deg, #16a34a, #15803d)",
+      background: "linear-gradient(135deg, #c8a45c, #b8943f)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -1527,7 +1527,7 @@ export default function ListedJobs() {
                         onClick={() => setSelectedApplication(application)}
                         onKeyDown={(event) =>
                           activateWithKeyboard(event, () => setSelectedApplication(application))
-                        }
+                        }
                         role="button"
                         tabIndex={0}
                         aria-pressed={isSelected}
@@ -2016,7 +2016,7 @@ export default function ListedJobs() {
                     disabled={updating}
                     style={{
                       flex: 1,
-                      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+                      background: "linear-gradient(135deg, #c8a45c 0%, #b8943f 100%)",
                       color: "#ffffff",
                       border: "none",
                       padding: "14px 28px",

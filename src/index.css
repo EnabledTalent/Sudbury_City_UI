@@ -1,16 +1,21 @@
-/* Sudbury Jobs theme - matches landing (green + purple + blue) */
+/* Sudbury Jobs theme - dark teal header, gold accent, warm neutrals */
 :root {
-  --primary: #16a34a;
-  --primary-dark: #15803d;
-  --primary-light: #22c55e;
-  --primary-bg: #dcfce7;
-  --secondary: #7c3aed;
-  --secondary-dark: #5b21b6;
+  --primary: #2d6a5e;
+  --primary-dark: #1a5c50;
+  --primary-light: #3d8b7a;
+  --primary-bg: #e8f5f0;
+  --accent: #c8a45c;
+  --accent-dark: #b8943f;
+  --accent-light: #d4b76e;
+  --header-bg: #2d3a3a;
+  --header-text: #ffffff;
+  --secondary: #2d6a5e;
+  --secondary-dark: #1a5c50;
   --accent-blue: #3b82f6;
-  --text: #111827;
+  --text: #1a1a2e;
   --text-muted: #6b7280;
   --border: #e5e7eb;
-  --bg-page: #f8fafc;
+  --bg-page: #f5f3ef;
   --bg-card: #ffffff;
   --error: #ef4444;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);

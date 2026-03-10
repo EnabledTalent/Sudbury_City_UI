@@ -75,7 +75,7 @@ export default function Preference({ onPrev, onNext }) {
       cursor: "pointer",
       padding: "8px 12px",
       borderRadius: "8px",
-      border: "1px solid #16a34a",
+      border: "1px solid #c8a45c",
       background: "#fff7ed",
       transition: "all 0.2s",
     },
@@ -83,7 +83,7 @@ export default function Preference({ onPrev, onNext }) {
       width: "18px",
       height: "18px",
       cursor: "pointer",
-      accentColor: "#16a34a",
+      accentColor: "#c8a45c",
     },
     radioLabel: {
       fontSize: "14px",
@@ -105,7 +105,7 @@ export default function Preference({ onPrev, onNext }) {
       fontWeight: 500,
     },
     btnPrimary: {
-      background: "#16a34a",
+      background: "#c8a45c",
       color: "#ffffff",
       border: "none",
       padding: "12px 20px",

@@ -1,5 +1,5 @@
 .student-home {
-  background: #f2f7fd;
+  background: var(--bg-page, #f5f3ef);
   min-height: 100vh;
 }
 
@@ -14,29 +14,29 @@
   border-radius: 20px;
   padding: 56px 48px;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08), 0 4px 12px rgba(15, 23, 42, 0.06);
-  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .student-home__title {
   margin: 0 0 8px;
   font-size: 28px;
   font-weight: 700;
-  color: #111827;
+  color: var(--text, #1a1a2e);
 }
 
 .student-home__subtitle {
   margin: 0;
   font-size: 15px;
-  color: #6b7280;
+  color: var(--text-muted, #6b7280);
 }
 
 .student-home__upload {
-  border: 2px dashed #d7e3f3;
+  border: 2px dashed #d1cdc4;
   border-radius: 18px;
   padding: 40px 24px;
   margin-top: 32px;
-  background: #fbfdff;
+  background: #faf9f6;
 }
 
 .student-home__upload-text {
@@ -48,7 +48,7 @@
 
 .student-home__primary-btn {
   margin-top: 16px;
-  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  background: linear-gradient(135deg, var(--accent, #c8a45c) 0%, var(--accent-dark, #b8943f) 100%);
   color: #ffffff;
   border: 0;
   padding: 12px 20px;
@@ -56,7 +56,7 @@
   cursor: pointer;
   font-size: 14px;
   font-weight: 700;
-  box-shadow: 0 10px 18px rgba(22, 163, 74, 0.25);
+  box-shadow: 0 10px 18px rgba(200, 164, 92, 0.25);
 }
 
 .student-home__primary-btn:disabled {
@@ -68,12 +68,12 @@
 .student-home__support-text {
   margin-top: 10px;
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-muted, #6b7280);
 }
 
 .student-home__error {
   margin-top: 12px;
-  color: #ef4444;
+  color: var(--error, #ef4444);
   font-weight: 600;
 }
 
@@ -84,7 +84,7 @@
 }
 
 .student-home__manual-link {
-  color: #15803d;
+  color: var(--primary, #2d6a5e);
   font-weight: 700;
   cursor: pointer;
 }
@@ -106,4 +106,3 @@
     font-size: 24px;
   }
 }
-

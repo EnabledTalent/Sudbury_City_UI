@@ -259,7 +259,7 @@ export default function PostJob() {
 
   const styles = {
     page: {
-      background: "#f2f7fd",
+      background: "#f5f3ef",
       minHeight: "100vh",
       padding: "20px",
     },
@@ -268,9 +268,9 @@ export default function PostJob() {
       margin: "0 auto",
       background: "#ffffff",
       borderRadius: "20px",
-      border: "2px solid #16a34a",
+      border: "2px solid #c8a45c",
       padding: "40px",
-      boxShadow: "0 10px 30px rgba(22, 163, 74, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1)",
+      boxShadow: "0 10px 30px rgba(200, 164, 92, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1)",
     },
     header: {
       display: "flex",
@@ -334,7 +334,7 @@ export default function PostJob() {
       boxSizing: "border-box",
     },
     inputFocus: {
-      borderColor: "#16a34a",
+      borderColor: "#c8a45c",
     },
     calendarIcon: {
       position: "absolute",
@@ -358,7 +358,7 @@ export default function PostJob() {
       lineHeight: "1.6",
     },
     textareaFocus: {
-      borderColor: "#16a34a",
+      borderColor: "#c8a45c",
     },
     radioGroup: {
       display: "flex",
@@ -375,7 +375,7 @@ export default function PostJob() {
       width: "18px",
       height: "18px",
       cursor: "pointer",
-      accentColor: "#16a34a",
+      accentColor: "#c8a45c",
     },
     radioLabel: {
       fontSize: "14px",
@@ -418,7 +418,7 @@ export default function PostJob() {
       gap: "12px",
     },
     submitButton: {
-      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      background: "linear-gradient(135deg, #c8a45c 0%, #b8943f 100%)",
       color: "#ffffff",
       border: "none",
       padding: "16px 36px",
@@ -428,7 +428,7 @@ export default function PostJob() {
       fontWeight: 600,
       width: "100%",
       marginTop: "12px",
-      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      boxShadow: "0 4px 12px rgba(200, 164, 92, 0.3)",
       transition: "all 0.3s ease",
     },
     sectionTitle: {
@@ -469,11 +469,11 @@ export default function PostJob() {
       boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)",
     },
     selectionCardHover: {
-      borderColor: "#16a34a",
+      borderColor: "#c8a45c",
       boxShadow: "0 4px 12px rgba(22, 163, 74, 0.2)",
     },
     selectionCardSelected: {
-      borderColor: "#16a34a",
+      borderColor: "#c8a45c",
       background: "#f0fdf4",
       boxShadow: "0 4px 12px rgba(22, 163, 74, 0.2)",
     },
@@ -489,7 +489,7 @@ export default function PostJob() {
       lineHeight: "1.5",
     },
     continueButton: {
-      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      background: "linear-gradient(135deg, #c8a45c 0%, #b8943f 100%)",
       color: "#ffffff",
       border: "none",
       padding: "16px 36px",
@@ -499,7 +499,7 @@ export default function PostJob() {
       fontWeight: 600,
       marginTop: "32px",
       minWidth: "200px",
-      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      boxShadow: "0 4px 12px rgba(200, 164, 92, 0.3)",
       transition: "all 0.3s ease",
     },
     continueButtonDisabled: {
@@ -543,7 +543,7 @@ export default function PostJob() {
                 onClick={() => setApplicationType("easy-apply")}
                 onMouseEnter={(e) => {
                   if (applicationType !== "easy-apply") {
-                    e.currentTarget.style.borderColor = "#16a34a";
+                    e.currentTarget.style.borderColor = "#c8a45c";
                     e.currentTarget.style.boxShadow = "0 4px 12px rgba(22, 163, 74, 0.2)";
                   }
                 }}
@@ -567,7 +567,7 @@ export default function PostJob() {
                 onClick={() => setApplicationType("apply-link")}
                 onMouseEnter={(e) => {
                   if (applicationType !== "apply-link") {
-                    e.currentTarget.style.borderColor = "#16a34a";
+                    e.currentTarget.style.borderColor = "#c8a45c";
                     e.currentTarget.style.boxShadow = "0 4px 12px rgba(22, 163, 74, 0.2)";
                   }
                 }}
@@ -591,7 +591,7 @@ export default function PostJob() {
                 onClick={handlePdfPick}
                 onMouseEnter={(e) => {
                   if (!pdfUploading) {
-                    e.currentTarget.style.borderColor = "#16a34a";
+                    e.currentTarget.style.borderColor = "#c8a45c";
                     e.currentTarget.style.boxShadow = "0 4px 12px rgba(22, 163, 74, 0.2)";
                   }
                 }}
@@ -739,7 +739,7 @@ export default function PostJob() {
               onChange={handleInputChange}
               style={styles.input}
               onFocus={(e) => {
-                e.target.style.borderColor = "#16a34a";
+                e.target.style.borderColor = "#c8a45c";
               }}
               onBlur={(e) => {
                 e.target.style.borderColor = "#e5e7eb";
@@ -757,7 +757,7 @@ export default function PostJob() {
               onChange={handleInputChange}
               style={styles.input}
               onFocus={(e) => {
-                e.target.style.borderColor = "#16a34a";
+                e.target.style.borderColor = "#c8a45c";
               }}
               onBlur={(e) => {
                 e.target.style.borderColor = "#e5e7eb";
@@ -775,7 +775,7 @@ export default function PostJob() {
               onChange={handleInputChange}
               style={styles.input}
               onFocus={(e) => {
-                e.target.style.borderColor = "#16a34a";
+                e.target.style.borderColor = "#c8a45c";
               }}
               onBlur={(e) => {
                 e.target.style.borderColor = "#e5e7eb";
@@ -793,7 +793,7 @@ export default function PostJob() {
               onChange={handleInputChange}
               style={styles.input}
               onFocus={(e) => {
-                e.target.style.borderColor = "#16a34a";
+                e.target.style.borderColor = "#c8a45c";
               }}
               onBlur={(e) => {
                 e.target.style.borderColor = "#e5e7eb";
@@ -870,7 +870,7 @@ export default function PostJob() {
                     style={{
                       ...styles.radioInput,
                       accentColor:
-                        formData.contractType === option ? "#15803d" : "#16a34a",
+                        formData.contractType === option ? "#b8943f" : "#c8a45c",
                     }}
                   />
                   <label style={styles.radioLabel}>{option}</label>
@@ -889,7 +889,7 @@ export default function PostJob() {
                 onChange={handleInputChange}
                 style={styles.select}
                 onFocus={(e) => {
-                  e.target.style.borderColor = "#16a34a";
+                  e.target.style.borderColor = "#c8a45c";
                 }}
                 onBlur={(e) => {
                   e.target.style.borderColor = "#e5e7eb";
@@ -938,7 +938,7 @@ export default function PostJob() {
               onChange={handleInputChange}
               style={styles.textarea}
               onFocus={(e) => {
-                e.target.style.borderColor = "#16a34a";
+                e.target.style.borderColor = "#c8a45c";
               }}
               onBlur={(e) => {
                 e.target.style.borderColor = "#e5e7eb";
@@ -955,7 +955,7 @@ export default function PostJob() {
               onChange={handleInputChange}
               style={styles.textarea}
               onFocus={(e) => {
-                e.target.style.borderColor = "#16a34a";
+                e.target.style.borderColor = "#c8a45c";
               }}
               onBlur={(e) => {
                 e.target.style.borderColor = "#e5e7eb";
@@ -973,7 +973,7 @@ export default function PostJob() {
               onChange={handleInputChange}
               style={styles.input}
               onFocus={(e) => {
-                e.target.style.borderColor = "#16a34a";
+                e.target.style.borderColor = "#c8a45c";
               }}
               onBlur={(e) => {
                 e.target.style.borderColor = "#e5e7eb";
@@ -993,7 +993,7 @@ export default function PostJob() {
                 placeholder="https://example.com/apply"
                 style={styles.input}
                 onFocus={(e) => {
-                  e.target.style.borderColor = "#16a34a";
+                  e.target.style.borderColor = "#c8a45c";
                 }}
                 onBlur={(e) => {
                   e.target.style.borderColor = "#e5e7eb";

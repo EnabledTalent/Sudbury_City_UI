@@ -154,14 +154,14 @@ const ChatWidget = ({ onClose }) => {
       animation: "slideUp 0.4s ease-out",
     },
     header: {
-      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      background: "linear-gradient(135deg, #2d3a3a 0%, #1f2e2e 100%)",
       color: "#ffffff",
       padding: "20px 24px",
       borderRadius: "20px 20px 0 0",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.2)",
+      boxShadow: "0 4px 12px rgba(45, 58, 58, 0.25)",
     },
     headerTitle: {
       fontSize: "18px",
@@ -220,10 +220,10 @@ const ChatWidget = ({ onClose }) => {
       transition: "all 0.2s ease",
     },
     userBubble: {
-      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      background: "linear-gradient(135deg, #2d6a5e 0%, #1a5c50 100%)",
       color: "#ffffff",
       borderBottomRightRadius: "4px",
-      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.25)",
+      boxShadow: "0 4px 12px rgba(45, 106, 94, 0.25)",
     },
     assistantBubble: {
       background: "#ffffff",
@@ -254,7 +254,7 @@ const ChatWidget = ({ onClose }) => {
       background: "#f9fafb",
     },
     sendButton: {
-      background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      background: "linear-gradient(135deg, #c8a45c 0%, #b8943f 100%)",
       color: "#ffffff",
       border: "none",
       padding: "12px 24px",
@@ -264,10 +264,10 @@ const ChatWidget = ({ onClose }) => {
       fontWeight: 600,
       transition: "all 0.3s ease",
       whiteSpace: "nowrap",
-      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+      boxShadow: "0 4px 12px rgba(200, 164, 92, 0.3)",
     },
     sendButtonDisabled: {
-      background: "#16a34a",
+      background: "#c8a45c",
       color: "#ffffff",
       border: "none",
       padding: "10px 20px",
@@ -365,12 +365,12 @@ const ChatWidget = ({ onClose }) => {
           disabled={loading || !inputMessage.trim()}
           onMouseEnter={(e) => {
             if (!loading && inputMessage.trim()) {
-              e.target.style.background = "#15803d";
+              e.target.style.background = "#b8943f";
             }
           }}
           onMouseLeave={(e) => {
             if (!loading && inputMessage.trim()) {
-              e.target.style.background = "#16a34a";
+              e.target.style.background = "#c8a45c";
             }
           }}
         >

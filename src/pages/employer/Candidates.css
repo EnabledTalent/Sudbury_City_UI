@@ -1,5 +1,5 @@
 .candidates-page {
-  background: #f2f7fd;
+  background: var(--bg-page, #f5f3ef);
   min-height: 100vh;
 }
 
@@ -58,7 +58,7 @@
   min-height: 44px;
   border: 1px solid transparent;
   border-radius: 10px;
-  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
   color: #ffffff;
   font-size: 14px;
   font-weight: 600;
@@ -99,7 +99,7 @@
 }
 
 .candidates__item--active {
-  border-color: #16a34a;
+  border-color: var(--accent);
   background: linear-gradient(135deg, rgba(22, 163, 74, 0.05) 0%, rgba(21, 128, 61, 0.05) 100%);
   box-shadow: 0 8px 24px rgba(22, 163, 74, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08);
 }
@@ -221,7 +221,7 @@
   min-height: 44px;
   border: 1px solid transparent;
   border-radius: 10px;
-  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
   color: #ffffff;
   font-size: 14px;
   font-weight: 600;

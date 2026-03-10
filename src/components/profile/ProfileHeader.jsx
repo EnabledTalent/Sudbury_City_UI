@@ -17,7 +17,7 @@ export default function ProfileHeader() {
 
   const styles = {
     banner: {
-      background: "linear-gradient(90deg, #16a34a 0%, #15803d 100%)",
+      background: "linear-gradient(90deg, #c8a45c 0%, #b8943f 100%)",
       color: "#ffffff",
       borderRadius: "16px",
       padding: "28px 36px",
@@ -75,7 +75,7 @@ export default function ProfileHeader() {
     },
     progressRing: {
       fill: "none",
-      stroke: "#16a34a",
+      stroke: "#c8a45c",
       strokeWidth: "5",
       strokeLinecap: "round",
       transition: "stroke-dashoffset 0.6s ease",
