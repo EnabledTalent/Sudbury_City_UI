@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { getToken } from "../services/authService";
-import { fetchProfile, updateProfile } from "../services/profileService";
+import { fetchProfile } from "../services/profileService";
 import { fetchJobseekerNotifications } from "../services/jobService";
 import { calculateProfileCompletion } from "../utils/profileCompletion";
 import ChatWidget from "../components/ChatWidget";

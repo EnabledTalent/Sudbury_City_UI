@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { postJob } from "../../services/jobService";
+import { postJob, uploadEmployerJobPdf } from "../../services/jobService";
 import { fetchOrganizationProfile } from "../../services/employerService";
 import Toast from "../../components/Toast";
 
 export default function PostJob() {
   const navigate = useNavigate();
+  const pdfInputRef = useRef(null);
   const [applicationType, setApplicationType] = useState(null); // null, "easy-apply", or "apply-link"
   const [formData, setFormData] = useState({
     jobTitle: "",
@@ -22,6 +23,7 @@ export default function PostJob() {
     estimatedSalary: "",
     url: "", // For apply-link type
   });
+  const [pdfUploading, setPdfUploading] = useState(false);
 
   useEffect(() => {
     const draftName = localStorage.getItem("employer:orgName:draft");
@@ -71,6 +73,169 @@ export default function PostJob() {
 
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState({ message: "", type: "error" });
+
+  const normalizeUploadedJob = (raw) => {
+    const root = raw && typeof raw === "object" ? raw : null;
+    if (root && Array.isArray(root.jobs) && root.jobs.length > 0) {
+      return normalizeUploadedJob(root.jobs[0]);
+    }
+
+    const job = raw?.job ? raw.job : raw;
+    if (!job || typeof job !== "object") return null;
+
+    const toNullableString = (value) => {
+      if (value === null || value === undefined) return null;
+      const str = String(value).trim();
+      return str ? str : null;
+    };
+
+    const toNullableNumber = (value) => {
+      if (value === null || value === undefined || value === "") return null;
+      const n = Number(value);
+      return Number.isFinite(n) ? n : null;
+    };
+
+    const toBool = (value) => {
+      if (typeof value === "boolean") return value;
+      if (typeof value === "string") {
+        const v = value.trim().toLowerCase();
+        if (v === "true" || v === "yes") return true;
+        if (v === "false" || v === "no") return false;
+      }
+      return false;
+    };
+
+    // Ensure EXACT field set
+    return {
+      role: toNullableString(job.role ?? job.jobTitle ?? job.title),
+      companyName: toNullableString(job.companyName ?? job.company ?? job.employer?.companyName),
+      jobLocation: toNullableString(job.jobLocation ?? job.location ?? job.city),
+      address: toNullableString(job.address),
+      experienceRange: toNullableString(job.experienceRange ?? job.yearsOfExperience),
+      employmentType: toNullableString(job.employmentType ?? job.jobType),
+      typeOfWork: toNullableString(job.typeOfWork ?? job.workMode),
+      preferredLanguage: toNullableString(job.preferredLanguage),
+      urgentlyHiring: toBool(job.urgentlyHiring),
+      jobDescription: toNullableString(job.jobDescription ?? job.description) || "",
+      requirements: toNullableString(job.requirements ?? job.jobRequirement) || "",
+      salaryMin: toNullableNumber(job.salaryMin),
+      salaryMax: toNullableNumber(job.salaryMax),
+      externalApplyUrl: toNullableString(job.externalApplyUrl ?? job.url),
+    };
+  };
+
+  const mapExtractedJobToFormData = (extracted) => {
+    const mapEmploymentToJobType = (value) => {
+      if (!value) return "";
+      const v = String(value).toLowerCase();
+      if (v.includes("intern")) return "Internship";
+      if (v.includes("part")) return "Part time";
+      if (v.includes("full")) return "Full time";
+      if (v.includes("contract")) return "";
+      return "";
+    };
+
+    const mapWorkModeToJobType = (value) => {
+      if (!value) return "";
+      const v = String(value).toLowerCase();
+      if (v.includes("remote")) return "Remote";
+      if (v.includes("hybrid")) return "Hybrid";
+      if (v.includes("on") && v.includes("site")) return "Onsite";
+      return "";
+    };
+
+    const mapWorkModeToContractType = (value) => {
+      if (!value) return "";
+      const v = String(value).toLowerCase();
+      if (v.includes("hybrid")) return "Contract hybrid";
+      if (v.includes("remote")) return "Contract remote";
+      if (v.includes("on") && v.includes("site")) return "Contract onsite";
+      if (v.includes("hour")) return "Hourly based";
+      return "";
+    };
+
+    const jobTypeFromEmployment = mapEmploymentToJobType(extracted.employmentType);
+    const jobTypeFromWorkMode = mapWorkModeToJobType(extracted.typeOfWork);
+    const nextJobType = jobTypeFromEmployment || jobTypeFromWorkMode;
+    const employmentRaw = extracted.employmentType || "";
+    const employmentLower = String(employmentRaw).toLowerCase();
+    const isContractOrHourly =
+      employmentLower.includes("contract") || employmentLower.includes("hour");
+    const nextContractType = isContractOrHourly
+      ? mapWorkModeToContractType(extracted.typeOfWork)
+      : "";
+
+    const salaryText =
+      extracted.salaryMin !== null && extracted.salaryMax !== null
+        ? `${extracted.salaryMin} - ${extracted.salaryMax}`
+        : extracted.salaryMin !== null
+        ? `${extracted.salaryMin}`
+        : extracted.salaryMax !== null
+        ? `${extracted.salaryMax}`
+        : "";
+
+    setFormData((prev) => ({
+      ...prev,
+      jobTitle: extracted.role || "",
+      companyName: extracted.companyName || prev.companyName || "",
+      jobLocation: extracted.jobLocation || "",
+      address: extracted.address || "",
+      yearsOfExperience: extracted.experienceRange || "",
+      jobType: nextJobType,
+      contractType: nextContractType,
+      preferredLanguage: extracted.preferredLanguage || prev.preferredLanguage || "English",
+      urgentlyHiring: extracted.urgentlyHiring ? "Yes" : "No",
+      jobDescription: extracted.jobDescription || "",
+      jobRequirement: extracted.requirements || "",
+      estimatedSalary: salaryText,
+      url: extracted.externalApplyUrl || prev.url || "",
+    }));
+
+    if (extracted.externalApplyUrl) {
+      setApplicationType("apply-link");
+      return;
+    }
+    setApplicationType((prev) => prev || "easy-apply");
+  };
+
+  const handlePdfPick = () => {
+    pdfInputRef.current?.click();
+  };
+
+  const handlePdfChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      setToast({ message: "Only PDF files are allowed", type: "error" });
+      e.target.value = "";
+      return;
+    }
+
+    setPdfUploading(true);
+    try {
+      const result = await uploadEmployerJobPdf(file);
+
+      const candidate = Array.isArray(result)
+        ? result[0]
+        : result && Array.isArray(result.jobs)
+        ? result.jobs[0]
+        : result;
+      const extracted = normalizeUploadedJob(candidate || result);
+      if (!extracted) {
+        throw new Error("Could not extract job fields from the uploaded PDF");
+      }
+
+      mapExtractedJobToFormData(extracted);
+      setToast({ message: "Job details extracted from PDF.", type: "success" });
+    } catch (error) {
+      console.error("Error uploading job PDF:", error);
+      setToast({ message: `Failed to upload PDF: ${error.message}`, type: "error" });
+    } finally {
+      setPdfUploading(false);
+      e.target.value = "";
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -286,10 +451,11 @@ export default function PostJob() {
       marginBottom: "12px",
     },
     selectionOptions: {
-      display: "flex",
-      gap: "24px",
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+      gap: "16px",
       width: "100%",
-      maxWidth: "600px",
+      maxWidth: "820px",
     },
     selectionCard: {
       flex: 1,
@@ -417,6 +583,40 @@ export default function PostJob() {
                   Candidates will be redirected to your external application URL
                 </div>
               </div>
+              <div
+                style={{
+                  ...styles.selectionCard,
+                  ...(pdfUploading ? styles.selectionCardSelected : {}),
+                }}
+                onClick={handlePdfPick}
+                onMouseEnter={(e) => {
+                  if (!pdfUploading) {
+                    e.currentTarget.style.borderColor = "#16a34a";
+                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(22, 163, 74, 0.2)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!pdfUploading) {
+                    e.currentTarget.style.borderColor = "#e5e7eb";
+                    e.currentTarget.style.boxShadow = "none";
+                  }
+                }}
+                title="Upload a PDF job description to auto-fill fields."
+              >
+                <div style={styles.selectionCardTitle}>
+                  {pdfUploading ? "Uploading…" : "Upload from PDF"}
+                </div>
+                <div style={styles.selectionCardDescription}>
+                  Upload a PDF job description. We’ll extract details and fill the form for you.
+                </div>
+                <input
+                  ref={pdfInputRef}
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  style={{ display: "none" }}
+                  onChange={handlePdfChange}
+                />
+              </div>
             </div>
             <button
               style={{
@@ -461,6 +661,74 @@ export default function PostJob() {
 
         {/* Form */}
         <form style={styles.form} onSubmit={handleSubmit}>
+          {/* Upload from PDF */}
+          <div
+            style={{
+              padding: "16px",
+              borderRadius: "14px",
+              border: "1px dashed #c7d2fe",
+              background: "#f8fafc",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "14px",
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <div style={{ fontWeight: 700, color: "#111827", fontSize: "14px" }}>
+                Upload from PDF{" "}
+                <span
+                  title="Upload a PDF job description to auto-fill the form fields."
+                  style={{
+                    display: "inline-flex",
+                    width: "18px",
+                    height: "18px",
+                    borderRadius: "50%",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "#e0f2fe",
+                    color: "#0369a1",
+                    fontSize: "12px",
+                    cursor: "help",
+                    marginLeft: "6px",
+                  }}
+                  aria-label="Upload PDF help"
+                >
+                  i
+                </span>
+              </div>
+              <div style={{ color: "#6b7280", fontSize: "13px" }}>
+                Please upload a <strong>PDF</strong> file to extract job details.
+              </div>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <button
+                type="button"
+                onClick={handlePdfPick}
+                disabled={pdfUploading}
+                style={{
+                  background: "#ffffff",
+                  border: "1px solid #e5e7eb",
+                  padding: "10px 14px",
+                  borderRadius: "12px",
+                  cursor: pdfUploading ? "not-allowed" : "pointer",
+                  fontWeight: 700,
+                  color: "#111827",
+                }}
+              >
+                {pdfUploading ? "Uploading..." : "Upload PDF"}
+              </button>
+              <input
+                ref={pdfInputRef}
+                type="file"
+                accept=".pdf,application/pdf"
+                style={{ display: "none" }}
+                onChange={handlePdfChange}
+              />
+            </div>
+          </div>
+
           {/* Job Title */}
           <div style={styles.formGroup}>
             <label style={styles.label}>Job Title</label>
@@ -561,7 +829,7 @@ export default function PostJob() {
           <div style={styles.formGroup}>
             <div style={styles.sectionTitle}>Job Type</div>
             <div style={styles.jobTypeGrid}>
-              {["Full time", "Remote", "Part time", "Hybrid", "Internship"].map(
+              {["Full time", "Remote", "Part time", "Hybrid", "Onsite", "Internship"].map(
                 (option) => (
                   <div
                     key={option}

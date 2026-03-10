@@ -545,46 +545,51 @@ export const postJob = async (jobData) => {
     throw new Error("No auth token found");
   }
 
-  // Parse salary range from "CAD 2500 - 3000" format
-  let salaryMin = 0;
-  let salaryMax = 0;
+  // Parse salary range from "2500 - 3000" format
+  let salaryMin = null;
+  let salaryMax = null;
   if (jobData.estimatedSalary) {
-    const salaryMatch = jobData.estimatedSalary.match(/(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)/);
+    const raw = String(jobData.estimatedSalary);
+    const salaryMatch = raw.match(/(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)/);
     if (salaryMatch) {
       salaryMin = parseFloat(salaryMatch[1]);
       salaryMax = parseFloat(salaryMatch[2]);
+    } else {
+      const single = raw.match(/(\d+(?:\.\d+)?)/);
+      if (single) {
+        salaryMin = parseFloat(single[1]);
+      }
     }
   }
 
-  // Determine employmentType and typeOfWork from jobType and contractType
-  let employmentType = jobData.jobType || "Full time";
-  let typeOfWork = jobData.contractType || jobData.jobType || "Remote";
+  const employmentOptions = new Set(["Full time", "Part time", "Internship", "Contract", "Hourly based"]);
+  const workModeOptions = new Set(["Remote", "Hybrid", "Onsite"]);
 
-  // Map jobType to employmentType
-  const jobTypeMap = {
-    "Full time": "Full-time",
-    "Part time": "Part-time",
-    "Remote": "Remote",
-    "Hybrid": "Hybrid",
-    "Internship": "Internship",
-  };
+  // Determine employmentType/typeOfWork from mixed UI fields.
+  let employmentType = "Full time";
+  let typeOfWork = null;
 
-  if (jobTypeMap[jobData.jobType]) {
-    employmentType = jobTypeMap[jobData.jobType];
+  if (employmentOptions.has(jobData.jobType)) {
+    employmentType = jobData.jobType;
+  } else if (jobData.contractType === "Hourly based") {
+    employmentType = "Hourly based";
+  } else if (jobData.contractType && jobData.contractType.startsWith("Contract")) {
+    employmentType = "Contract";
   }
 
-  // Map contractType to typeOfWork
+  if (workModeOptions.has(jobData.jobType)) {
+    typeOfWork = jobData.jobType;
+  }
+
   const contractTypeMap = {
     "Contract hybrid": "Hybrid",
     "Contract remote": "Remote",
-    "Contract onsite": "On-site",
-    "Hourly based": "Hourly",
+    "Contract onsite": "Onsite",
+    "Hourly based": null,
   };
 
-  if (contractTypeMap[jobData.contractType]) {
+  if (contractTypeMap[jobData.contractType] !== undefined) {
     typeOfWork = contractTypeMap[jobData.contractType];
-  } else if (jobData.jobType && !jobData.contractType) {
-    typeOfWork = jobData.jobType;
   }
 
   const payload = {
@@ -604,9 +609,7 @@ export const postJob = async (jobData) => {
   };
 
   // Add externalApplyUrl field if provided (for apply-link type)
-  if (jobData.url) {
-    payload.externalApplyUrl = jobData.url;
-  }
+  payload.externalApplyUrl = jobData.url ? jobData.url : null;
 
   // Get employer email from token
   const employerEmail = getEmailFromToken();
@@ -641,6 +644,59 @@ export const postJob = async (jobData) => {
     return JSON.parse(responseText);
   } catch (e) {
     return { success: true, message: "Job posted successfully" };
+  }
+};
+
+/**
+ * Upload a job PDF and extract job fields (employer)
+ * POST /api/v1/jobs/employer/jobs/upload-pdf?email=<employerEmail>
+ * @param {File} file - PDF file
+ */
+export const uploadEmployerJobPdf = async (file) => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
+  if (!file) {
+    throw new Error("PDF file is required");
+  }
+
+  const employerEmail = getEmailFromToken();
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(
+    `${BUSINESS_BASE_URL}/api/v1/jobs/employer/jobs/upload-pdf?email=${encodeURIComponent(
+      employerEmail
+    )}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        accept: "*/*",
+      },
+      body: formData,
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to upload job PDF: ${response.status} ${errorText}`);
+  }
+
+  const responseText = await response.text();
+  if (!responseText || !responseText.trim()) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(responseText);
+  } catch {
+    // Some backends return plain text; return the raw response for debugging
+    return responseText;
   }
 };
 
