@@ -23,12 +23,6 @@ const NAV_ITEMS = [
     path: "/employer/listed-jobs",
     tour: "employer-nav-listedjobs",
   },
-  {
-    key: "companyProfile",
-    label: "Company Profile",
-    path: "/employer/company-profile",
-    tour: "employer-nav-companyprofile",
-  },
 ];
 
 export default function EmployerHeader({
