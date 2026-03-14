@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { fetchEmployerJobs, fetchEmployerJobStats, fetchAcceptedCandidates, fetchEmployerMetrics } from "../../services/jobService";
 import EmployerHeader from "../../components/employer/EmployerHeader";
+import AcceptanceRateLineChart from "../../components/employer/AcceptanceRateLineChart";
 import Toast from "../../components/Toast";
 import TourOverlay from "../../components/TourOverlay";
 
@@ -371,7 +372,7 @@ export default function EmployerDashboard() {
       transition: "all 0.3s ease",
     },
     graphContainer: {
-      height: "200px",
+      minHeight: "260px",
       marginBottom: "16px",
       position: "relative",
       background: "#f9fafb",
@@ -715,39 +716,21 @@ export default function EmployerDashboard() {
                   No data
                 </div>
               ) : (
-                <div style={styles.graphPlaceholder}>
-                  {/* Display metrics data from API */}
-                  {acceptanceRateData && (
-                    <div style={{ padding: "20px", textAlign: "center", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                      <div style={{ fontSize: "16px", fontWeight: 600, marginBottom: "16px", color: "#111827" }}>
+                <div style={{ width: "100%" }}>
+                  {acceptanceRateData?.acceptanceRateSeries?.length > 0 ||
+                  acceptanceRateData?.projectedAcceptanceRateSeries?.length > 0 ? (
+                    <AcceptanceRateLineChart
+                      acceptanceRateSeries={acceptanceRateData.acceptanceRateSeries || []}
+                      projectedAcceptanceRateSeries={acceptanceRateData.projectedAcceptanceRateSeries || []}
+                      windowDays={acceptanceRateData.windowDays}
+                    />
+                  ) : (
+                    <div style={styles.graphPlaceholder}>
+                      <div style={{ padding: "20px", textAlign: "center", color: "#9ca3af", fontSize: "14px" }}>
                         Acceptance Rate Metrics
                       </div>
-                      {acceptanceRateData.acceptanceRate !== undefined && (
-                        <div style={{ fontSize: "32px", fontWeight: 700, color: "#c8a45c", marginBottom: "12px" }}>
-                          {typeof acceptanceRateData.acceptanceRate === "number" 
-                            ? (acceptanceRateData.acceptanceRate < 1 
-                                ? (acceptanceRateData.acceptanceRate * 100).toFixed(1) 
-                                : acceptanceRateData.acceptanceRate.toFixed(1))
-                            : acceptanceRateData.acceptanceRate}%
-                        </div>
-                      )}
-                      {acceptanceRateData.totalApplications !== undefined && (
-                        <div style={{ fontSize: "14px", color: "#6b7280", marginBottom: "6px" }}>
-                          Total Applications: {acceptanceRateData.totalApplications}
-                        </div>
-                      )}
-                      {acceptanceRateData.acceptedApplications !== undefined && (
-                        <div style={{ fontSize: "14px", color: "#6b7280", marginBottom: "6px" }}>
-                          Accepted: {acceptanceRateData.acceptedApplications}
-                        </div>
-                      )}
-                      {acceptanceRateData.rejectedApplications !== undefined && (
-                        <div style={{ fontSize: "14px", color: "#6b7280", marginBottom: "6px" }}>
-                          Rejected: {acceptanceRateData.rejectedApplications}
-                        </div>
-                      )}
-                      {acceptanceRateData.windowDays && (
-                        <div style={{ fontSize: "12px", color: "#9ca3af", marginTop: "12px" }}>
+                      {acceptanceRateData?.windowDays && (
+                        <div style={{ fontSize: "12px", color: "#9ca3af", textAlign: "center", marginTop: "8px" }}>
                           Window: {acceptanceRateData.windowDays} days
                         </div>
                       )}
