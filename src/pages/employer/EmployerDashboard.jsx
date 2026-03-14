@@ -649,18 +649,7 @@ export default function EmployerDashboard() {
 
   return (
     <div style={styles.page}>
-      <EmployerHeader
-        activePage="dashboard"
-        extraActions={
-          <button
-            type="button"
-            className="employer-header__tour-btn"
-            onClick={() => setShowTour(true)}
-          >
-            Launch Tour
-          </button>
-        }
-      />
+      <EmployerHeader activePage="dashboard" />
 
       {/* Main Content */}
       <main style={styles.container} aria-label="Employer dashboard">

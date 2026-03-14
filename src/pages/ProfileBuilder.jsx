@@ -182,15 +182,6 @@ export default function ProfileBuilder() {
 
       {/* RIGHT CONTENT */}
       <div className="profile-content">
-        <div className="profile-content-header">
-          <button
-            type="button"
-            className="profile-tour-btn"
-            onClick={() => setShowTour(true)}
-          >
-            Launch Tour
-          </button>
-        </div>
         {loading ? (
           <div style={{ padding: "40px", textAlign: "center", color: "#6b7280" }}>
             Loading profile data...

@@ -289,15 +289,6 @@ export default function ViewProfile() {
         activePage="home"
         showAiCoach
         onAiCoachClick={() => setShowChatWidget(true)}
-        extraActions={
-          <button
-            type="button"
-            className="student-header__launch-tour"
-            onClick={() => setShowTour(true)}
-          >
-            Launch Tour
-          </button>
-        }
       />
 
       <main className="view-profile__main" aria-label="Profile overview">
