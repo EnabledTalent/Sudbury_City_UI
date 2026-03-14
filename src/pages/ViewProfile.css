@@ -493,6 +493,29 @@
   font-weight: 500;
 }
 
+.view-profile__delete-btn {
+  background: transparent;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.view-profile__delete-btn:hover:not(:disabled) {
+  background: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.view-profile__delete-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .view-profile__sr-only {
   position: absolute;
   width: 1px;

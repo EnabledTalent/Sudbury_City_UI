@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { getToken } from "../services/authService";
 import { fetchProfile } from "../services/profileService";
-import { fetchJobseekerNotifications } from "../services/jobService";
+import { fetchJobseekerNotifications, deleteJobseekerInvite } from "../services/jobService";
 import { calculateProfileCompletion } from "../utils/profileCompletion";
 import ChatWidget from "../components/ChatWidget";
 import { useProfile } from "../context/ProfileContext";
@@ -37,6 +37,7 @@ export default function ViewProfile() {
     legacy: [],
   });
   const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const [deletingInviteId, setDeletingInviteId] = useState(null);
   const [toast, setToast] = useState({ message: "", type: "error" });
   const [showTour, setShowTour] = useState(false);
 
@@ -145,6 +146,29 @@ export default function ViewProfile() {
       ...prev,
       [section]: !prev[section],
     }));
+  };
+
+  const handleDeleteInvite = async (inviteId) => {
+    if (!inviteId) return;
+    const email = getEmail();
+    if (!email) {
+      setToast({ message: "Email not found", type: "error" });
+      return;
+    }
+    try {
+      setDeletingInviteId(inviteId);
+      await deleteJobseekerInvite(inviteId, email);
+      setNotifications((prev) => ({
+        ...prev,
+        invites: (prev.invites || []).filter((inv) => inv.inviteId !== inviteId),
+      }));
+      setToast({ message: "Invitation removed", type: "success" });
+    } catch (err) {
+      console.error("Error deleting invite:", err);
+      setToast({ message: err.message || "Failed to delete invitation", type: "error" });
+    } finally {
+      setDeletingInviteId(null);
+    }
   };
 
   const getCount = (array) => {
@@ -823,9 +847,11 @@ export default function ViewProfile() {
                 {invites.length > 0 && (
                   <section className="view-profile__notifications-section" aria-label="Invites">
                     <div className="view-profile__notifications-section-title">Invites</div>
-                    {invites.map((invite, index) => (
+                    {invites.map((invite, index) => {
+                      const inviteId = invite.inviteId ?? invite.id;
+                      return (
                       <article
-                        key={invite.inviteId || `${invite.jobId || "invite"}-${index}`}
+                        key={inviteId || `${invite.jobId || "invite"}-${index}`}
                         className="view-profile__notification-card"
                       >
                         <p className="view-profile__notification-text">
@@ -842,8 +868,8 @@ export default function ViewProfile() {
                             {new Date(invite.invitedAt).toLocaleString()}
                           </time>
                         )}
-                        {invite.jobId && (
-                          <div className="view-profile__notification-buttons">
+                        <div className="view-profile__notification-buttons">
+                          {invite.jobId && (
                             <button
                               type="button"
                               className="view-profile__accept-btn"
@@ -855,10 +881,22 @@ export default function ViewProfile() {
                             >
                               View in My Jobs
                             </button>
-                          </div>
-                        )}
+                          )}
+                          {inviteId && (
+                            <button
+                              type="button"
+                              className="view-profile__delete-btn"
+                              onClick={() => handleDeleteInvite(inviteId)}
+                              disabled={deletingInviteId === inviteId}
+                              aria-label="Delete invitation"
+                            >
+                              {deletingInviteId === inviteId ? "Deleting..." : "Delete"}
+                            </button>
+                          )}
+                        </div>
                       </article>
-                    ))}
+                    );
+                    })}
                   </section>
                 )}
 

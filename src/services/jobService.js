@@ -1012,6 +1012,64 @@ export const fetchJobseekerNotifications = async (email = null) => {
 };
 
 /**
+ * Delete one invite (jobseeker)
+ * DELETE /api/v1/jobs/jobseeker/notifications/invites/{inviteId}?email={email}
+ */
+export const deleteJobseekerInvite = async (inviteId, email = null) => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
+  if (!inviteId) {
+    throw new Error("Invite ID is required");
+  }
+
+  let userEmail = email;
+  if (!userEmail) {
+    const profileData = localStorage.getItem("profileData");
+    if (profileData) {
+      try {
+        const parsed = JSON.parse(profileData);
+        userEmail = parsed.basicInfo?.email;
+      } catch (e) {
+        console.error("Error parsing profileData:", e);
+      }
+    }
+    if (!userEmail) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        userEmail = payload.sub || payload.email || payload.username;
+      } catch (e) {
+        console.error("Error parsing token:", e);
+      }
+    }
+  }
+
+  if (!userEmail) {
+    throw new Error("Email is required to delete invite");
+  }
+
+  const url = `${BUSINESS_BASE_URL}/api/v1/jobs/jobseeker/notifications/invites/${inviteId}?email=${encodeURIComponent(userEmail)}`;
+
+  const response = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      accept: "*/*",
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to delete invite: ${response.status} ${errorText}`);
+  }
+
+  return { success: true };
+};
+
+/**
  * Invite candidate to apply for a job
  * POST /api/v1/jobs/employer/jobs/{jobId}/invite?inviteeEmail={inviteeEmail}&email={email}
  */
