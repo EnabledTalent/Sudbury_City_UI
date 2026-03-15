@@ -67,7 +67,8 @@ const toCandidate = (profile) => {
     location,
     experience: yearsOfExperience > 0 ? `${yearsOfExperience} yrs` : "No experience",
     profilePic: fullName.charAt(0).toUpperCase(),
-    about: profile?.summary || profile?.basicInfo?.summary || "No description available.",
+    about: profile?.summary || profile?.basicInfo?.summary || profile?.otherDetails?.otherDetailsText || "No description available.",
+    basicInfo: profile?.basicInfo || null,
     education: Array.isArray(profile?.education) ? profile.education : [],
     workExperience: workHistory,
     skills: Array.isArray(profile?.skills)
@@ -371,7 +372,42 @@ export default function Candidates() {
           key: "about",
           title: "About",
           count: null,
-          content: <p className="candidates__body-text">{selectedCandidate.about}</p>,
+          content: (
+            <div className="candidates__about-content">
+              {(selectedCandidate.basicInfo || selectedCandidate.email) && (
+                <div className="candidates__about-contact" aria-label="Contact information">
+                  <div className="candidates__about-fullname">
+                    {selectedCandidate.basicInfo?.name || selectedCandidate.name}
+                  </div>
+                  <div className="candidates__about-contact-items">
+                    {selectedCandidate.basicInfo?.phone && (
+                      <a className="candidates__about-contact-link" href={`tel:${selectedCandidate.basicInfo.phone}`}>
+                        {selectedCandidate.basicInfo.phone}
+                      </a>
+                    )}
+                    {(selectedCandidate.basicInfo?.email || selectedCandidate.email) && (
+                      <a className="candidates__about-contact-link" href={`mailto:${selectedCandidate.basicInfo?.email || selectedCandidate.email}`}>
+                        {selectedCandidate.basicInfo?.email || selectedCandidate.email}
+                      </a>
+                    )}
+                    {selectedCandidate.basicInfo?.linkedin && (
+                      <a
+                        className="candidates__about-contact-link"
+                        href={selectedCandidate.basicInfo.linkedin.startsWith("http") ? selectedCandidate.basicInfo.linkedin : `https://${selectedCandidate.basicInfo.linkedin}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        LinkedIn
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+              {selectedCandidate.about && selectedCandidate.about !== "No description available." && (
+                <p className="candidates__body-text">{selectedCandidate.about}</p>
+              )}
+            </div>
+          ),
         },
         {
           key: "culturalInterest",
