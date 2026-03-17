@@ -26,7 +26,7 @@ const toCompanyData = (profile) => {
     subtitle: profile?.industry ? `${profile.industry} company` : "Software development company",
     logo: orgName ? orgName.charAt(0).toUpperCase() : "O",
     location: profile?.location || "",
-    foundedYear: profile?.foundedYear ? String(profile.foundedYear) : "N/A",
+    foundedYear: profile?.foundedYear ? String(profile.foundedYear) : "",
     industry: profile?.industry || "",
     employees: profile?.companySize || "",
     website: profile?.website || "",
@@ -431,19 +431,19 @@ export default function CompanyProfile() {
                   <dl className="company-profile__details-list">
                     <div className="company-profile__detail-card">
                       <dt className="company-profile__detail-label">Location</dt>
-                      <dd className="company-profile__detail-value">{companyData.location || "N/A"}</dd>
+                      <dd className="company-profile__detail-value">{companyData.location || ""}</dd>
                     </div>
                     <div className="company-profile__detail-card">
                       <dt className="company-profile__detail-label">Founded in</dt>
-                      <dd className="company-profile__detail-value">{companyData.foundedYear || "N/A"}</dd>
+                      <dd className="company-profile__detail-value">{companyData.foundedYear || ""}</dd>
                     </div>
                     <div className="company-profile__detail-card">
                       <dt className="company-profile__detail-label">Industry</dt>
-                      <dd className="company-profile__detail-value">{companyData.industry || "N/A"}</dd>
+                      <dd className="company-profile__detail-value">{companyData.industry || ""}</dd>
                     </div>
                     <div className="company-profile__detail-card">
                       <dt className="company-profile__detail-label">Employees</dt>
-                      <dd className="company-profile__detail-value">{companyData.employees || "N/A"}</dd>
+                      <dd className="company-profile__detail-value">{companyData.employees || ""}</dd>
                     </div>
                   </dl>
 

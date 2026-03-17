@@ -54,7 +54,7 @@ export default function EmployerDashboard() {
             jobTitle: job.role || "",
             companyName: job.companyName || "",
             location: job.location || job.address || "",
-            experience: job.experienceRange ? `Exp: ${job.experienceRange}` : "Exp: N/A",
+            experience: job.experienceRange ? `Exp: ${job.experienceRange}` : "",
             jobType: job.employmentType || job.typeOfWork || "Full Time",
             accepted: jobStats?.acceptedCandidates || 0,
             declined: jobStats?.declinedCandidates || 0,

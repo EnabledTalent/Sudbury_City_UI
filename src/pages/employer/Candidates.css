@@ -388,6 +388,19 @@
   border-bottom: 0;
 }
 
+.candidates__list-row--block {
+  display: block;
+}
+
+.candidates__list-bullets {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+
+.candidates__list-bullets li {
+  margin-top: 4px;
+}
+
 .candidates__item-title,
 .candidates__item-subtitle {
   margin: 0;

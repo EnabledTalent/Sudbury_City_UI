@@ -400,6 +400,15 @@
   margin-bottom: 8px;
 }
 
+.view-profile__list-bullets {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+
+.view-profile__list-bullets li {
+  margin-top: 4px;
+}
+
 .view-profile__skill-group {
   margin-bottom: 16px;
 }

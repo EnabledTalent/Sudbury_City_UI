@@ -19,7 +19,6 @@ export default function ViewProfile() {
   const [error, setError] = useState("");
   const [expandedSections, setExpandedSections] = useState({
     about: true,
-    culturalInterest: false,
     education: false,
     workExperience: false,
     skills: false,
@@ -27,7 +26,6 @@ export default function ViewProfile() {
     achievements: false,
     certification: false,
     preference: false,
-    otherDetails: false,
   });
   const [showChatWidget, setShowChatWidget] = useState(false);
   const [notifications, setNotifications] = useState({
@@ -407,28 +405,6 @@ export default function ViewProfile() {
               )}
             </section>
 
-            {/* Cultural Interest */}
-            <section className="view-profile__section" aria-labelledby="section-heading-cultural-interest">
-              <header className="view-profile__section-header">
-                <h3 id="section-heading-cultural-interest" className="view-profile__section-title">Cultural Interest</h3>
-                <button
-                  type="button"
-                  className="view-profile__chevron-btn"
-                  onClick={() => toggleSection("culturalInterest")}
-                  aria-expanded={expandedSections.culturalInterest}
-                  aria-controls="profile-section-cultural-interest"
-                  aria-label={expandedSections.culturalInterest ? "Collapse Cultural Interest section" : "Expand Cultural Interest section"}
-                >
-                  <span className="view-profile__chevron">{chevronIcon}</span>
-                </button>
-              </header>
-              {expandedSections.culturalInterest && (
-                <div id="profile-section-cultural-interest" className="view-profile__section-content" role="region" aria-labelledby="section-heading-cultural-interest">
-                  <div className="view-profile__empty">No cultural interests added</div>
-                </div>
-              )}
-            </section>
-
             {/* Education */}
             <section className="view-profile__section" aria-labelledby="section-heading-education">
               <header className="view-profile__section-header">
@@ -511,9 +487,17 @@ export default function ViewProfile() {
                         <div className="view-profile__item-title">
                           {exp.jobTitle || "Job Title"} at {exp.company || "Company"}
                         </div>
+                        {Array.isArray(exp.responsibilities) && exp.responsibilities.length > 0 && (
+                          <div className="view-profile__item-detail">
+                            <strong>Responsibilities:</strong>
+                            <ul className="view-profile__list-bullets">
+                              {exp.responsibilities.map((r, i) => (r ? <li key={i}>{r}</li> : null))}
+                            </ul>
+                          </div>
+                        )}
                         {(exp.startDate || exp.endDate) && (
                           <div className="view-profile__item-detail">
-                            <strong>Duration:</strong> {exp.startDate || ""} - {exp.endDate || (exp.currentlyWorking ? "Present" : "")}
+                            <strong>Duration:</strong> {exp.startDate || ""} – {exp.endDate || (exp.currentlyWorking ? "Present" : "")}
                           </div>
                         )}
                         {exp.location && (
@@ -783,40 +767,6 @@ export default function ViewProfile() {
               </section>
             )}
 
-            {/* Other Details */}
-            {profile?.otherDetails && (
-              <section className="view-profile__section" aria-labelledby="section-heading-other-details">
-                <header className="view-profile__section-header">
-                  <h3 id="section-heading-other-details" className="view-profile__section-title">Other details</h3>
-                  <button
-                    type="button"
-                    className="view-profile__chevron-btn"
-                    onClick={() => toggleSection("otherDetails")}
-                    aria-expanded={expandedSections.otherDetails}
-                    aria-controls="profile-section-other-details"
-                    aria-label={expandedSections.otherDetails ? "Collapse Other details section" : "Expand Other details section"}
-                  >
-                    <span className="view-profile__chevron">{chevronIcon}</span>
-                  </button>
-                </header>
-                {expandedSections.otherDetails && (
-                  <div id="profile-section-other-details" className="view-profile__section-content" role="region" aria-labelledby="section-heading-other-details">
-                    <article className="view-profile__item-card">
-                      {profile.otherDetails.careerStage && (
-                        <div className="view-profile__item-detail">
-                          <strong>Career Stage:</strong> {profile.otherDetails.careerStage}
-                        </div>
-                      )}
-                      {profile.otherDetails.desiredSalary && (
-                        <div className="view-profile__item-detail">
-                          <strong>Desired Salary:</strong> {profile.otherDetails.desiredSalary}
-                        </div>
-                      )}
-                    </article>
-                  </div>
-                )}
-              </section>
-            )}
           </section>
 
           {/* Right Column - Notifications */}

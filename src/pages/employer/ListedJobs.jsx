@@ -129,7 +129,7 @@ export default function ListedJobs() {
             jobTitle: job.role || "",
             companyName: job.companyName || "",
             location: job.location || job.address || "",
-            experience: job.experienceRange ? `Exp: ${job.experienceRange}` : "Exp: N/A",
+            experience: job.experienceRange ? `Exp: ${job.experienceRange}` : "",
             jobType: job.employmentType || "Full Time",
             accepted: jobStats?.acceptedCandidates || 0,
             declined: jobStats?.declinedCandidates || 0,
@@ -142,7 +142,7 @@ export default function ListedJobs() {
             jobTypeDetail: job.employmentType || "Full Time",
             locationDetail: job.location || "",
             workArrangement: job.typeOfWork || "Hybrid",
-            yearsOfExperience: job.experienceRange || "N/A",
+            yearsOfExperience: job.experienceRange || "",
             salary: job.salaryMin && job.salaryMax
               ? `$${job.salaryMin} - ${job.salaryMax}`
               : job.salary
@@ -309,7 +309,7 @@ export default function ListedJobs() {
           jobTitle: job.role || "",
           companyName: job.companyName || "",
           location: job.location || job.address || "",
-          experience: job.experienceRange ? `Exp: ${job.experienceRange}` : "Exp: N/A",
+          experience: job.experienceRange ? `Exp: ${job.experienceRange}` : "",
           jobType: job.employmentType || "Full Time",
           accepted: jobStats?.acceptedCandidates || 0,
           declined: jobStats?.declinedCandidates || 0,
@@ -322,7 +322,7 @@ export default function ListedJobs() {
           jobTypeDetail: job.employmentType || "Full Time",
           locationDetail: job.location || "",
           workArrangement: job.typeOfWork || "Hybrid",
-          yearsOfExperience: job.experienceRange || "N/A",
+          yearsOfExperience: job.experienceRange || "",
           salary: job.salaryMin && job.salaryMax
             ? `$${job.salaryMin} - ${job.salaryMax}`
             : job.salary
@@ -390,7 +390,7 @@ export default function ListedJobs() {
           jobTitle: job.role || "",
           companyName: job.companyName || "",
           location: job.location || job.address || "",
-          experience: job.experienceRange ? `Exp: ${job.experienceRange}` : "Exp: N/A",
+          experience: job.experienceRange ? `Exp: ${job.experienceRange}` : "",
           jobType: job.employmentType || "Full Time",
           accepted: jobStats?.acceptedCandidates || 0,
           declined: jobStats?.declinedCandidates || 0,
@@ -403,7 +403,7 @@ export default function ListedJobs() {
           jobTypeDetail: job.employmentType || "Full Time",
           locationDetail: job.location || "",
           workArrangement: job.typeOfWork || "Hybrid",
-          yearsOfExperience: job.experienceRange || "N/A",
+          yearsOfExperience: job.experienceRange || "",
           salary: job.salaryMin && job.salaryMax
             ? `$${job.salaryMin} - ${job.salaryMax}`
             : job.salary
@@ -1641,7 +1641,7 @@ export default function ListedJobs() {
                                         jobTitle: job.role || "",
                                         companyName: job.companyName || "",
                                         location: job.location || job.address || "",
-                                        experience: job.experienceRange ? `Exp: ${job.experienceRange}` : "Exp: N/A",
+                                        experience: job.experienceRange ? `Exp: ${job.experienceRange}` : "",
                                         jobType: job.employmentType || "Full Time",
                                         accepted: jobStats?.acceptedCandidates || 0,
                                         declined: jobStats?.declinedCandidates || 0,
@@ -1654,7 +1654,7 @@ export default function ListedJobs() {
                                         jobTypeDetail: job.employmentType || "Full Time",
                                         locationDetail: job.location || "",
                                         workArrangement: job.typeOfWork || "Hybrid",
-                                        yearsOfExperience: job.experienceRange || "N/A",
+                                        yearsOfExperience: job.experienceRange || "",
                                         salary: job.salaryMin && job.salaryMax
                                           ? `$${job.salaryMin} - ${job.salaryMax}`
                                           : job.salary

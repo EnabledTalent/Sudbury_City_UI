@@ -7,7 +7,6 @@ import "./Candidates.css";
 
 const DEFAULT_EXPANDED_SECTIONS = {
   about: true,
-  culturalInterest: false,
   education: false,
   workExperience: false,
   skills: false,
@@ -15,10 +14,9 @@ const DEFAULT_EXPANDED_SECTIONS = {
   achievements: false,
   certifications: false,
   preference: false,
-  otherDetails: false,
 };
 
-const valueOrFallback = (value, fallback = "N/A") => {
+const valueOrFallback = (value, fallback = "") => {
   if (value == null) return fallback;
   const text = String(value).trim();
   return text ? text : fallback;
@@ -59,6 +57,11 @@ const toCandidate = (profile) => {
 
   const recentRole = workHistory[0]?.jobTitle || workHistory[0]?.title || "Job Seeker";
 
+  const rawBasicInfo = profile?.basicInfo || {};
+  const linkedin = rawBasicInfo.linkedin || rawBasicInfo.linkedIn || profile?.linkedin;
+  const basicInfo = Object.keys(rawBasicInfo).length > 0 || linkedin
+    ? { ...rawBasicInfo, linkedin: linkedin || rawBasicInfo.linkedin }
+    : null;
   return {
     id: profile?.id || email || fullName,
     name: fullName,
@@ -68,7 +71,7 @@ const toCandidate = (profile) => {
     experience: yearsOfExperience > 0 ? `${yearsOfExperience} yrs` : "No experience",
     profilePic: fullName.charAt(0).toUpperCase(),
     about: profile?.summary || profile?.basicInfo?.summary || profile?.otherDetails?.otherDetailsText || "No description available.",
-    basicInfo: profile?.basicInfo || null,
+    basicInfo,
     education: Array.isArray(profile?.education) ? profile.education : [],
     workExperience: workHistory,
     skills: Array.isArray(profile?.skills)
@@ -251,15 +254,20 @@ export default function Candidates() {
     return selectedCandidate.workExperience.map((exp, index) => (
       <div
         key={`${selectedCandidate.id}-work-${index}`}
-        className={`candidates__list-row ${
+        className={`candidates__list-row candidates__list-row--block ${
           index === selectedCandidate.workExperience.length - 1 ? "candidates__list-row--last" : ""
         }`}
       >
         <p className="candidates__item-title">{valueOrFallback(exp?.jobTitle || exp?.title)}</p>
-        <p className="candidates__item-subtitle">{valueOrFallback(exp?.company || exp?.companyName)}</p>
-        <p className="candidates__item-subtitle">
-          {valueOrFallback(exp?.duration || `${valueOrFallback(exp?.startDate, "")} - ${valueOrFallback(exp?.endDate, "Present")}`)}
-        </p>
+        <p className="candidates__item-subtitle"><strong>Company:</strong> {valueOrFallback(exp?.company || exp?.companyName)}</p>
+        {Array.isArray(exp?.responsibilities) && exp.responsibilities.length > 0 && (
+          <div className="candidates__item-subtitle">
+            <strong>Responsibilities:</strong>
+            <ul className="candidates__list-bullets">
+              {exp.responsibilities.map((r, i) => (r ? <li key={i}>{r}</li> : null))}
+            </ul>
+          </div>
+        )}
       </div>
     ));
   };
@@ -322,46 +330,34 @@ export default function Candidates() {
       return <p className="candidates__empty-text">No preferences added.</p>;
     }
 
-    const formatValue = (value) =>
-      Array.isArray(value) ? value.filter(Boolean).join(", ") : value != null ? String(value) : "";
+    const fmt = (v) => (Array.isArray(v) ? v.filter(Boolean).join(", ") : v != null ? String(v) : "");
+    const companySize = fmt(selectedCandidate.preference.companySize);
+    const jobType = fmt(selectedCandidate.preference.jobType);
+    const jobSearch = fmt(selectedCandidate.preference.jobSearch);
+    const hasAny = companySize || jobType || jobSearch;
 
-    const entries = Object.entries(selectedCandidate.preference)
-      .map(([key, value]) => [key, formatValue(value)])
-      .filter(([, str]) => str.trim() !== "");
-
-    if (!entries.length) return <p className="candidates__empty-text">No preferences added.</p>;
-
-    return (
-      <dl className="candidates__key-value">
-        {entries.map(([key, displayValue]) => (
-          <div key={key} className="candidates__key-value-row">
-            <dt>{key}</dt>
-            <dd>{displayValue}</dd>
-          </div>
-        ))}
-      </dl>
-    );
-  };
-
-  const renderOtherDetails = () => {
-    if (!selectedCandidate?.otherDetails || typeof selectedCandidate.otherDetails !== "object") {
-      return <p className="candidates__empty-text">No other details added.</p>;
-    }
-
-    const entries = Object.entries(selectedCandidate.otherDetails).filter(
-      ([, value]) => value != null && String(value).trim() !== ""
-    );
-
-    if (!entries.length) return <p className="candidates__empty-text">No other details added.</p>;
+    if (!hasAny) return <p className="candidates__empty-text">No preferences added.</p>;
 
     return (
       <dl className="candidates__key-value">
-        {entries.map(([key, value]) => (
-          <div key={key} className="candidates__key-value-row">
-            <dt>{key}</dt>
-            <dd>{String(value)}</dd>
+        {companySize && (
+          <div className="candidates__key-value-row">
+            <dt>Company Size</dt>
+            <dd>{companySize}</dd>
           </div>
-        ))}
+        )}
+        {jobType && (
+          <div className="candidates__key-value-row">
+            <dt>Job Type</dt>
+            <dd>{jobType}</dd>
+          </div>
+        )}
+        {jobSearch && (
+          <div className="candidates__key-value-row">
+            <dt>Job Search</dt>
+            <dd>{jobSearch}</dd>
+          </div>
+        )}
       </dl>
     );
   };
@@ -373,47 +369,32 @@ export default function Candidates() {
           title: "About",
           count: null,
           content: (
-            <div className="candidates__about-content">
-              {(selectedCandidate.basicInfo || selectedCandidate.email) && (
-                <div className="candidates__about-contact" aria-label="Contact information">
-                  <div className="candidates__about-fullname">
-                    {selectedCandidate.basicInfo?.name || selectedCandidate.name}
-                  </div>
-                  <div className="candidates__about-contact-items">
-                    {selectedCandidate.basicInfo?.phone && (
-                      <a className="candidates__about-contact-link" href={`tel:${selectedCandidate.basicInfo.phone}`}>
-                        {selectedCandidate.basicInfo.phone}
-                      </a>
-                    )}
-                    {(selectedCandidate.basicInfo?.email || selectedCandidate.email) && (
-                      <a className="candidates__about-contact-link" href={`mailto:${selectedCandidate.basicInfo?.email || selectedCandidate.email}`}>
-                        {selectedCandidate.basicInfo?.email || selectedCandidate.email}
-                      </a>
-                    )}
-                    {selectedCandidate.basicInfo?.linkedin && (
-                      <a
-                        className="candidates__about-contact-link"
-                        href={selectedCandidate.basicInfo.linkedin.startsWith("http") ? selectedCandidate.basicInfo.linkedin : `https://${selectedCandidate.basicInfo.linkedin}`}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        LinkedIn
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
-              {selectedCandidate.about && selectedCandidate.about !== "No description available." && (
-                <p className="candidates__body-text">{selectedCandidate.about}</p>
-              )}
+            <div className="candidates__about-contact" aria-label="Contact information">
+              <div className="candidates__about-fullname">
+                {selectedCandidate.basicInfo?.name || selectedCandidate.name}
+              </div>
+              <div className="candidates__about-contact-items">
+                {(selectedCandidate.basicInfo?.email || selectedCandidate.email) && (
+                  <a className="candidates__about-contact-link" href={`mailto:${selectedCandidate.basicInfo?.email || selectedCandidate.email}`}>
+                    {selectedCandidate.basicInfo?.email || selectedCandidate.email}
+                  </a>
+                )}
+                {(selectedCandidate.basicInfo?.linkedin || selectedCandidate.linkedin) && (
+                  <a
+                    className="candidates__about-contact-link"
+                    href={(() => {
+                      const url = selectedCandidate.basicInfo?.linkedin || selectedCandidate.linkedin || "";
+                      return url.startsWith("http") ? url : `https://${url}`;
+                    })()}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    LinkedIn
+                  </a>
+                )}
+              </div>
             </div>
           ),
-        },
-        {
-          key: "culturalInterest",
-          title: "Cultural Interest",
-          count: null,
-          content: <p className="candidates__empty-text">No cultural interests added.</p>,
         },
         {
           key: "education",
@@ -466,12 +447,6 @@ export default function Candidates() {
           title: "Preference",
           count: null,
           content: renderPreference(),
-        },
-        {
-          key: "otherDetails",
-          title: "Other details",
-          count: null,
-          content: renderOtherDetails(),
         },
       ]
     : [];
