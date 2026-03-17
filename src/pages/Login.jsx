@@ -61,7 +61,10 @@ export default function Login() {
         const role = localStorage.getItem("role");
 
         if (token) {
-          if (role === "EMPLOYER") {
+          const normalizedRole = String(role || "").trim().toUpperCase().replace(/_/g, "");
+          if (normalizedRole === "SERVICEPROVIDER") {
+            navigate("/service-provider/profile");
+          } else if (normalizedRole === "EMPLOYER") {
             try {
               const orgProfile = await fetchOrganizationProfile();
 
@@ -107,7 +110,7 @@ export default function Login() {
 
         await registerUser({
           name: form.name,
-          role: form.role === "student" ? "Student" : form.role,
+          role: form.role === "student" ? "Student" : form.role === "serviceProvider" ? "ServiceProvider" : form.role,
           username: form.email,
           password: form.password,
         });
@@ -207,6 +210,7 @@ export default function Login() {
                     >
                       <option value="student">Talent</option>
                       <option value="employer">Employer</option>
+                      <option value="serviceProvider">Service Provider</option>
                     </select>
                   </div>
                 </>

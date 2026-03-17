@@ -12,6 +12,7 @@ import Candidates from "./pages/employer/Candidates";
 import ListedJobs from "./pages/employer/ListedJobs";
 import CompanyProfile from "./pages/employer/CompanyProfile";
 import PostJob from "./pages/employer/PostJob";
+import ServiceProviderProfile from "./pages/ServiceProviderProfile";
 import { ProfileProvider } from "./context/ProfileContext";
 import { PublicOnlyRoute, RequireAuth, RequireRole } from "./routes/RouteGuards";
 
@@ -40,6 +41,10 @@ export default function App() {
             <Route path="/employer/listed-jobs" element={<ListedJobs />} />
             <Route path="/employer/company-profile" element={<CompanyProfile />} />
             <Route path="/employer/post-job" element={<PostJob />} />
+          </Route>
+
+          <Route element={<RequireRole allowedRoles={["SERVICEPROVIDER"]} />}>
+            <Route path="/service-provider/profile" element={<ServiceProviderProfile />} />
           </Route>
         </Route>
       </Routes>

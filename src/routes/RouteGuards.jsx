@@ -1,7 +1,11 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { getToken } from "../services/authService";
 
-const normalizeRole = (role) => String(role || "").trim().toUpperCase();
+const normalizeRole = (role) =>
+  String(role || "")
+    .trim()
+    .toUpperCase()
+    .replace(/_/g, "");
 
 const getRoleFromToken = () => {
   const token = getToken();
@@ -37,8 +41,9 @@ export function PublicOnlyRoute() {
   if (!hasValidToken()) return <Outlet />;
 
   const role = getCurrentRole();
-  const destination = role === "EMPLOYER" ? "/employer/dashboard" : "/student/view-profile";
-  return <Navigate to={destination} replace />;
+  if (role === "SERVICEPROVIDER") return <Navigate to="/service-provider/profile" replace />;
+  if (role === "EMPLOYER") return <Navigate to="/employer/dashboard" replace />;
+  return <Navigate to="/student/view-profile" replace />;
 }
 
 export function RequireAuth() {
