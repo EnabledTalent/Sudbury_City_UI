@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { registerUser, loginUser } from "../services/authService";
 import { fetchOrganizationProfile } from "../services/employerService";
@@ -146,12 +146,46 @@ export default function Login() {
       <a className="skip-link" href="#auth-form">
         Skip to authentication form
       </a>
+      
+      {/* Back Navigation Arrow */}
+      <a 
+        href="https://sudburyjobs.ca/" 
+        className="back-nav-link"
+        style={{
+          position: "absolute",
+          top: "20px",
+          left: "20px",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          color: "#374151",
+          textDecoration: "none",
+          fontSize: "14px",
+          fontWeight: 500,
+          padding: "8px 12px",
+          borderRadius: "8px",
+          transition: "all 0.2s ease",
+          zIndex: 10,
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "#f3f4f6";
+          e.currentTarget.style.color = "#111827";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "transparent";
+          e.currentTarget.style.color = "#374151";
+        }}
+      >
+        <ArrowLeft size={20} />
+        <span>Back to Home</span>
+      </a>
+
       <div className="auth-wrapper">
         <div className="auth-container">
           <aside className="auth-left" aria-label="Platform welcome">
             <div className="logo-circle">S</div>
             <h2>
-              Welcome To <b>Sudburry</b>
+              Welcome To <b>Sudbury</b>
             </h2>
             <p>Because every talent deserves the right chance</p>
           </aside>
@@ -289,11 +323,11 @@ export default function Login() {
 
             <p className="terms-text">
               By continuing, you agree to our{" "}
-              <a className="terms-link" href="/terms-of-service">
+              <a className="terms-link" href="https://sudburyjobs.ca/terms" target="_blank" rel="noopener noreferrer">
                 Terms of Service
               </a>{" "}
               and{" "}
-              <a className="terms-link" href="/privacy-policy">
+              <a className="terms-link" href="https://sudburyjobs.ca/privacy" target="_blank" rel="noopener noreferrer">
                 Privacy Policy
               </a>
             </p>
