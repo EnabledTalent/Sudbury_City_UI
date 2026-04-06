@@ -183,7 +183,15 @@ export default function Login() {
       <div className="auth-wrapper">
         <div className="auth-container">
           <aside className="auth-left" aria-label="Platform welcome">
-            <div className="logo-circle">S</div>
+            <div className="logo-circle">
+              <img
+                src="/images/favicon.svg"
+                alt=""
+                width={40}
+                height={40}
+                decoding="async"
+              />
+            </div>
             <h2>
               Welcome To <b>Sudbury</b>
             </h2>
