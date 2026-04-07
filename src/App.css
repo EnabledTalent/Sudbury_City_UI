@@ -78,6 +78,11 @@
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
 }
 
+.logo-circle img {
+  display: block;
+  object-fit: contain;
+}
+
 .auth-left h1,
 .auth-left h2 {
   font-size: 28px;

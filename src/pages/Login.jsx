@@ -185,8 +185,8 @@ export default function Login() {
           <aside className="auth-left" aria-label="Platform welcome">
             <div className="logo-circle">
               <img
-                src="/images/favicon.svg"
-                alt=""
+                src="/images/LogoOnlyBlack.png"
+                alt="Sudbury"
                 width={40}
                 height={40}
                 decoding="async"
