@@ -179,3 +179,45 @@ export const updateOrganizationProfile = async (organizationData, email = null) 
     return { success: true, message: "Organization profile updated successfully" };
   }
 };
+
+/**
+ * Delete organization profile for employer
+ */
+export const deleteOrganizationProfile = async (email = null) => {
+  const token = getToken();
+
+  if (!token) {
+    throw new Error("No auth token found");
+  }
+
+  const employerEmail = email || getEmailFromToken();
+
+  const response = await fetch(
+    `${BUSINESS_BASE_URL}/api/employer/profile/organization?email=${encodeURIComponent(employerEmail)}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        accept: "*/*",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to delete organization profile: ${response.status} ${errorText}`
+    );
+  }
+
+  const responseText = await response.text();
+  if (!responseText || !responseText.trim()) {
+    return { success: true, message: "Organization profile deleted" };
+  }
+
+  try {
+    return JSON.parse(responseText);
+  } catch {
+    return { success: true, message: "Organization profile deleted" };
+  }
+};

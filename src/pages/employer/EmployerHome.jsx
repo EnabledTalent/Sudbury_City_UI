@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   fetchOrganizationProfile,
   saveOrganizationProfile,
@@ -21,9 +21,19 @@ const DEFAULT_FORM_DATA = {
 
 export default function EmployerHome() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [websiteError, setWebsiteError] = useState("");
   const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
   const [toast, setToast] = useState({ message: "", type: "error" });
+  const deleteToastShownRef = useRef(false);
+
+  useEffect(() => {
+    if (location.state?.organizationProfileDeleted && !deleteToastShownRef.current) {
+      deleteToastShownRef.current = true;
+      setToast({ message: "Organization profile was deleted. You can add your company again below.", type: "success" });
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, location.pathname, navigate]);
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;

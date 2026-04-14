@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Pencil } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Pencil, Trash2 } from "lucide-react";
 import {
   fetchOrganizationProfile,
   updateOrganizationProfile,
+  deleteOrganizationProfile,
 } from "../../services/employerService";
 import EmployerHeader from "../../components/employer/EmployerHeader";
 import Toast from "../../components/Toast";
@@ -53,10 +55,13 @@ const toExternalWebsiteHref = (website) => {
 };
 
 export default function CompanyProfile() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [toast, setToast] = useState({ message: "", type: "error" });
   const [websiteError, setWebsiteError] = useState("");
   const [companyData, setCompanyData] = useState(toCompanyData(null));
@@ -201,6 +206,23 @@ export default function CompanyProfile() {
     }
   };
 
+  const handleConfirmDelete = async () => {
+    try {
+      setDeleting(true);
+      await deleteOrganizationProfile();
+      setShowDeleteConfirm(false);
+      navigate("/employer/home", { replace: true, state: { organizationProfileDeleted: true } });
+    } catch (err) {
+      console.error("Error deleting organization profile:", err);
+      setToast({
+        message: err?.message || "Failed to delete organization profile.",
+        type: "error",
+      });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <div className="company-profile">
       <a className="skip-link" href="#company-profile-content">
@@ -244,9 +266,24 @@ export default function CompanyProfile() {
               </div>
 
               {!isEditMode && (
-                <button type="button" className="company-profile__edit-btn" onClick={handleEdit} aria-label="Edit organization info">
-                  <Pencil size={18} strokeWidth={2.5} aria-hidden="true" />
-                </button>
+                <div className="company-profile__banner-actions">
+                  <button
+                    type="button"
+                    className="company-profile__edit-btn"
+                    onClick={handleEdit}
+                    aria-label="Edit organization info"
+                  >
+                    <Pencil size={18} strokeWidth={2.5} aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    className="company-profile__delete-btn"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    aria-label="Delete organization profile"
+                  >
+                    <Trash2 size={18} strokeWidth={2.5} aria-hidden="true" />
+                  </button>
+                </div>
               )}
             </section>
 
@@ -475,6 +512,48 @@ export default function CompanyProfile() {
           non-commercial use only.
         </p>
       </footer>
+
+      {showDeleteConfirm && (
+        <div
+          className="company-profile__modal-overlay"
+          role="presentation"
+          onClick={() => !deleting && setShowDeleteConfirm(false)}
+        >
+          <div
+            className="company-profile__modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="company-profile-delete-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="company-profile-delete-title" className="company-profile__modal-title">
+              Delete organization profile?
+            </h2>
+            <p className="company-profile__modal-text">
+              This removes your saved company information from Sudbury Jobs. You can add your organization again
+              later from the employer home page. This action cannot be undone.
+            </p>
+            <div className="company-profile__modal-actions">
+              <button
+                type="button"
+                className="company-profile__cancel-btn"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="company-profile__modal-delete-confirm"
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+              >
+                {deleting ? "Deleting…" : "Delete profile"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Toast
         message={toast.message}
