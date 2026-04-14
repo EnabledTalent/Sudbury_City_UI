@@ -1,5 +1,23 @@
 import BASE_URL, { AUTH_BASE_URL } from "../config/api";
 
+const parseApiMessage = (text) => {
+  if (!text) return null;
+  try {
+    const data = JSON.parse(text);
+    if (typeof data === "string") return data;
+    if (data?.message) return data.message;
+    if (data?.error) return data.error;
+    if (data?.detail) return data.detail;
+    if (data?.title) return data.title;
+    if (Array.isArray(data?.errors) && data.errors.length > 0) {
+      return data.errors.join(", ");
+    }
+    return text;
+  } catch {
+    return text;
+  }
+};
+
 /**
  * Get token string from localStorage
  * Handles both string token and JSON object format
@@ -47,24 +65,6 @@ export const registerUser = async (payload) => {
 
   const raw = await res.text();
 
-  const parseApiMessage = (text) => {
-    if (!text) return null;
-    try {
-      const data = JSON.parse(text);
-      if (typeof data === "string") return data;
-      if (data?.message) return data.message;
-      if (data?.error) return data.error;
-      if (data?.detail) return data.detail;
-      if (data?.title) return data.title;
-      if (Array.isArray(data?.errors) && data.errors.length > 0) {
-        return data.errors.join(", ");
-      }
-      return text; // fallback: show whatever backend returned
-    } catch {
-      return text; // plain-text error
-    }
-  };
-
   if (!res.ok) {
     const apiMessage = parseApiMessage(raw);
     throw new Error(apiMessage || `Registration failed (${res.status})`);
@@ -101,7 +101,59 @@ export const registerUser = async (payload) => {
   return response;
 };
 
+/**
+ * Request a password reset OTP (public). Backend returns the same message whether or not the email exists.
+ */
+export const requestPasswordReset = async (email) => {
+  const res = await fetch(`${BASE_URL}/forgot-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      accept: "*/*",
+    },
+    body: JSON.stringify({ email }),
+  });
 
+  const raw = await res.text();
+
+  if (!res.ok) {
+    const apiMessage = parseApiMessage(raw);
+    throw new Error(apiMessage || `Request failed (${res.status})`);
+  }
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return raw;
+  }
+};
+
+/**
+ * Complete password reset with email, 6-digit OTP, and new password (public).
+ */
+export const resetPasswordWithOtp = async ({ email, otp, newPassword }) => {
+  const res = await fetch(`${BASE_URL}/reset-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      accept: "*/*",
+    },
+    body: JSON.stringify({ email, otp, newPassword }),
+  });
+
+  const raw = await res.text();
+
+  if (!res.ok) {
+    const apiMessage = parseApiMessage(raw);
+    throw new Error(apiMessage || `Reset failed (${res.status})`);
+  }
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return raw;
+  }
+};
 
 export const loginUser = async (username, password) => {
   // Emergency rollback flag:

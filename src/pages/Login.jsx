@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { registerUser, loginUser } from "../services/authService";
 import { fetchOrganizationProfile } from "../services/employerService";
 import { fetchProfile } from "../services/profileService";
@@ -305,6 +305,14 @@ export default function Login() {
               {error && mode === "login" && (
                 <p id={authErrorId} className="error-text" role="alert" aria-live="assertive">
                   {error}
+                </p>
+              )}
+
+              {mode === "login" && (
+                <p className="helper-text" style={{ marginTop: "-0.25rem", marginBottom: "0.5rem" }}>
+                  <Link to="/forgot-password" className="terms-link">
+                    Forgot password?
+                  </Link>
                 </p>
               )}
 

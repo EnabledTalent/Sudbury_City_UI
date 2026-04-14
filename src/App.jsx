@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
 import StudentHome from "./pages/StudentHome";
 import ProfileSuccess from "./pages/ProfileSuccess";
 import ProfileBuilder from "./pages/ProfileBuilder";
@@ -22,6 +23,7 @@ export default function App() {
       <Routes>
         <Route element={<PublicOnlyRoute />}>
           <Route path="/" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
         </Route>
 
         <Route element={<RequireAuth />}>
