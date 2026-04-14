@@ -1,6 +1,6 @@
-# Discover Sudbury 
+# Discover Sudbury Jobs
 
-Discover Sudbury is a modern single-page React application that helps users explore jobs, events, services, training programs, and community resources in Sudbury — all in one place.
+Discover Sudbury Jobs is a modern single-page React application that helps users explore jobs, events, services, training programs, and community resources in Sudbury — all in one place.
 
 The application is built as a smooth-scrolling SPA with a hero section, multiple content sections, and a call-to-action footer.
 

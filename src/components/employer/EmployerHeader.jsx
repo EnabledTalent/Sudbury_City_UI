@@ -90,9 +90,17 @@ export default function EmployerHeader({
       className={`employer-header ${menuOpen ? "employer-header--menu-open" : ""}`}
     >
       <nav className="employer-header__nav" aria-label="Employer navigation">
-        <div className="employer-header__logo" aria-label="Sudburry">
-          <span className="employer-header__logo-icon" aria-hidden="true" />
-          <span>Sudburry</span>
+        <div className="employer-header__logo" aria-label="Sudbury Jobs">
+          <span className="employer-header__logo-icon" aria-hidden="true">
+            <img
+              src="/images/LogoOnlyBlack.png"
+              alt=""
+              width={24}
+              height={24}
+              decoding="async"
+            />
+          </span>
+          <span>Sudbury Jobs</span>
         </div>
 
         <button

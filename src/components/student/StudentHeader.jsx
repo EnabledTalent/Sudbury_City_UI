@@ -97,9 +97,17 @@ export default function StudentHeader({
       className={`student-header ${menuOpen ? "student-header--menu-open" : ""}`}
     >
       <nav className="student-header__nav" aria-label="Student navigation">
-        <div className="student-header__logo" aria-label="Sudburry">
-          <span className="student-header__logo-icon" aria-hidden="true" />
-          <span>Sudburry</span>
+        <div className="student-header__logo" aria-label="Sudbury Jobs">
+          <span className="student-header__logo-icon" aria-hidden="true">
+            <img
+              src="/images/LogoOnlyBlack.png"
+              alt=""
+              width={24}
+              height={24}
+              decoding="async"
+            />
+          </span>
+          <span>Sudbury Jobs</span>
         </div>
 
         <button

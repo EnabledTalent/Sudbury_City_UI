@@ -468,7 +468,7 @@ export default function ServiceProviderProfile() {
 
       <header className="service-provider-profile__header">
         <div className="service-provider-profile__logo">S</div>
-        <h1 className="service-provider-profile__brand">Sudbury</h1>
+        <h1 className="service-provider-profile__brand">Sudbury Jobs</h1>
         <nav className="service-provider-profile__nav">
           <button
             type="button"

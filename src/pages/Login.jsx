@@ -186,14 +186,14 @@ export default function Login() {
             <div className="logo-circle">
               <img
                 src="/images/LogoOnlyBlack.png"
-                alt="Sudbury"
+                alt="Sudbury Jobs"
                 width={40}
                 height={40}
                 decoding="async"
               />
             </div>
             <h2>
-              Welcome To <b>Sudbury</b>
+              Welcome To <b>Sudbury Jobs</b>
             </h2>
             <p>Because every talent deserves the right chance</p>
           </aside>

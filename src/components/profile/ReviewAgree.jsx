@@ -263,7 +263,7 @@ export default function ReviewAgree({ onPrev, onNext }) {
 
       <div style={styles.formGroup}>
         <label style={styles.label}>
-          How did you discover the Sudbury talent platform?
+          How did you discover the Sudbury Jobs talent platform?
         </label>
         <select
           style={styles.select}

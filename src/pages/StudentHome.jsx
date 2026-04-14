@@ -50,7 +50,7 @@ export default function StudentHome() {
 
       <main className="student-home__main" aria-label="Student onboarding">
         <section className="student-home__card">
-          <h1 className="student-home__title">Create your Sudburry profile</h1>
+          <h1 className="student-home__title">Create your Sudbury Jobs profile</h1>
           <p className="student-home__subtitle">Upload your resume to build a profile automatically.</p>
 
           <div className="student-home__upload">

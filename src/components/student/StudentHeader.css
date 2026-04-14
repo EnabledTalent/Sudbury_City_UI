@@ -29,10 +29,19 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--accent, #c8a45c);
+  background: rgba(255, 255, 255, 0.95);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.student-header__logo-icon img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: block;
 }
 
 .student-header__menu-panel {
