@@ -1,5 +1,10 @@
 import { BUSINESS_BASE_URL } from "../config/api";
 import { getToken } from "./authService";
+import {
+  mergeReviewAgree,
+  buildDisabilityPayload,
+  deriveHasDisabilityFromIdentifiesAs,
+} from "../utils/disabilityReviewConstants";
 
 /**
  * Transform profile data from context format to API format
@@ -124,15 +129,18 @@ const transformProfileForAPI = (profile) => {
       desiredSalary: profile.otherDetails?.desiredSalary || "",
       otherDetailsText: profile.otherDetails?.otherDetailsText || profile.otherDetails || "",
     },
-    reviewAgree: {
-      discovery: profile.reviewAgree?.discovery || "",
-      comments: profile.reviewAgree?.comments || "",
-      agreed: profile.reviewAgree?.agreed || false,
-      hasDisability:
-        profile.reviewAgree?.hasDisability === undefined
-          ? null
-          : profile.reviewAgree?.hasDisability,
-    },
+    reviewAgree: (() => {
+      const ra = mergeReviewAgree(profile.reviewAgree);
+      const derived = deriveHasDisabilityFromIdentifiesAs(ra.disability?.identifiesAs);
+      return {
+        discovery: ra.discovery || "",
+        comments: ra.comments || "",
+        agreed: ra.agreed || false,
+        hasDisability:
+          derived !== undefined && derived !== null ? derived : ra.hasDisability ?? null,
+        disability: buildDisabilityPayload(ra.disability),
+      };
+    })(),
   };
 
   return transformed;

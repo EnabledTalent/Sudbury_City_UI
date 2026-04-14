@@ -129,6 +129,33 @@ export const requestPasswordReset = async (email) => {
 };
 
 /**
+ * Resend password reset OTP (public). Same behaviour and generic response as forgot-password.
+ */
+export const resendPasswordOtp = async (email) => {
+  const res = await fetch(`${BASE_URL}/resend-password-otp`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      accept: "*/*",
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  const raw = await res.text();
+
+  if (!res.ok) {
+    const apiMessage = parseApiMessage(raw);
+    throw new Error(apiMessage || `Request failed (${res.status})`);
+  }
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return raw;
+  }
+};
+
+/**
  * Complete password reset with email, 6-digit OTP, and new password (public).
  */
 export const resetPasswordWithOtp = async ({ email, otp, newPassword }) => {

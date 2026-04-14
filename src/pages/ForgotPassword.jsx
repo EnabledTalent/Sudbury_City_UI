@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { requestPasswordReset, resetPasswordWithOtp } from "../services/authService";
+import {
+  requestPasswordReset,
+  resendPasswordOtp,
+  resetPasswordWithOtp,
+} from "../services/authService";
 import Toast from "../components/Toast";
 
 export default function ForgotPassword() {
@@ -13,6 +17,7 @@ export default function ForgotPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const [error, setError] = useState("");
   const [toast, setToast] = useState({ message: "", type: "error" });
 
@@ -76,6 +81,26 @@ export default function ForgotPassword() {
       setError(err?.message || "Could not reset password.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setError("");
+    setToast({ message: "", type: "error" });
+    setResendLoading(true);
+
+    try {
+      const message = await resendPasswordOtp(email.trim());
+      const text =
+        typeof message === "string"
+          ? message
+          : "If an account exists for that email, a reset code has been sent.";
+      setToast({ message: text, type: "success" });
+      setOtp("");
+    } catch (err) {
+      setError(err?.message || "Could not resend code.");
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -206,6 +231,17 @@ export default function ForgotPassword() {
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
                     aria-invalid={Boolean(error)}
                   />
+                  <p className="helper-text" style={{ marginTop: "8px", textAlign: "left" }}>
+                    <button
+                      type="button"
+                      className="switch-btn"
+                      onClick={handleResendOtp}
+                      disabled={loading || resendLoading}
+                      aria-busy={resendLoading}
+                    >
+                      {resendLoading ? "Sending…" : "Resend code"}
+                    </button>
+                  </p>
                 </div>
 
                 <div className="form-group">
@@ -264,7 +300,7 @@ export default function ForgotPassword() {
                   </p>
                 )}
 
-                <button className="submit-btn" disabled={loading} type="submit">
+                <button className="submit-btn" disabled={loading || resendLoading} type="submit">
                   {loading ? "Please wait..." : "Update password"}
                 </button>
 
@@ -272,6 +308,7 @@ export default function ForgotPassword() {
                   <button
                     type="button"
                     className="switch-btn"
+                    disabled={loading || resendLoading}
                     onClick={() => {
                       setStep(1);
                       setOtp("");

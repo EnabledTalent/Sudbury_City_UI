@@ -2,6 +2,11 @@ import { BUSINESS_BASE_URL } from "../config/api";
 import { saveProfile } from "./profileService";
 import { normalizeUploadData } from "../utils/normalizeUploadData";
 import { getToken } from "./authService";
+import {
+  mergeReviewAgree,
+  buildDisabilityPayload,
+  deriveHasDisabilityFromIdentifiesAs,
+} from "../utils/disabilityReviewConstants";
 
 /**
  * Get email from JWT token
@@ -432,15 +437,18 @@ const transformProfileForApplication = (profile) => {
       : null,
     
     reviewAgree: profile.reviewAgree
-      ? {
-          discovery: profile.reviewAgree.discovery || "",
-          comments: profile.reviewAgree.comments || "",
-          agreed: profile.reviewAgree.agreed || false,
-          hasDisability:
-            profile.reviewAgree.hasDisability === undefined
-              ? null
-              : profile.reviewAgree.hasDisability,
-        }
+      ? (() => {
+          const ra = mergeReviewAgree(profile.reviewAgree);
+          const derived = deriveHasDisabilityFromIdentifiesAs(ra.disability?.identifiesAs);
+          return {
+            discovery: ra.discovery || "",
+            comments: ra.comments || "",
+            agreed: ra.agreed || false,
+            hasDisability:
+              derived !== undefined && derived !== null ? derived : ra.hasDisability ?? null,
+            disability: buildDisabilityPayload(ra.disability),
+          };
+        })()
       : null,
     
     // Additional fields from profile

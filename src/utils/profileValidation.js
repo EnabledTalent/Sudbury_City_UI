@@ -1,3 +1,5 @@
+import { validateDisabilityReview } from "./disabilityReviewConstants";
+
 export const validateBasicInfo = (profile) => {
   const b = profile.basicInfo || {};
   const errors = {};
@@ -128,9 +130,7 @@ export const validateReviewAgree = (profile) => {
     errors.agreed = "You must agree to the terms and conditions";
   }
 
-  if (reviewAgree.hasDisability === undefined || reviewAgree.hasDisability === null || reviewAgree.hasDisability === "") {
-    errors.hasDisability = "Please select if you have a disability";
-  }
+  Object.assign(errors, validateDisabilityReview(profile));
 
   return errors;
 };

@@ -1,3 +1,5 @@
+import { mergeReviewAgree } from "./disabilityReviewConstants";
+
 /**
  * Normalize upload endpoint response to profile format
  * This function converts the upload API response to match the profile structure
@@ -175,16 +177,17 @@ export const normalizeUploadData = (uploadData) => {
       earliestAvailability: uploadData.otherDetails?.earliestAvailability || "",
       desiredSalary: uploadData.otherDetails?.desiredSalary || "",
     },
-    reviewAgree: {
-      discovery: uploadData.reviewAgree?.discovery || "",
-      comments: uploadData.reviewAgree?.comments || "",
+    reviewAgree: mergeReviewAgree({
+      ...(typeof uploadData.reviewAgree === "object" && uploadData.reviewAgree !== null
+        ? uploadData.reviewAgree
+        : {}),
       agreed: uploadData.reviewAgree === true || uploadData.reviewAgree?.agreed || false,
       hasDisability:
         uploadData.reviewAgree?.hasDisability ??
         uploadData.hasDisability ??
         uploadData.otherDetails?.hasDisability ??
         null,
-    },
+    }),
   };
 
   return normalized;
