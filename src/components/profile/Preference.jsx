@@ -203,7 +203,7 @@ export default function Preference({ onPrev, onNext }) {
           Previous
         </button>
         <button style={styles.btnPrimary} onClick={onNext}>
-          Save & Next
+          Next
         </button>
       </div>
     </>

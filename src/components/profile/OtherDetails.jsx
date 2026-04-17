@@ -351,7 +351,7 @@ export default function OtherDetails({ onPrev, onNext }) {
           Previous
         </button>
         <button style={styles.btnPrimary} onClick={handleNext}>
-          Save & Next
+          Next
         </button>
       </div>
     </>

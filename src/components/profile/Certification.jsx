@@ -519,7 +519,7 @@ export default function Certification({ onPrev, onNext }) {
             e.currentTarget.style.boxShadow = styles.btnPrimary.boxShadow;
           }}
         >
-          Save & Next
+          Next
         </button>
       </div>
     </div>

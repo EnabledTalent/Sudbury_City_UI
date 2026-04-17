@@ -2,6 +2,7 @@ import { useProfile } from "../../context/ProfileContext";
 import {
   validateBasicInfo,
   validateEducation,
+  validateWorkExperience,
   validateSkills,
   validateProjects,
   validateAchievements,
@@ -13,10 +14,12 @@ import {
 const validators = {
   basicInfo: validateBasicInfo,
   education: validateEducation,
+  workExperience: validateWorkExperience,
   skills: validateSkills,
   projects: validateProjects,
   achievements: validateAchievements,
   certification: validateCertification,
+  preference: () => ({}),
   otherDetails: validateOtherDetails,
   reviewAgree: validateReviewAgree,
 };
@@ -170,8 +173,8 @@ export default function Stepper({ steps, activeStep, onStepClick }) {
             <div style={styles.stepContent}>
               <span style={styles.stepLabel}>{step.label}</span>
               {hasError && errorCount > 0 && (
-                <span style={styles.errorText}>
-                  {errorCount.toString().padStart(2, "0")} error
+                <span style={styles.errorText} title="Required fields not filled">
+                  {errorCount} field{errorCount === 1 ? "" : "s"} missing
                 </span>
               )}
             </div>

@@ -73,7 +73,7 @@ export default function Skills({ onPrev, onNext }) {
       <ProfileHeader />
       <div className="section-header">
         <h3>Skills</h3>
-        {hasError && <span className="error-badge">01 error</span>}
+        {hasError && <span className="error-badge">1 field missing</span>}
       </div>
 
       {/* Primary Skills Section */}
@@ -146,7 +146,7 @@ export default function Skills({ onPrev, onNext }) {
             }
           }}
         >
-          Save & Next
+          Next
         </button>
       </div>
     </>

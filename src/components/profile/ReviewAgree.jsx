@@ -786,7 +786,13 @@ export default function ReviewAgree({ onPrev, onNext }) {
           {loading && (
             <span style={styles.loadingSpinner} className="loading-spinner"></span>
           )}
-          {loading ? (isEditMode ? "Updating..." : "Saving...") : isEditMode ? "Update" : "Save & Proceed"}
+          {loading
+            ? isEditMode
+              ? "Updating..."
+              : "Saving..."
+            : isEditMode
+              ? "Update profile"
+              : "Save profile"}
         </button>
       </div>
     </>

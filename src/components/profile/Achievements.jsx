@@ -328,7 +328,7 @@ export default function Achievements({ onPrev, onNext }) {
           Previous
         </button>
         <button style={styles.btnPrimary} onClick={handleNext}>
-          Save & Next
+          Next
         </button>
       </div>
     </>

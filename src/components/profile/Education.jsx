@@ -170,7 +170,7 @@ export default function Education({ onPrev, onNext }) {
           Previous
         </button>
         <button className="btn-primary" onClick={handleNext}>
-          Save & Next
+          Next
         </button>
       </div>
     </>

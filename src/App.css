@@ -428,6 +428,17 @@
   border-color: var(--primary);
 }
 
+/* Highlight whole row when a required field is missing (profile builder) */
+.form-group.form-group--missing {
+  padding: 14px 14px 12px;
+  margin-left: -8px;
+  margin-right: -8px;
+  border-radius: 10px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  box-shadow: 0 0 0 1px rgba(252, 211, 77, 0.35);
+}
+
 /* ===== ERROR STATE ===== */
 .input-error {
   border: 1px solid var(--error);
