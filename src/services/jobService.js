@@ -1,7 +1,7 @@
 import { BUSINESS_BASE_URL } from "../config/api";
 import { saveProfile } from "./profileService";
 import { normalizeUploadData } from "../utils/normalizeUploadData";
-import { getToken } from "./authService";
+import { getToken, getEmailFromToken as getLoginEmailFromJwt } from "./authService";
 import {
   mergeReviewAgree,
   buildDisabilityPayload,
@@ -9,20 +9,14 @@ import {
 } from "../utils/disabilityReviewConstants";
 
 /**
- * Get email from JWT token
+ * Email from JWT; throws if missing (same behavior as before for job APIs).
  */
 const getEmailFromToken = () => {
-  const token = getToken();
-  if (!token) {
+  const email = getLoginEmailFromJwt();
+  if (!email) {
     throw new Error("No auth token found");
   }
-  
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.sub || payload.email || payload.username;
-  } catch (e) {
-    throw new Error("Failed to decode token");
-  }
+  return email;
 };
 
 /**
@@ -330,11 +324,13 @@ const transformProfileForApplication = (profile) => {
     return totalYears;
   };
 
+  const accountEmail = getLoginEmailFromJwt() || profile.basicInfo?.email || "";
+
   const transformed = {
     // Basic Info DTO
     basicInfo: {
       name: profile.basicInfo?.name || "",
-      email: profile.basicInfo?.email || "",
+      email: accountEmail,
       phone: profile.basicInfo?.phone || "",
       linkedin: profile.basicInfo?.linkedin || "",
     },
@@ -475,7 +471,8 @@ export const applyWithProfile = async (jobId, profile) => {
     throw new Error("Job ID is required");
   }
 
-  if (!profile || !profile.basicInfo?.email) {
+  const accountEmail = getLoginEmailFromJwt() || profile?.basicInfo?.email;
+  if (!profile || !accountEmail) {
     throw new Error("Profile data is required to apply");
   }
 

@@ -1,19 +1,35 @@
 import { BUSINESS_BASE_URL } from "../config/api";
-import { getToken } from "./authService";
+import { getToken, getEmailFromToken } from "./authService";
 import {
   mergeReviewAgree,
   buildDisabilityPayload,
   deriveHasDisabilityFromIdentifiesAs,
 } from "../utils/disabilityReviewConstants";
 
+function syncStoredProfileEmail(canonicalEmail) {
+  if (!canonicalEmail) return;
+  try {
+    const raw = localStorage.getItem("profileData");
+    const p = raw ? JSON.parse(raw) : {};
+    if (!p.basicInfo) p.basicInfo = {};
+    p.basicInfo.email = canonicalEmail;
+    localStorage.setItem("profileData", JSON.stringify(p));
+    localStorage.setItem("userEmail", canonicalEmail);
+    window.dispatchEvent(new CustomEvent("profileDataUpdated", { detail: p }));
+  } catch {
+    /* ignore */
+  }
+}
+
 /**
  * Transform profile data from context format to API format
  */
-const transformProfileForAPI = (profile) => {
+const transformProfileForAPI = (profile, canonicalEmail) => {
+  const emailForPayload = canonicalEmail || profile.basicInfo?.email || "";
   const transformed = {
     basicInfo: {
       name: profile.basicInfo?.name || "",
-      email: profile.basicInfo?.email || "",
+      email: emailForPayload,
       phone: profile.basicInfo?.phone || "",
       linkedin: profile.basicInfo?.linkedin || "",
     },
@@ -151,7 +167,7 @@ const transformProfileForAPI = (profile) => {
  */
 export const saveProfile = async (profile) => {
   const token = getToken();
-  const email = profile.basicInfo?.email;
+  const email = getEmailFromToken() || profile.basicInfo?.email;
 
   if (!token) {
     throw new Error("No auth token found");
@@ -161,7 +177,7 @@ export const saveProfile = async (profile) => {
     throw new Error("Email is required to save profile");
   }
 
-  const transformedData = transformProfileForAPI(profile);
+  const transformedData = transformProfileForAPI(profile, email);
 
   const response = await fetch(
     `${BUSINESS_BASE_URL}/api/jobseeker/profile?email=${encodeURIComponent(email)}`,
@@ -182,6 +198,8 @@ export const saveProfile = async (profile) => {
       `Failed to save profile: ${response.status} ${errorText}`
     );
   }
+
+  syncStoredProfileEmail(email);
 
   // Check if response has content and is JSON
   const responseText = await response.text();
@@ -209,7 +227,7 @@ export const saveProfile = async (profile) => {
  */
 export const updateProfile = async (profile) => {
   const token = getToken();
-  const email = profile.basicInfo?.email;
+  const email = getEmailFromToken() || profile.basicInfo?.email;
 
   if (!token) {
     throw new Error("No auth token found");
@@ -219,7 +237,7 @@ export const updateProfile = async (profile) => {
     throw new Error("Email is required to update profile");
   }
 
-  const transformedData = transformProfileForAPI(profile);
+  const transformedData = transformProfileForAPI(profile, email);
 
   const response = await fetch(
     `${BUSINESS_BASE_URL}/api/jobseeker/profile?email=${encodeURIComponent(email)}`,
@@ -240,6 +258,8 @@ export const updateProfile = async (profile) => {
       `Failed to update profile: ${response.status} ${errorText}`
     );
   }
+
+  syncStoredProfileEmail(email);
 
   // Check if response has content and is JSON
   const responseText = await response.text();
@@ -271,12 +291,13 @@ export const fetchProfile = async (email) => {
     throw new Error("No auth token found");
   }
 
-  if (!email) {
+  const resolvedEmail = getEmailFromToken() || email;
+  if (!resolvedEmail) {
     throw new Error("Email is required to fetch profile");
   }
 
   const response = await fetch(
-    `${BUSINESS_BASE_URL}/api/jobseeker/profile?email=${encodeURIComponent(email)}`,
+    `${BUSINESS_BASE_URL}/api/jobseeker/profile?email=${encodeURIComponent(resolvedEmail)}`,
     {
       method: "GET",
       headers: {

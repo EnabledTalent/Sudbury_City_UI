@@ -1,20 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
 import { useProfile } from "../../context/ProfileContext";
 import ProfileHeader from "./ProfileHeader";
-import { getToken } from "../../services/authService";
+import { getEmailFromToken } from "../../services/authService";
 
 function getLoginEmail() {
+  const fromJwt = getEmailFromToken();
+  if (fromJwt) return fromJwt;
   const stored = localStorage.getItem("userEmail");
   if (stored) return stored;
-  const token = getToken();
-  if (token) {
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      return payload.sub || payload.email || payload.username || "";
-    } catch (e) {
-      // ignore
-    }
-  }
   return "";
 }
 
@@ -31,6 +24,15 @@ export default function BasicInfo({ onNext, onPrev }) {
   const [firstName, setFirstName] = useState(nameParts[0] || "");
   const [lastName, setLastName] = useState(nameParts.slice(1).join(" ") || "");
   const [phone, setPhone] = useState(data.phone ?? "");
+
+  // Keep profile context email aligned with the logged-in account (JWT), not resume/upload extraction.
+  useEffect(() => {
+    const em = getEmailFromToken();
+    if (!em) return;
+    const cur = profile.basicInfo || {};
+    if ((cur.email || "") === em) return;
+    updateProfile("basicInfo", { ...cur, email: em });
+  }, [profile.basicInfo, updateProfile]);
 
   useEffect(() => {
     const name = data.name || "";

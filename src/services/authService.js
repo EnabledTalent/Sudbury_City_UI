@@ -53,6 +53,22 @@ export const getToken = () => {
   return typeof tokenData === 'string' ? tokenData : null;
 };
 
+/**
+ * Logged-in account email from JWT (`sub` / `email` / `username`).
+ * Use for API query params and profile basicInfo.email so it matches the session (not resume/upload data).
+ * Returns null if there is no valid token.
+ */
+export const getEmailFromToken = () => {
+  const token = getToken();
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.sub || payload.email || payload.username || null;
+  } catch {
+    return null;
+  }
+};
+
 export const registerUser = async (payload) => {
   const res = await fetch(`${BASE_URL}/register`, {
     method: "POST",
